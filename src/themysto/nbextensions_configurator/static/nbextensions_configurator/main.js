@@ -953,12 +953,7 @@ define([
         nbext_config_page.show_header();
         events.trigger('resize-header.Page');
 
-        var config_promises = [];
-        for (var section in configs) {
-            config_promises.push(configs[section].loaded);
-            configs[section].load();
-        }
-        Promise.all(config_promises).then(function () {
+        load_all_configs().then(function () {
             // get list of extensions from value set by script embedded in page by the python backend
             build_extension_list(window.extension_list);
             nbext_config_page.show();
@@ -1126,6 +1121,9 @@ define([
     }
 
     return {
-        build_page : build_page
+        build_page : build_page,
+        build_configurator_ui : build_configurator_ui,
+        build_extension_list : build_extension_list,
+        load_all_configs : load_all_configs
     };
 });
