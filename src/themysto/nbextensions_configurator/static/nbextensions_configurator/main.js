@@ -876,6 +876,62 @@ define([
         }
     }
 
+    function build_configurator_ui () {
+        var config_ui = $('<div/>')
+            .attr('id', 'nbextensions-configurator-container')
+            .addClass('container');
+
+        var selector = $('<div/>')
+            .addClass('row nbext-row container-fluid nbext-selector')
+            .appendTo(config_ui);
+
+        $('<h4>Configurable extensions</h4>').appendTo(selector);
+
+        var selector_nav = $('<nav/>')
+            .addClass('row')
+            .appendTo(selector);
+
+        var ncols = 4;
+        var col_width = Math.floor(12 / ncols);
+        for (var ii = 0; ii < ncols; ii++) {
+            $('<ul/>')
+                .addClass('nav nav-pills nav-stacked col-md-' + col_width)
+                .appendTo(selector_nav);
+        }
+
+        var showhide = $('<div/>')
+            .addClass('nbext-showhide-incompat')
+            .append(
+                build_param_input({
+                    input_type: 'checkbox',
+                    section: 'common'
+                })
+                    .attr('id', param_id_prefix + 'nbext_hide_incompat')
+                    .on('change', function (evt) {
+                        set_hide_incompat(handle_input(evt));
+                    })
+            )
+            .text('disable configuration for extensions without explicit compatibility (they may break your notebook environment, but can be useful to show for extension development)')
+            .appendTo(selector);
+
+        var readme = $('<div/>')
+            .addClass('row nbext-readme')
+            .append('<h3/>')
+            .append('<div class="nbext-readme-contents"/>')
+            .appendTo(config_ui);
+
+        return config_ui;
+    }
+
+    function load_all_configs() {
+        var config_promises = [];
+        for (var section in configs) {
+            config_promises.push(configs[section].loaded);
+            configs[section].load();
+        }
+        return Promise.all(config_promises);
+    }
+
     /**
      * build html body listing all extensions.
      */
@@ -887,15 +943,7 @@ define([
         // prepare for rendermd usage
         rendermd.add_markdown_css();
 
-        build_param_input({
-            input_type: 'checkbox',
-            section: 'common'
-        })
-            .attr('id', param_id_prefix + 'nbext_hide_incompat')
-            .on('change', function (evt) {
-                set_hide_incompat(handle_input(evt));
-            })
-            .prependTo('.nbext-showhide-incompat');
+        build_configurator_ui().appendTo('#site');
 
         nbext_config_page.show_header();
         events.trigger('resize-header.Page');

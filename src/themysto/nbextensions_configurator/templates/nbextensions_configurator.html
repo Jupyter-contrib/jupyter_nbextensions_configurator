@@ -24,31 +24,9 @@ data-base-url="{{base_url | urlencode}}"
 {% endblock %}
 
 {% block header %}
-
 {% endblock %}
 
 {% block site %}
-
-<div id="notebook-container" class="container">
-	<div class="row nbext-row container-fluid nbext-selector">
-		<h4>Configurable extensions</h4>
-		<div class="nbext-showhide-incompat">
-			disable configuration for extensions without explicit compatibility
-			(they may break your notebook environment, but can be useful to show for extension development)
-		</div>
-		<nav class="row">
-			<ul class="nav nav-pills nav-stacked col-md-3"></ul>
-			<ul class="nav nav-pills nav-stacked col-md-3"></ul>
-			<ul class="nav nav-pills nav-stacked col-md-3"></ul>
-			<ul class="nav nav-pills nav-stacked col-md-3"></ul>
-		</nav>
-	</div>
-	<div class="row nbext-readme">
-		<h3></h3>
-		<div class="nbext-readme-contents"></div>
-	</div>
-</div>
-
 {% endblock %}
 
 {% block script %}
