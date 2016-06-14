@@ -48,6 +48,9 @@ define([
 
     // the prefix added to all parameter input id's
     var param_id_prefix = 'input_';
+    // class added to the body tag when we're in a standalone page.
+    // Used as a flag to decide whether to set window.location.search
+    var page_class = 'nbextensions_configurator_page';
 
     /**
      * check whether a dot-notation key exists in a given ConfigSection object
@@ -537,12 +540,13 @@ define([
         opts = $.extend(true, {}, default_opts, opts);
 
         /**
+         * If we're in a standalone page,
          * Set window search string to allow reloading settings for a given
          * extension.
          * Use history.pushState if available, to avoid reloading the page
          */
         var new_search = '?nbextension=' + utils.encode_uri_components(extension.require);
-        if (first_load_done) {
+        if (first_load_done && $('body').hasClass(page_class)) {
             if (window.history.pushState) {
                 window.history.pushState(extension.require, undefined, new_search);
             }
@@ -937,6 +941,7 @@ define([
      */
     function build_page () {
         add_css('./main.css');
+        $('body').addClass(page_class);
 
         var nbext_config_page = Jupyter.page = new page.Page();
 
@@ -958,6 +963,9 @@ define([
             build_extension_list(window.extension_list);
             nbext_config_page.show();
         });
+
+        window.addEventListener('popstate', popstateCallback);
+        setTimeout(popstateCallback, 0);
 
         return nbext_config_page;
     }
@@ -1102,9 +1110,6 @@ define([
             );
         }
         set_hide_incompat(hide_incompat);
-
-        window.addEventListener('popstate', popstateCallback);
-        setTimeout(popstateCallback, 0);
     }
 
     /**
