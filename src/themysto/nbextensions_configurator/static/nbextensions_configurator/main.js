@@ -906,7 +906,8 @@ define([
             configs[section].load();
         }
         Promise.all(config_promises).then(function () {
-            build_extension_list();
+            // get list of extensions from value set by script embedded in page by the python backend
+            build_extension_list(window.extension_list);
             nbext_config_page.show();
         });
 
@@ -952,9 +953,7 @@ define([
      * Since this function uses the contents of config.data,
      * it should only be called after config.load() has been executed
      */
-    function build_extension_list () {
-        // get list of extensions from body data supplied by the python backend
-        var extension_list = $('body').data('extension-list') || [];
+    function build_extension_list (extension_list) {
         // add enabled-but-unconfigurable extensions to the list
         // construct a set of enabled extension urls from the configs
         // this is used later to add unconfigurable extensions to the list

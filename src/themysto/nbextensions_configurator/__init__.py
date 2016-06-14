@@ -11,11 +11,10 @@ import posixpath
 import re
 
 import yaml
-from notebook.base.handlers import IPythonHandler
+from notebook.base.handlers import APIHandler, IPythonHandler, json_errors
 from notebook.utils import url_path_join as ujoin
 from notebook.utils import path2url
 from tornado import web
-from yaml.error import YAMLError
 
 # attempt to use LibYaml if available
 try:
@@ -59,7 +58,7 @@ def get_configurable_nbextensions(
                 with open(yaml_path, 'r') as stream:
                     try:
                         extension = yaml.load(stream, Loader=SafeLoader)
-                    except YAMLError:
+                    except yaml.YAMLError:
                         if log:
                             log.warning(
                                 'Failed to load yaml file {}'.format(
@@ -117,7 +116,25 @@ def get_configurable_nbextensions(
     return [val['extension'] for val in extension_dict.values()]
 
 
-class NBExtensionHandler(IPythonHandler):
+class NBExtensionHandlerJSON(APIHandler):
+    """
+    Returns a json list describing the configurable extensions.
+
+    Based on part of notebook.services.config.handlers.ConfigHandler
+    """
+
+    @web.authenticated
+    @json_errors
+    def get(self):
+        self.set_header("Content-Type", 'application/json')
+        nbapp_webapp = self.application
+        nbextension_dirs = nbapp_webapp.settings['nbextensions_path']
+        extension_list = get_configurable_nbextensions(
+            nbextension_dirs=nbextension_dirs, log=self.log)
+        self.finish(json.dumps(extension_list))
+
+
+class NBExtensionHandlerPage(IPythonHandler):
     """Renders the notebook extension configuration interface."""
 
     @web.authenticated
@@ -127,12 +144,9 @@ class NBExtensionHandler(IPythonHandler):
         nbextension_dirs = nbapp_webapp.settings['nbextensions_path']
         extension_list = get_configurable_nbextensions(
             nbextension_dirs=nbextension_dirs, log=self.log)
-        # dump to JSON, replacing any single quotes with HTML representation
-        extension_list_json = json.dumps(extension_list).replace("'", "&#39;")
-
         self.finish(self.render_template(
             'nbextensions_configurator.html',
-            extension_list=extension_list_json,
+            extension_list_json=json.dumps(extension_list),
             page_title='Notebook Extension Configuration',
             **self.application.settings
         ))
@@ -179,13 +193,12 @@ def load_jupyter_server_extension(nbapp):
 
     # add our new custom handlers
     nbapp.log.debug('  Adding new handlers')
-    webapp.add_handlers(".*$", [
-        (ujoin(base_url, r"/nbextensions"), NBExtensionHandler),
-        (ujoin(base_url, r"/nbextensions/"), NBExtensionHandler),
-        (ujoin(base_url,
-               r"/nbextensions/nbextensions_configurator/rendermd/(.*)"),
-         RenderExtensionHandler),
-    ])
+    new_handlers = [(ujoin(base_url, '/nbextensions/' + u), h) for u, h in [
+        (r"?", NBExtensionHandlerPage),
+        (r"nbextensions_configurator/list$", NBExtensionHandlerJSON),
+        (r"nbextensions_configurator/rendermd/(.*)", RenderExtensionHandler),
+    ]]
+    webapp.add_handlers(".*$", new_handlers)
 
     nbapp.log.info('Loaded extension {}'.format(__name__))
 

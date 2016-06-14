@@ -9,7 +9,6 @@
 {% block params %}
 
 data-base-url="{{base_url | urlencode}}"
-data-extension-list='{{extension_list}}'
 
 {% endblock %}
 
@@ -55,6 +54,14 @@ data-extension-list='{{extension_list}}'
 {% block script %}
 
 	{{super()}}
+
+	<script type="text/javascript">
+    	sys_info = {{sys_info|safe}};
+	</script>
+
+	<script type="text/javascript">
+		extension_list = {{extension_list_json|safe}};
+	</script>
 
 	<script type="text/javascript" charset="utf-8">
 		require(['jquery'], function (jq) {
