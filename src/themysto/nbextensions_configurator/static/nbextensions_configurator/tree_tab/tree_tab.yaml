@@ -1,0 +1,7 @@
+Type: Jupyter Notebook Extension
+Name: Nbextensions dashboard tab
+Description: An extension that renders the nbextensions configurator interface as a dashboard tab.
+Link: readme.md
+Main: main.js
+Section: tree
+Compatibility: 4.x
