@@ -488,6 +488,9 @@ define([
                 // since render_markdown returns
                 // before the actual rendering work is complete
                 extension.readme_content = md_contents;
+                if (! $('body').hasClass(page_class)) {
+                    return;
+                }
                 // attempt to scroll to a location hash, if there is one.
                 var hash = window.location.hash.replace(/^#/, '');
                 if (hash) {
@@ -595,6 +598,9 @@ define([
         }
         open_ext_ui(extension, {
             complete: function () {
+                if (! $('body').hasClass(page_class)) {
+                    return;
+                }
                 // scroll to ensure at least title is visible
                 var site = $('#site');
                 var title = extension.ui.children('h3:first');
