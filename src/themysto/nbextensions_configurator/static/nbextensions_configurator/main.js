@@ -783,15 +783,16 @@ define([
 
             // Duplicate warning
             if (extension.duplicate) {
-                var duplicate_warning_p = $('<p/>').text(
-                    'This extension\'s require url (' + extension.require + ') ' +
-                    'is referenced by two different yaml files on the server. ' +
-                    'This probably means that there are two installations ' +
-                    'of the same extension in different directories. ' +
-                    'If they are different, this may prevent configuration ' +
-                    'from working correctly. ' +
-                    'Check the jupyter server log for ' +
-                    'the paths of the relevant yaml files.');
+                var duplicate_warning_p = $('<p/>').text([
+                    'This extension\'s require url (' + extension.require + ')',
+                    'is referenced by two different yaml files on the server.',
+                    'This probably means that there are two installations of the',
+                    'same extension in different directories on the server.',
+                    'If they are different, only one will be loaded by the',
+                    'notebook, and this may prevent configuration from working',
+                    'correctly.',
+                    'Check the jupyter server log for the paths of the relevant',
+                    'yaml files.'].join(' '));
                 $('<div/>')
                     .addClass('alert alert-warning')
                     .css('margin-top', '5px')
@@ -808,6 +809,12 @@ define([
                     .html(extension.Description)
                     .appendTo(div_desc);
             }
+
+            // Section
+            var section = $('<div/>')
+                .text('section: ' + extension.Section)
+                .addClass('nbext-sect')
+                .appendTo(col_left);
 
             // Compatibility
             var compat_txt = extension.Compatibility || '?.x';
@@ -897,18 +904,6 @@ define([
 
         $('<h4>Configurable extensions</h4>').appendTo(selector);
 
-        var selector_nav = $('<nav/>')
-            .addClass('row')
-            .appendTo(selector);
-
-        var ncols = 4;
-        var col_width = Math.floor(12 / ncols);
-        for (var ii = 0; ii < ncols; ii++) {
-            $('<ul/>')
-                .addClass('nav nav-pills nav-stacked col-md-' + col_width)
-                .appendTo(selector_nav);
-        }
-
         var showhide = $('<div/>')
             .addClass('nbext-showhide-incompat')
             .append(
@@ -921,7 +916,12 @@ define([
                         set_hide_incompat(handle_input(evt));
                     })
             )
-            .text('disable configuration for extensions without explicit compatibility (they may break your notebook environment, but can be useful to show for extension development)')
+            .append(' disable configuration for extensions without explicit compatibility (they may break your notebook environment, but can be useful to show for extension development)')
+            .appendTo(selector);
+
+        var selector_nav = $('<nav/>')
+            .addClass('row')
+            .append('<ul class="nav"/>')
             .appendTo(selector);
 
         var readme = $('<div/>')
@@ -1044,8 +1044,7 @@ define([
 
         var container = $('#site > .container');
 
-        var selector = $('.nbext-selector');
-        var cols = selector.find('ul');
+        var selector_nav = $('.nbext-selector ul');
 
         // sort extensions alphabetically
         extension_list.sort(function (a, b) {
@@ -1056,8 +1055,7 @@ define([
             return 0;
         });
 
-        // fill the columns with nav links
-        var col_length = Math.ceil(extension_list.length / cols.length);
+        // fill the selector with nav links
         for (i = 0; i < extension_list.length; i++) {
             extension = extension_list[i];
             extensions_dict[extension.require] = extension;
@@ -1080,14 +1078,15 @@ define([
                         .addClass('fa fa-fw nbext-enable-toggle')
                 );
             $('<li/>')
+                .addClass('col-lg-3 col-md-4 col-sm-6 col-xs-12')
                 .toggleClass('nbext-incompatible', !extension.is_compatible)
                 .append(extension.selector_link)
-                .appendTo(cols[Math.floor(i / col_length)]);
+                .appendTo(selector_nav);
 
             var ext_enabled = false;
             var conf = configs[extension.Section];
             if (conf === undefined) {
-                console.error("nbextension '" + extension.Name + "' specifies unknown Section of '" + extension.Section + "'. Can't determine enable status.");
+                console.warn("nbextension '" + extension.Name + "' specifies unknown Section of '" + extension.Section + "'. Can't determine enable status.");
             }
             else if (conf.data.hasOwnProperty('load_extensions')) {
                 ext_enabled = (conf.data.load_extensions[extension.require] === true);
