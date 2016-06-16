@@ -149,7 +149,7 @@ define([
         state = state === undefined ? true : state;
         console.log('Notebook extension "' + extension.Name + '"', state ? 'enabled' : 'disabled');
         var to_load = {};
-        to_load[extension.require] = (state ? true : null);
+        to_load[extension.require] = Boolean(state);
         configs[extension.Section].update({load_extensions: to_load});
     }
 
@@ -1025,11 +1025,10 @@ define([
         for (section in configs) {
             for (var require_url in unconfigurable_enabled_extensions[section]) {
                 extension_list.push({
-                    Name: section + ' : ' + require_url,
+                    Name: require_url,
                     Description: 'This extension is enabled in the ' + section + ' json config, ' +
                         "but doesn't provide a yaml file to tell us how to configure it. " +
-                        "You can disable it from here, but if you do, it won't show up in " +
-                        'this list again after you reload the page.',
+                        "You can still enable or disable it from here, though.",
                     Section: section,
                     require: require_url,
                     unconfigurable: true,
