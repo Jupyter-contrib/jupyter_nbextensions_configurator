@@ -53,12 +53,12 @@
 
 .nbext-selector > nav > .nav > li.disabled > a > .nbext-enable-toggle:before {
     /* fa-ban */
-    content: "\f05e  (incompatible)";
+    content: "\f05e";
 }
 
 .nbext-selector > nav > .nav > li.disabled > a > .nbext-enabled:before {
     /* fa-exclamation-circle */
-    content: "\f06a  (incompatible, enabled)";
+    content: "\f06a";
 }
 
 /* bugfix for using .container with padding: we need 15px extra to width. */
