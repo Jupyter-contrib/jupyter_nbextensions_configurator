@@ -8,6 +8,9 @@ cache:
 environment:
   COVERALLS_REPO_TOKEN:
     secure: vTJ+1pZImRjZSGK9EPW1AHiSbB4TSUy24ebsdTtk4syvYTey2cjc+KXe3rnBc9EK
+  SAUCE_USERNAME: jcb91
+  SAUCE_ACCESS_KEY:
+    secure: sZFZZTfDscyqemIjZBN6nTGVnydd6oSJJ0R5Mt7+tm8Nz3smvkFwMWlI5dzAA5jM
   matrix:
 
     - TOXENV: 'py27-notebook'
@@ -71,6 +74,7 @@ on_success:
   - '%PYTHON_HOME%\Scripts\tox -e codecov'
 on_failure:
   - ps: $($env:COVERALLS_REPO_TOKEN = '')
+  - ps: $($env:SAUCE_ACCESS_KEY = '')
   - ps: dir "env:"
   - ps: get-content .tox\*\log\*
 artifacts:
