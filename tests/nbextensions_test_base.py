@@ -279,6 +279,8 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
         super(SeleniumNbextensionTestBase, cls).setup_class()
 
         if os.environ.get('CI') and os.environ.get('TRAVIS'):
+            if os.environ['TRAVIS_OS_NAME'] == 'osx':
+                raise SkipTest('Don\'t do selenium tests on travis osx')
             cls.log.info('Running in CI environment. Using Sauce.')
             username = os.environ['SAUCE_USERNAME']
             access_key = os.environ['SAUCE_ACCESS_KEY']
@@ -293,8 +295,6 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
             hub_url = 'http://{}:{}@ondemand.saucelabs.com:80/wd/hub'.format(
                 username, access_key)
             if os.environ.get('TRAVIS'):
-                if os.environ['TRAVIS_OS_NAME'] == 'osx':
-                    raise SkipTest('Don\'t do selenium tests on travis osx')
                 # see https://docs.travis-ci.com/user/gui-and-headless-browsers
                 # and https://docs.travis-ci.com/user/sauce-connect
                 capabilities.update({
