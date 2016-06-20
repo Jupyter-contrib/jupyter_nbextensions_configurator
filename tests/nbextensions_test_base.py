@@ -9,12 +9,12 @@ import os
 import sys
 from threading import Event, RLock, Thread
 
-import jupyter.serverextension
 import jupyter_core.paths
 from ipython_genutils.tempdir import TemporaryDirectory
 from nose.plugins.attrib import attr as nose_attr
 from nose.plugins.skip import SkipTest
 from notebook.notebookapp import NotebookApp
+from notebook.serverextensions import toggle_serverextension_python
 from notebook.tests.launchnotebook import NotebookTestBase
 from tornado.ioloop import IOLoop
 from traitlets.config import Config
@@ -200,8 +200,9 @@ class NbextensionTestBase(NotebookTestBase):
         cls.path_patch.start()
 
         # added to install things!
-        cls.log.info('Installing jupyter_nbextensions_configurator')
-        jupyter.serverextension.install('jupyter_nbextensions_configurator')
+        cls.log.info('Enabling jupyter_nbextensions_configurator')
+        toggle_serverextension_python(
+            'jupyter_nbextensions_configurator', enabled=True)
 
     @classmethod
     def get_server_kwargs(cls, **overrides):
