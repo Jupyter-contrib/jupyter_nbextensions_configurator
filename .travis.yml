@@ -69,7 +69,7 @@ before_install:
   - id -un
   - id -Gn
   # install python on osx
-  - 'if [[ ${OSX_PYTHON} ]]; then curl https://raw.githubusercontent.com/MacPython/terryfy/master/travis_tools.sh > travis_tools.sh; fi'
+  - 'if [[ ${OSX_PYTHON} ]]; then curl https://raw.githubusercontent.com/MacPython/terryfy/12a4641c4e922eb4a63c82732df8d0c5045430af/travis_tools.sh > travis_tools.sh; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then source travis_tools.sh; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then get_python_environment macpython $OSX_PYTHON venv; fi'
   # install 3.4 as it's the default for tox environments like clean, check
