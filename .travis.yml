@@ -77,15 +77,19 @@ before_install:
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.3) ]]; then ls -l $(which python3.3); else echo "missing"; fi; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.4) ]]; then ls -l $(which python3.4); else echo "missing"; fi; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.5) ]]; then ls -l $(which python3.5); else echo "missing"; fi; fi'
+  # don't need SAUCE if we're not testing js (which we don't on osx), so disable by clearing env vars
+  - 'if [[ ${TRAVIS_OS_NAME} != "linux" ]]; then unset SAUCE_USERNAME && unset SAUCE_ACCESS_KEY && echo unset; fi'
+  # don't need sauce for builds which don't start with 'py'
+  - 'if [[ ${TOXENV} != py* ]]; then unset SAUCE_USERNAME && unset SAUCE_ACCESS_KEY && echo unset; fi'
 install:
   - pip install tox
   - virtualenv --version
 before_script:
   # from https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
   #  we need to start xvfb for selenium to work correctly
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-  - sleep 3 # give xvfb some time to start'
+  - 'if [ -n "${SAUCE_ACCESS_KEY}" ]; then export DISPLAY=:99.0; fi'
+  - 'if [ -n "${SAUCE_ACCESS_KEY}" ]; then sh -e /etc/init.d/xvfb start; fi'
+  - 'if [ -n "${SAUCE_ACCESS_KEY}" ]; then sleep 3; fi # give xvfb some time to start'
 script:
   - tox -v -e ${TOXENV}
 after_script:
