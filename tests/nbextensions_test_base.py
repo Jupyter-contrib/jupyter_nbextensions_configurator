@@ -9,6 +9,7 @@ import os
 import sys
 from threading import Event, RLock, Thread
 
+import jupyter.serverextension
 import jupyter_core.paths
 from ipython_genutils.tempdir import TemporaryDirectory
 from nose.plugins.attrib import attr as nose_attr
@@ -20,8 +21,7 @@ from traitlets.config import Config
 from traitlets.config.application import LevelFormatter
 from traitlets.traitlets import default
 
-import themysto.install
-from themysto_testing_utils import stringify_env
+from testing_utils import stringify_env
 
 try:
     from unittest.mock import patch  # py3
@@ -169,7 +169,7 @@ class NbextensionTestBase(NotebookTestBase):
     Base class for nbextensions test case classes.
 
     We override the setup_class method from NotebookTestBase in order to
-    install themysto, and also to set log_level to debug.
+    install things, and also to set log_level to debug.
     Also split some of the setup_class method into separate methods in order to
     simplify subclassing.
     """
@@ -199,11 +199,9 @@ class NbextensionTestBase(NotebookTestBase):
             jupyter_core.paths, 'SYSTEM_JUPYTER_PATH', [])
         cls.path_patch.start()
 
-        # added to install themysto!
-        cls.log.info('Installing themysto')
-        logger = get_wrapped_logger(
-            name='themysto.install.install', log_level=logging.DEBUG)
-        themysto.install.install(config_dir=cls.config_dir.name, logger=logger)
+        # added to install things!
+        cls.log.info('Installing jupyter_nbextensions_configurator')
+        jupyter.serverextension.install('jupyter_nbextensions_configurator')
 
     @classmethod
     def get_server_kwargs(cls, **overrides):
@@ -246,7 +244,7 @@ class NbextensionTestBase(NotebookTestBase):
 
     @classmethod
     def setup_class(cls):
-        """Install themysto, & setup a notebook server in a separate thread."""
+        """Install things & setup a notebook server in a separate thread."""
         cls.log = get_wrapped_logger(cls.__name__)
         cls.pre_server_setup()
         started = Event()

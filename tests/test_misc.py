@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-"""Test themysto package"""
+"""Test the package"""
 
 import re
 
-from themysto import __version__
+from jupyter_nbextensions_configurator import __version__
 
 try:
     from notebook.tests.test_notebookapp import raise_on_bad_version

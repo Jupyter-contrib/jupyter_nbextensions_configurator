@@ -15,9 +15,8 @@ import yaml
 from ipython_genutils.tempdir import TemporaryDirectory
 from notebook.utils import url_path_join
 
+import jupyter_nbextensions_configurator
 from nbextensions_test_base import SeleniumNbextensionTestBase
-from themysto.nbextensions_configurator import get_configurable_nbextensions
-from themysto.nbextensions_injector import nbext_dir
 
 # from http://nose.readthedocs.io/en/latest/writing_tests.html#writing-tests
 #
@@ -108,10 +107,15 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
                 yaml.dump(yaml_obj, f)
 
         # a yaml file which shadows an existing extension.
-        nbexts = get_configurable_nbextensions([nbext_dir()], as_dict=True)
+        nbdir = os.path.join(
+            os.path.dirname(jupyter_nbextensions_configurator.__file__),
+            'static')
+        nbexts = (
+            jupyter_nbextensions_configurator.get_configurable_nbextensions(
+                [nbdir], as_dict=True))
         src = random.choice(list(nbexts.values()))['yaml_path']
         dst = os.path.join(
-            dodgy_nbext_dir_path, os.path.relpath(src, start=nbext_dir()))
+            dodgy_nbext_dir_path, os.path.relpath(src, start=nbdir))
         dst_dir = os.path.dirname(dst)
         if not os.path.exists(dst_dir):
             os.makedirs(dst_dir)
