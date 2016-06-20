@@ -279,8 +279,8 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
                            'Skipping selenium-based test.')
         super(SeleniumNbextensionTestBase, cls).setup_class()
 
-        if os.environ.get('CI'):
-            cls.log.info('Running in a CI environment. Using Sauce.')
+        if os.environ.get('CI') and os.environ.get('TRAVIS'):
+            cls.log.info('Running in CI environment. Using Sauce.')
             username = os.environ['SAUCE_USERNAME']
             access_key = os.environ['SAUCE_ACCESS_KEY']
             capabilities = {
@@ -310,7 +310,11 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
 
     def run(self, results):
         """Run a given test. Overridden in order to access results."""
-        results = super(SeleniumNbextensionTestBase, self).run(results)
+        # in py2 unittest, run doesn't return the results object, so we need to
+        # create one in order to have a reference to it.
+        if results is None:
+            results = self.defaultTestResult()
+        super(SeleniumNbextensionTestBase, self).run(results)
         if results.failures or results.errors:
             self.__class__._failure_occurred = True
         return results
