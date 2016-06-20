@@ -14,11 +14,14 @@ import nose.tools as nt
 import yaml
 from ipython_genutils.tempdir import TemporaryDirectory
 from notebook.utils import url_path_join
-from notebook.nbextensions import install_nbextension
 
 import jupyter_nbextensions_configurator
 from nbextensions_test_base import (
     get_wrapped_logger, SeleniumNbextensionTestBase,
+)
+
+from jupyter_nbextensions_configurator.notebook_compat import (
+    install_nbextension,
 )
 
 # from http://nose.readthedocs.io/en/latest/writing_tests.html#writing-tests

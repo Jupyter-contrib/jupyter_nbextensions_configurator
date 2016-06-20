@@ -14,13 +14,15 @@ from ipython_genutils.tempdir import TemporaryDirectory
 from nose.plugins.attrib import attr as nose_attr
 from nose.plugins.skip import SkipTest
 from notebook.notebookapp import NotebookApp
-from notebook.serverextensions import toggle_serverextension_python
 from notebook.tests.launchnotebook import NotebookTestBase
 from tornado.ioloop import IOLoop
 from traitlets.config import Config
 from traitlets.config.application import LevelFormatter
 from traitlets.traitlets import default
 
+from jupyter_nbextensions_configurator.notebook_compat import (
+    toggle_serverextension_python,
+)
 from testing_utils import stringify_env
 
 try:
