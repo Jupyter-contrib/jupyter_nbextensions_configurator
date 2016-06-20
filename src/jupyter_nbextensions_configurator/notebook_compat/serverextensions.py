@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
-"""Functions from notebook.serverextensions for versions < 4.2.0."""
+"""
+Functions from notebook.serverextensions for versions < 4.2.0.
+
+Note that this isn't quite a direct copy, because of the switch from the config
+key
+NotebookApp.server_extensions (a list) in notebook < 4.2.0
+to the key
+NotebookApp.nbserver_extensions (a dict) in notebook >= 4.2.0
+"""
 
 # Original jupyter notebook source is
 # Copyright (c) Jupyter Development Team.
@@ -56,10 +64,10 @@ def toggle_serverextension_python(import_name, enabled=None, parent=None,
     cfg = cm.get("jupyter_notebook_config")
     server_extensions = (
         cfg.setdefault("NotebookApp", {})
-        .setdefault("nbserver_extensions", {})
+        .setdefault("server_extensions", [])
     )
 
-    old_enabled = server_extensions.get(import_name, None)
+    old_enabled = import_name in server_extensions
     new_enabled = enabled if enabled is not None else not old_enabled
 
     if logger:
@@ -68,7 +76,12 @@ def toggle_serverextension_python(import_name, enabled=None, parent=None,
         else:
             logger.info(u"Disabling: %s" % (import_name))
 
-    server_extensions[import_name] = new_enabled
+    if new_enabled:
+        if not old_enabled:
+            server_extensions.append(import_name)
+    elif old_enabled:
+        while import_name in server_extensions:
+            server_extensions.pop(server_extensions.index(import_name))
 
     if logger:
         logger.info(u"- Writing config: {}".format(config_dir))
