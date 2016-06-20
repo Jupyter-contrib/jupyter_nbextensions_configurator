@@ -20,9 +20,8 @@ from traitlets.config import Config
 from traitlets.config.application import LevelFormatter
 from traitlets.traitlets import default
 
-from jupyter_nbextensions_configurator.notebook_compat import (
-    toggle_serverextension_python,
-)
+from jupyter_nbextensions_configurator.notebook_compat import \
+    toggle_serverextension_python
 from testing_utils import stringify_env
 
 try:

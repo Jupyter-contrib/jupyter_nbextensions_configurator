@@ -11,7 +11,18 @@ import os
 import shutil
 import tarfile
 import zipfile
-from os.path import basename, join as pjoin, normpath
+from os.path import join as pjoin
+from os.path import basename, normpath
+
+from ipython_genutils.path import ensure_dir_exists
+from ipython_genutils.py3compat import cast_unicode_py2
+from ipython_genutils.tempdir import TemporaryDirectory
+from jupyter_core.paths import (
+    ENV_CONFIG_PATH, ENV_JUPYTER_PATH, SYSTEM_CONFIG_PATH, SYSTEM_JUPYTER_PATH,
+    jupyter_config_dir, jupyter_data_dir,
+)
+from traitlets.config.manager import BaseJSONConfigManager
+from traitlets.utils.importstring import import_item
 
 try:
     # Py3
@@ -21,16 +32,6 @@ except ImportError:
     # Py2
     from urlparse import urlparse
     from urllib import urlretrieve
-
-from jupyter_core.paths import (
-    jupyter_data_dir, jupyter_config_dir,
-    SYSTEM_JUPYTER_PATH, ENV_JUPYTER_PATH, ENV_CONFIG_PATH, SYSTEM_CONFIG_PATH
-)
-from ipython_genutils.path import ensure_dir_exists
-from ipython_genutils.py3compat import cast_unicode_py2
-from ipython_genutils.tempdir import TemporaryDirectory
-from traitlets.config.manager import BaseJSONConfigManager
-from traitlets.utils.importstring import import_item
 
 DEPRECATED_ARGUMENT = object()
 

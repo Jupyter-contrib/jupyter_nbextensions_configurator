@@ -2,8 +2,8 @@
 """
 Functions from notebook.serverextensions for versions < 4.2.0.
 
-Note that this isn't quite a direct copy, because of the switch from the config
-key
+Note that functions aren't quite direct copies, because of the switch from the
+config key
 NotebookApp.server_extensions (a list) in notebook < 4.2.0
 to the key
 NotebookApp.nbserver_extensions (a dict) in notebook >= 4.2.0
@@ -17,18 +17,19 @@ from __future__ import print_function
 
 import importlib
 
+from traitlets.config.manager import BaseJSONConfigManager
+from traitlets.utils.importstring import import_item
+
 try:
     from notebook.nbextensions import _get_config_dir, GREEN_OK, RED_X
 except ImportError:
     from .nbextensions import _get_config_dir, GREEN_OK, RED_X
 
-from traitlets.utils.importstring import import_item
-from traitlets.config.manager import BaseJSONConfigManager
 
-
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Public API
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 class ArgumentConflict(ValueError):
     pass
 
@@ -137,9 +138,9 @@ def validate_serverextension(import_name, logger=None):
 
     return warnings
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Private API
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
 def _get_server_extension_metadata(module):

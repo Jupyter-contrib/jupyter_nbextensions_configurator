@@ -15,14 +15,11 @@ import yaml
 from ipython_genutils.tempdir import TemporaryDirectory
 from notebook.utils import url_path_join
 
-import jupyter_nbextensions_configurator
+import jupyter_nbextensions_configurator.notebook_compat
 from nbextensions_test_base import (
-    get_wrapped_logger, SeleniumNbextensionTestBase,
+    SeleniumNbextensionTestBase, get_wrapped_logger,
 )
 
-from jupyter_nbextensions_configurator.notebook_compat import (
-    install_nbextension,
-)
 
 # from http://nose.readthedocs.io/en/latest/writing_tests.html#writing-tests
 #
@@ -88,11 +85,11 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         nbext_path = url_path_join(
             'https://github.com/minrk/nbextension-scratchpad',
             'archive', 'master.zip')
-        inst_funcname = '.'.join([
-            install_nbextension.__module__, install_nbextension.__name__])
+        inst_func = jupyter_nbextensions_configurator.notebook_compat.install_nbextension  # noqa
+        inst_funcname = '.'.join([inst_func.__module__, inst_func.__name__])
         logger = get_wrapped_logger(
             name=inst_funcname, log_level=logging.DEBUG)
-        install_nbextension(nbext_path, user=True, logger=logger)
+        inst_func(nbext_path, user=True, logger=logger)
 
     @classmethod
     def add_dodgy_yaml_files(cls):
