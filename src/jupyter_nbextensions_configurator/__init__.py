@@ -22,6 +22,8 @@ try:
 except ImportError:
     from yaml import SafeLoader
 
+__version__ = '0.0.0'
+
 absolute_url_re = re.compile(r'^(f|ht)tps?://')
 
 

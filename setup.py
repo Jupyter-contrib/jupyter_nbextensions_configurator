@@ -23,9 +23,9 @@ TODO
         author='IPython-contrib Developers',
         author_email='joshuacookebarnes@gmail.com',
         url='https://github.com/jcb91/IPython-notebook-extensions.git',
-        download_url=('https://github.com/jcb91/IPython-notebook-extensions/'
-                      'tarball/0.0.4'),
-        keywords=['IPython', 'Jupyter', 'notebook'],
+        download_url=('https://github.com/jcb91/jupyter_nbextensions_configurator/'
+                      'tarball/0.0.0'),
+        keywords=['Jupyter', 'notebook'],
         license='BSD',
         platform=['Any'],
         packages=find_packages('src'),
@@ -66,7 +66,6 @@ TODO
             'Programming Language :: Python',
             'Topic :: Utilities',
         ],
-
     )
 
 if __name__ == '__main__':
