@@ -294,6 +294,8 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
             hub_url = 'http://{}:{}@ondemand.saucelabs.com:80/wd/hub'.format(
                 username, access_key)
             if os.environ.get('TRAVIS'):
+                if os.environ['TRAVIS_OS_NAME'] == 'osx':
+                    raise SkipTest('Don\'t do selenium tests on travis osx')
                 # see https://docs.travis-ci.com/user/gui-and-headless-browsers
                 # and https://docs.travis-ci.com/user/sauce-connect
                 capabilities.update({
