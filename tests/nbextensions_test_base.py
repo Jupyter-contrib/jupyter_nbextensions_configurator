@@ -177,9 +177,16 @@ class NbextensionTestBase(NotebookTestBase):
     """
     config = Config(NotebookApp={'log_level': logging.DEBUG})
 
-    # this is added for notebook < 4.1, where it wasn't defined
+    # these are added for notebook < 4.1, where url_prefix wasn't defined.
+    # However, due to the fact that the base_url body data attribute in the
+    # page template isn't passed through the urlencode jinja2 filter,
+    # so we can't expect base_url which would need encoding to work :(
     if not hasattr(NotebookTestBase, 'url_prefix'):
-        url_prefix = '/a%40b/'
+        url_prefix = '/ab/'
+
+        @classmethod
+        def base_url(cls):
+            return 'http://localhost:%i%s' % (cls.port, cls.url_prefix)
 
     @classmethod
     def pre_server_setup(cls):
@@ -203,8 +210,12 @@ class NbextensionTestBase(NotebookTestBase):
 
         # added to install things!
         cls.log.info('Enabling jupyter_nbextensions_configurator')
+        inst_func = toggle_serverextension_python
+        inst_funcname = '.'.join([inst_func.__module__, inst_func.__name__])
+        logger = get_wrapped_logger(
+            name=inst_funcname, log_level=logging.DEBUG)
         toggle_serverextension_python(
-            'jupyter_nbextensions_configurator', enabled=True)
+            'jupyter_nbextensions_configurator', enabled=True, logger=logger)
 
     @classmethod
     def get_server_kwargs(cls, **overrides):
