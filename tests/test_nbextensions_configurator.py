@@ -5,7 +5,7 @@ from __future__ import (
 )
 
 import io
-import json
+import logging
 import os
 import random
 import shutil
@@ -14,9 +14,12 @@ import nose.tools as nt
 import yaml
 from ipython_genutils.tempdir import TemporaryDirectory
 from notebook.utils import url_path_join
+from notebook.nbextensions import install_nbextension
 
 import jupyter_nbextensions_configurator
-from nbextensions_test_base import SeleniumNbextensionTestBase
+from nbextensions_test_base import (
+    get_wrapped_logger, SeleniumNbextensionTestBase,
+)
 
 # from http://nose.readthedocs.io/en/latest/writing_tests.html#writing-tests
 #
@@ -31,9 +34,11 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
     """Tests for the nbextensions_configurator server extension."""
 
     @classmethod
-    def setup_class(cls):
+    def pre_server_setup(cls):
+        """Setup a temporary environment in which to run a notebook server."""
+        super(ConfiguratorTest, cls).pre_server_setup()
         cls.add_dodgy_yaml_files()
-        super(ConfiguratorTest, cls).setup_class()
+        cls.install_nbexts()
         cls.nbext_configurator_url = url_path_join(
             cls.base_url(), 'nbextensions')
 
@@ -46,11 +51,8 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         nt.assert_in('configuration', self.driver.title.lower())
 
     def test_02_body_data_attribute(self):
-        elem = self.driver.find_element_by_tag_name('body')
-        attr = elem.get_attribute('data-extension-list')
-        nt.assert_is_not_none(
-            attr, 'body tag should have a "data-extension-list" attribute')
-        nbext_list = json.loads(attr)
+        nbext_list = self.driver.execute_script('return window.extension_list')
+        nt.assert_is_instance(nbext_list, list)
         nt.assert_greater(
             len(nbext_list), 0, 'some nbextensions should be found')
 
@@ -64,7 +66,7 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
     def test_04_readme_rendering(self):
         # load the collapsible headings UI, as it has a readme to render
         collapsible_link = self.driver.find_element_by_partial_link_text(
-            'Collapsible Headings')
+            'Scratchpad')
         collapsible_link.click()
 
         # # uncomment below to scroll readme into view
@@ -77,6 +79,17 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
     def test_05_click_page_readme_link(self):
         self.driver.find_element_by_css_selector('.nbext-page-title a').click()
         self.wait_for_selector('.rendermd-page-title')
+
+    @classmethod
+    def install_nbexts(cls):
+        nbext_path = url_path_join(
+            'https://github.com/minrk/nbextension-scratchpad',
+            'archive', 'master.zip')
+        inst_funcname = '.'.join([
+            install_nbextension.__module__, install_nbextension.__name__])
+        logger = get_wrapped_logger(
+            name=inst_funcname, log_level=logging.DEBUG)
+        install_nbextension(nbext_path, user=True, logger=logger)
 
     @classmethod
     def add_dodgy_yaml_files(cls):
