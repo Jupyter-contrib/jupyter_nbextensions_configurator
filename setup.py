@@ -14,16 +14,21 @@ def main():
 
     setup(
         name='jupyter_nbextensions_configurator',
-        description=("jupyter serverextension providing a "
-                     "configuration interface for nbextensions."),
+        description=("jupyter serverextension providing configuration "
+                     "interfaces for nbextensions."),
         long_description="""
-TODO
+The jupyter_nbextensions_configurator jupyter server extension provides
+graphical user interfaces for configuring which nbextensions are enabled (load
+automatically for every notebook), and display their readme files.
+In addition, for extensions which include an appropriate yaml descriptor file,
+the interface also provides controls to configure the extensions' options.
 """,
         version='0.0.0',
         author='IPython-contrib Developers',
         author_email='joshuacookebarnes@gmail.com',
         url='https://github.com/jcb91/IPython-notebook-extensions.git',
-        download_url=('https://github.com/jcb91/jupyter_nbextensions_configurator/'
+        download_url=('https://github.com/'
+                      'jcb91/jupyter_nbextensions_configurator/'
                       'tarball/0.0.0'),
         keywords=['Jupyter', 'notebook'],
         license='BSD',

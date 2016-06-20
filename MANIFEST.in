@@ -1,0 +1,19 @@
+# explicit includes
+include COPYING.rst
+include README.md
+include tox.ini
+include .bumpversion.cfg
+
+# explicit excludes
+exclude .travis.yml
+exclude appveyor.yml
+
+graft src
+graft tests
+
+# Patterns to exclude from any directory
+global-exclude *~
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude .git
+global-exclude .ipynb_checkpoints
