@@ -16,7 +16,6 @@ NotebookApp.nbserver_extensions (a dict) in notebook >= 4.2.0
 from __future__ import print_function
 
 import importlib
-import sys
 
 from jupyter_core.application import JupyterApp
 from traitlets import Bool
@@ -126,18 +125,18 @@ def validate_serverextension(import_name, logger=None):
     try:
         mod = importlib.import_module(import_name)
         func = getattr(mod, 'load_jupyter_server_extension', None)
-    except Exception:
+    except Exception:  # pragma: no cover
         logger.warning("Error loading server extension %s", import_name)
 
     import_msg = u"     {} is {} importable?"
     if func is not None:
         infos.append(import_msg.format(GREEN_OK, import_name))
-    else:
+    else:  # pragma: no cover
         warnings.append(import_msg.format(RED_X, import_name))
 
     post_mortem = u"      {} {} {}"
     if logger:
-        if warnings:
+        if warnings:  # pragma: no cover
             [logger.info(info) for info in infos]
             [logger.warn(warning) for warning in warnings]
         else:
@@ -225,17 +224,8 @@ class ToggleServerExtensionApp(BaseNBExtensionApp):
             module = server_ext['module']
             self.toggle_server_extension(module)
 
-    def start(self):
-        """Perform the App's actions as configured"""
-        if not self.extra_args:
-            sys.exit(
-                'Please specify a server extension/package '
-                'to enable or disable')
-        for arg in self.extra_args:
-            if self.python:
-                self.toggle_server_extension_python(arg)
-            else:
-                self.toggle_server_extension(arg)
+    # start definition omitted as it's overridden in
+    # jupyter_nbextensions_configurator.application anyway
 
 # -----------------------------------------------------------------------------
 # Private API
@@ -262,7 +252,7 @@ def _get_server_extension_metadata(module):
         magic-named `_jupyter_server_extension_paths` function
     """
     m = import_item(module)
-    if not hasattr(m, '_jupyter_server_extension_paths'):
+    if not hasattr(m, '_jupyter_server_extension_paths'):  # pragma: no cover
         raise KeyError(
             u'The Python module {} does not include any valid server extensions'.format(module))  # noqa
     return m, m._jupyter_server_extension_paths()
