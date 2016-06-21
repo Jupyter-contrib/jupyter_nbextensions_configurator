@@ -2,6 +2,18 @@ Jupyter Nbextensions Configurator
 =================================
 
 [![Join the chat at https://gitter.im/jcb91/jupyter_nbextensions_configurator](https://img.shields.io/gitter/room/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://gitter.im/jcb91/jupyter_nbextensions_configurator?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![GitHub issues](https://img.shields.io/github/issues/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://github.com/jcb91/jupyter_nbextensions_configurator/issues)
+
+[![Travis-CI Build Status](https://img.shields.io/travis/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600&label=Travis)](https://travis-ci.org/jcb91/jupyter_nbextensions_configurator)
+[![Appveyor Build status](https://img.shields.io/appveyor/ci/jcb91/jupyter-nbextensions-configurator.svg?maxAge=3600&label=Appveyor)](https://ci.appveyor.com/project/jcb91/jupyter-nbextensions-configurator)
+[![Coveralls python test coverage](https://img.shields.io/coveralls/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Coveralls)](https://coveralls.io/github/jcb91/jupyter_nbextensions_configurator)
+[![Codecov python test coverage](https://img.shields.io/codecov/c/github/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Codecov)](https://codecov.io/gh/jcb91/jupyter_nbextensions_configurator)
+
+[![PyPI](https://img.shields.io/pypi/v/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://pypi.python.org/pypi/jupyter_nbextensions_configurator)
+[![PyPI](https://img.shields.io/pypi/dm/jupyter_nbextensions_configurator.svg?maxAge=2592000)](https://pypi.python.org/pypi/jupyter_nbextensions_configurator)
+
+[![GitHub release](https://img.shields.io/github/release/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://github.com/jcb91/jupyter_nbextensions_configurator)
+[![Github All Releases](https://img.shields.io/github/downloads/jcb91/jupyter_nbextensions_configurator/total.svg?maxAge=3600)](https://github.com/jcb91/jupyter_nbextensions_configurator)
 
 A server extension for [jupyter notebook](https://github.com/jupyter/notebook)
 which provides configuration interfaces for notebook extensions (nbextensions).
