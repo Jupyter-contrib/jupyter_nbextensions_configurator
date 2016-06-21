@@ -335,7 +335,7 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
             browser_logger = get_wrapped_logger(
                 name=cls.__name__ + '.driver', log_level=logging.DEBUG)
             for entry in cls.driver.get_log('browser'):
-                level = logging._nameToLevel[entry['level']]
+                level = logging._nameToLevel.get(entry['level'], logging.ERROR)
                 msg = entry['message'].strip()
                 browser_logger.log(level, msg)
                 record, target = GlobalMemoryHandler._buffer[-1]
