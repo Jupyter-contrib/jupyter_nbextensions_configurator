@@ -12,18 +12,17 @@ import shutil
 import tempfile
 from unittest import TestCase
 
-import nose.tools as nt
 import jupyter_core.paths
+import nose.tools as nt
 from traitlets.config import Config
 from traitlets.tests.utils import check_help_all_output, check_help_output
 from traitlets.traitlets import default
-
 
 from jupyter_nbextensions_configurator.application import main as main_app
 from jupyter_nbextensions_configurator.application import (
     DisableJupyterNbextensionsConfiguratorApp,
     EnableJupyterNbextensionsConfiguratorApp,
-    JupyterNbextensionsConfiguratorApp
+    JupyterNbextensionsConfiguratorApp,
 )
 from jupyter_nbextensions_configurator.notebook_compat import _get_config_dir
 from testing_utils import stringify_env

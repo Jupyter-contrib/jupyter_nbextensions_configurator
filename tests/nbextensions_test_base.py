@@ -276,11 +276,11 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
         if no_selenium:
             raise SkipTest('Selenium not installed. '
                            'Skipping selenium-based test.')
+        if os.environ.get('TRAVIS_OS_NAME') == 'osx':
+            raise SkipTest("Don't do selenium tests on travis osx")
         super(SeleniumNbextensionTestBase, cls).setup_class()
 
         if os.environ.get('CI') and os.environ.get('TRAVIS'):
-            if os.environ['TRAVIS_OS_NAME'] == 'osx':
-                raise SkipTest('Don\'t do selenium tests on travis osx')
             cls.log.info('Running in CI environment. Using Sauce.')
             username = os.environ['SAUCE_USERNAME']
             access_key = os.environ['SAUCE_ACCESS_KEY']
@@ -344,7 +344,10 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
             GlobalMemoryHandler.flush_to_target()
 
         if (not cls._failure_occurred) or os.environ.get('CI'):
+            cls.log.info('closing webdriver')
             cls.driver.quit()
+        else:
+            cls.log.info('keeping webdriver open')
 
         super(SeleniumNbextensionTestBase, cls).teardown_class()
 
