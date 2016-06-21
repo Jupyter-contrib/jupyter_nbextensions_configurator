@@ -4,14 +4,12 @@
 try:
     from notebook.nbextensions import (
         GREEN_OK, RED_X, BaseNBExtensionApp, _get_config_dir,
-        install_nbextension, install_nbextension_python, uninstall_nbextension,
-        uninstall_nbextension_python,
+        install_nbextension,
     )
 except ImportError:
     from .nbextensions import (
         GREEN_OK, RED_X, BaseNBExtensionApp, _get_config_dir,
-        install_nbextension, install_nbextension_python, uninstall_nbextension,
-        uninstall_nbextension_python,
+        install_nbextension,
     )
 
 try:
@@ -28,10 +26,7 @@ __all__ = [
     'BaseNBExtensionApp',
     'GREEN_OK',
     'install_nbextension',
-    'install_nbextension_python',
     'RED_X',
     'toggle_serverextension_python',
     'ToggleServerExtensionApp',
-    'uninstall_nbextension',
-    'uninstall_nbextension_python',
 ]

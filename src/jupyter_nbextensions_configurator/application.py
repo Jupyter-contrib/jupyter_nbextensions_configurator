@@ -11,16 +11,18 @@ import operator
 import sys
 
 from jupyter_nbextensions_configurator import __version__
+# importing directly from jupyter_nbextensions_configurator.notebook_compat
+# ensures we get the notebook versions if they're available
 from jupyter_nbextensions_configurator.notebook_compat import (
-    nbextensions, serverextensions,
+    BaseNBExtensionApp, ToggleServerExtensionApp,
 )
 
 
 class ToggleJupyterNbextensionsConfiguratorApp(
-        serverextensions.ToggleServerExtensionApp):
+        ToggleServerExtensionApp):
     """An App that toggles the jupyter_nbextensions_configurator extension."""
 
-    flags = copy.deepcopy(serverextensions.ToggleServerExtensionApp.flags)
+    flags = copy.deepcopy(ToggleServerExtensionApp.flags)
     flags['sys-prefix'] = (
         flags['sys-prefix'][0],
         'Use sys.prefix as the prefix for configuring the server extension')
@@ -62,7 +64,7 @@ class DisableJupyterNbextensionsConfiguratorApp(
     _toggle_value = False
 
 
-class JupyterNbextensionsConfiguratorApp(nbextensions.BaseNBExtensionApp):
+class JupyterNbextensionsConfiguratorApp(BaseNBExtensionApp):
     """Root level jupyter_nbextensions_configurator app."""
 
     name = 'jupyter_nbextensions_configurator'
@@ -97,5 +99,5 @@ class JupyterNbextensionsConfiguratorApp(nbextensions.BaseNBExtensionApp):
 main = JupyterNbextensionsConfiguratorApp.launch_instance
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()

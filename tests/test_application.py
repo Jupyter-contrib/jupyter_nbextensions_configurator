@@ -164,6 +164,13 @@ class AppTest(TestCase):
 
         reset_app_class(DisableJupyterNbextensionsConfiguratorApp)
 
+    def test_00_extra_args(self):
+        """Check that app complains about extra args."""
+        for subcom in ('enable', 'disable'):
+            # sys.exit should be called if extra args specified
+            with nt.assert_raises(SystemExit):
+                main_app([subcom, 'arbitrary_extension_name'])
+
     def test_01_help_output(self):
         """Check that app help works."""
         app_module = 'jupyter_nbextensions_configurator.application'
