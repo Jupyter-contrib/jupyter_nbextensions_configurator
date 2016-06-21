@@ -28,6 +28,10 @@
     padding-bottom: 1em;
 }
 
+.nbext-selector > nav > .nav > li {
+    margin: 0;
+}
+
 .nbext-selector > nav > .nav > li > a {
     padding: 2px 6px;
 }

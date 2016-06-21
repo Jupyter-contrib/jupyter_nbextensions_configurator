@@ -921,7 +921,7 @@ define([
 
         var selector_nav = $('<nav/>')
             .addClass('row')
-            .append('<ul class="nav"/>')
+            .append('<ul class="nav nav-pills"/>')
             .appendTo(selector);
 
         var readme = $('<div/>')
