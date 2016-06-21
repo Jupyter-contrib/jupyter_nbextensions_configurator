@@ -5,21 +5,18 @@ from __future__ import (
 )
 
 import io
-import logging
 import os
 import random
 import shutil
+import time
 
 import nose.tools as nt
 import yaml
 from ipython_genutils.tempdir import TemporaryDirectory
 from notebook.utils import url_path_join
 
-import jupyter_nbextensions_configurator.notebook_compat
-from nbextensions_test_base import (
-    SeleniumNbextensionTestBase, get_wrapped_logger,
-)
-
+import jupyter_nbextensions_configurator
+from nbextensions_test_base import SeleniumNbextensionTestBase
 
 # from http://nose.readthedocs.io/en/latest/writing_tests.html#writing-tests
 #
@@ -38,7 +35,6 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         """Setup a temporary environment in which to run a notebook server."""
         super(ConfiguratorTest, cls).pre_server_setup()
         cls.add_dodgy_yaml_files()
-        cls.install_nbexts()
         cls.nbext_configurator_url = url_path_join(
             cls.base_url(), 'nbextensions')
 
@@ -65,31 +61,56 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
 
     def test_04_readme_rendering(self):
         # load the collapsible headings UI, as it has a readme to render
-        collapsible_link = self.driver.find_element_by_partial_link_text(
-            'Scratchpad')
-        collapsible_link.click()
-
-        # # uncomment below to scroll readme into view
-        # # (may require a time.sleep as well)
-        # driver.execute_script(
-        #     "document.querySelector('.nbext-readme').scrollIntoView()")
+        sel_link = self.driver.find_element_by_partial_link_text('dashboard')
+        sel_link.click()
         self.wait_for_selector('.nbext-readme-contents img',
                                'there should be an image in the readme')
 
     def test_05_click_page_readme_link(self):
         self.driver.find_element_by_css_selector('.nbext-page-title a').click()
-        self.wait_for_selector('.rendermd-page-title')
+        self.wait_for_selector('#render-container img',
+                               'there should be an image in the readme')
+
+    def test_06_enable_tree_tab(self):
+        self.driver.get(self.nbext_configurator_url)
+        self.wait_for_selector('.nbext-row', 'an extension ui should load')
+        # now enable the appropriate nbextension
+        sel_link = self.driver.find_element_by_partial_link_text('dashboard')
+        sel_link.find_element_by_css_selector('.nbext-enable-toggle').click()
+        self.check_extension_enabled(
+            'tree', 'nbextensions_configurator/tree_tab/main',
+            expected_status=True)
+
+    def test_07_open_tree_tab(self):
+        self.driver.get(self.base_url())
+        tab_selector = '#tabs a[href$=nbextensions_configurator]'
+        self.wait_for_selector(tab_selector)
+        self.driver.find_element_by_css_selector(tab_selector).click()
+        self.wait_for_selector('.nbext-row', 'an extension ui should load')
+
+    def test_08_disable_tree_tab(self):
+        # now disable the appropriate nbextension & wait for update to config
+        sel_link = self.driver.find_element_by_partial_link_text('dashboard')
+        sel_link.find_element_by_css_selector('.nbext-enable-toggle').click()
+        self.check_extension_enabled(
+            'tree', 'nbextensions_configurator/tree_tab/main',
+            expected_status=False)
 
     @classmethod
-    def install_nbexts(cls):
-        nbext_path = url_path_join(
-            'https://github.com/minrk/nbextension-scratchpad',
-            'archive', 'master.zip')
-        inst_func = jupyter_nbextensions_configurator.notebook_compat.install_nbextension  # noqa
-        inst_funcname = '.'.join([inst_func.__module__, inst_func.__name__])
-        logger = get_wrapped_logger(
-            name=inst_funcname, log_level=logging.DEBUG)
-        inst_func(nbext_path, user=True, logger=logger)
+    def check_extension_enabled(cls, section, require, expected_status=True,
+                                timeout=10, check_period=0.5):
+        cm = cls.notebook.config_manager
+        for ii in range(0, max(1, int(timeout / check_period))):
+            load_exts = cm.get(section).get('load_extensions', {})
+            enabled = [req for req, en in load_exts.items() if en]
+            if (require in enabled) == expected_status:
+                break
+            time.sleep(check_period)
+        assert_func = (
+            nt.assert_in if expected_status else nt.assert_not_in)
+        assert_func(require, enabled,
+                    'nbxtension should {}be in enabled list'.format(
+                        '' if expected_status else ' not'))
 
     @classmethod
     def add_dodgy_yaml_files(cls):
