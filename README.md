@@ -3,7 +3,7 @@ Jupyter Nbextensions Configurator
 
 [![Join the chat at https://gitter.im/jcb91/jupyter_nbextensions_configurator](https://img.shields.io/gitter/room/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://gitter.im/jcb91/jupyter_nbextensions_configurator?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Travis-CI Build Status](https://img.shields.io/travis/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600&label=Travis%20build)](https://travis-ci.org/jcb91/jupyter_nbextensions_configurator)
-[![Appveyor Build status](https://img.shields.io/appveyor/ci/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600&label=Windows%20build)](https://ci.appveyor.com/project/jcb91/jupyter_nbextensions_configurator)
+[![Appveyor Build status](https://img.shields.io/appveyor/ci/jcb91/jupyter-nbextensions-configurator.svg?maxAge=3600&label=Windows%20build)](https://ci.appveyor.com/project/jcb91/jupyter-nbextensions-configurator)
 [![Coveralls python test coverage](https://img.shields.io/coveralls/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Coveralls%20coverage)](https://coveralls.io/github/jcb91/jupyter_nbextensions_configurator)
 [![Codecov python test coverage](https://img.shields.io/codecov/c/github/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Codecov%20coverage)](https://codecov.io/gh/jcb91/jupyter_nbextensions_configurator)
 
