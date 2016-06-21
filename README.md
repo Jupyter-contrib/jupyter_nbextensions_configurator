@@ -2,10 +2,10 @@ Jupyter Nbextensions Configurator
 =================================
 
 [![Join the chat at https://gitter.im/jcb91/jupyter_nbextensions_configurator](https://img.shields.io/gitter/room/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://gitter.im/jcb91/jupyter_nbextensions_configurator?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Travis-CI Build Status](https://img.shields.io/travis/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600&label=Travis%20build)](https://travis-ci.org/jcb91/jupyter_nbextensions_configurator)
-[![Appveyor Build status](https://img.shields.io/appveyor/ci/jcb91/jupyter-nbextensions-configurator.svg?maxAge=3600&label=Windows%20build)](https://ci.appveyor.com/project/jcb91/jupyter-nbextensions-configurator)
-[![Coveralls python test coverage](https://img.shields.io/coveralls/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Coveralls%20coverage)](https://coveralls.io/github/jcb91/jupyter_nbextensions_configurator)
-[![Codecov python test coverage](https://img.shields.io/codecov/c/github/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Codecov%20coverage)](https://codecov.io/gh/jcb91/jupyter_nbextensions_configurator)
+[![Travis-CI Build Status](https://img.shields.io/travis/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600&label=Travis)](https://travis-ci.org/jcb91/jupyter_nbextensions_configurator)
+[![Appveyor Build status](https://img.shields.io/appveyor/ci/jcb91/jupyter-nbextensions-configurator.svg?maxAge=3600&label=Appveyor)](https://ci.appveyor.com/project/jcb91/jupyter-nbextensions-configurator)
+[![Coveralls python test coverage](https://img.shields.io/coveralls/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Coveralls)](https://coveralls.io/github/jcb91/jupyter_nbextensions_configurator)
+[![Codecov python test coverage](https://img.shields.io/codecov/c/github/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Codecov)](https://codecov.io/gh/jcb91/jupyter_nbextensions_configurator)
 
 A server extension for [jupyter notebook](https://github.com/jupyter/notebook)
 which provides configuration interfaces for notebook extensions (nbextensions).
@@ -29,24 +29,24 @@ Installation
 The installation has three steps:
 
 1. Installing the pip package. this should be as simple as
-  ```
-  pip install jupyter_nbextensions_configurator
-  ```
+
+      pip install jupyter_nbextensions_configurator
 
 2. Configuring the notebook server to load the server extension.
-  For notebook versions >= 4.2.0, you can do this using the jupyter machinery with
-  ```
-  jupyter serverextension enable jupyter_nbextensions_configurator
-  ```
+  For notebook versions >= 4.2.0, you can do this using the jupyter machinery
+  with
+
+      jupyter serverextension enable jupyter_nbextensions_configurator
+
   with whichever flags (such as `--user` for single-user, `--sys-prefix` for
-  installations into virtual environments, `--system` for ystem-wide installs,
+  installations into virtual environments, `--system` for system-wide installs,
   etc.) are appropriate for your needs.
   For notebook versions before 4.2.0, you can use the provided shim script
   (which essentially duplicates the jupyter installation machinery for versions
-  which don't have it already) with the same possible flags:
-  ```
-  jupyter_nbextensions_configurator enable
-  ```
+  which don't have it already) with the same possible flags, e.g.
+
+      jupyter_nbextensions_configurator enable --user
+
 3. Finally, you'll need to restart the notebook server. Once restarted, you
   should be able to find the configurator user interfaces as described below.
 
@@ -59,9 +59,11 @@ configuration interface at the url `<base_url>nbextensions`, where
 `<base_url>` is described below (for simple installs, it's usually just `/`, so
 the UI is at `/nbextensions`).
 
-![](src/jupyter_nbextensions_configurator/static/nbextensions_configurator/icon.png)
+![configurator UI page](src/jupyter_nbextensions_configurator/static/nbextensions_configurator/icon.png)
 
-###base_url
+
+### base_url
+
 For most single-user notebook servers, the dashboard (the file-browser view)
 is at
 
@@ -75,16 +77,20 @@ prepend it to the url. So, if your dashboard is at
     http://localhost:8888/custom/base/url/tree
 
 
-then you'll find the nbextensions configuration page at
+then you'll find the configurator UI page at
 
     http://localhost:8888/custom/base/url/nbextensions
 
+
 ### tree tab
+
 In addition to the main standalone page, the nbextensions configurator
 interface is also available as a tab on the dashboard, once it's been
 configured to appear there.
 To do this, go to the `/nbextensions` url described above, and enable the
-nbextension `Nbextensions dashboard tab`
+nbextension `Nbextensions dashboard tab`.
+
+![configurator UI in a dashboard tab](src/jupyter_nbextensions_configurator/static/nbextensions_configuratortree_tab/icon.png)
 
 
 YAML file format
@@ -101,20 +107,20 @@ describes the notebook extension and its options to
 
 The case-sensitive keys in the yaml file are as follows:
 
-* **Type**          - (*required*) identifier, must be `IPython Notebook Extension` or `Jupyter Notebook Extension` (case sensitive)
-* **Name**          - unique name of the extension
-* **Description**   - short explanation of the extension
-* **Link**          - a url for more documentation. If this is a relative url with a `.md` extension (recommended!), the markdown readme is rendered on the config page.
-* **Icon**          - a url for a small icon for the config page (rendered 120px high, should preferably end up 400px wide. Recall HDPI displays may benefit from a 2x resolution icon).
-* **Main**          - (*required*) main javascript file that is loaded, typically `main.js`
-* **Compatibility** - Jupyter major version compatibility, e.g. `3.x` or `4.x`, `3.x 4.x`, `3.x, 4.x, 5.x`
-* **Parameters**    - Optional list of configuration parameters. Each item is a dictionary with (some of) the following keys:
-  * **name**        - (*required*) this is the name used to store the configuration variable in the config json. It follows a json-like structure, so you can use `.` to separate sub-objects e.g. `myextension.buttons_to_add.play`.
-  * **description** - description of the configuration parameter
-  * **default**     - a default value used to populate the tag on the nbextensions config page if no value is found in config. Note that this is more of a hint to the user than anything functional - since it's only set in the yaml file, the javascript implementing the extension in question might actually use a different default, depending on the implementation.
-  * **input_type**  - controls the type of html tag used to render the parameter on the configuration page. Valid values include `text`, `textarea`, `checkbox`, [html5 input tags such as `number`, `url`, `color`, ...], plus a final type of `list`
-  * **list_element** - for parameters with input_type `list`, this is used in place of `input_type` to render each element of the list
-  * finally, extras such as **min** **step** **max** may be used by `number` tags for validation
+ * `Type`,            (**required**) a case-sensitive identifier, must be `IPython Notebook Extension` or `Jupyter Notebook Extension`
+ * `Main`,            (**required**) the main javascript file that is loaded, typically `main.js`
+ * `Name`,            the name of the extension
+ * `Description`,     a short explanation of the extension
+ * `Link`,            a URL for more documentation. If this is a relative url with a `.md` extension (recommended!), the markdown readme is rendered in the configurator UI.
+ * `Icon`,            a URL for a small icon for the configurator UI (rendered 120px high, should preferably end up 400px wide. Recall HDPI displays may benefit from a 2x resolution icon).
+ * `Compatibility`,   Jupyter major version compatibility, e.g. `3.x` or `4.x`, `3.x 4.x`, `3.x, 4.x, 5.x`
+ * `Parameters`,      an optional list of configuration parameters. Each item is a dictionary with (some of) the following keys
+   * `name`,          (**required**) the name used to store the configuration variable in the config json. It follows a json-like structure, so you can use `.` to separate sub-objects e.g. `myextension.buttons_to_add.play`.
+   * `description`,   a description of the configuration parameter
+   * `default`,       a default value used to populate the tag in the configurator UI, if no value is found in config. Note that this is more of a hint to the user than anything functional - since it's only set in the yaml file, the javascript implementing the extension in question might actually use a different default, depending on the implementation.
+   * `input_type`,    controls the type of html tag used to render the parameter in the configurator UI. Valid values include `text`, `textarea`, `checkbox`, [html5 input tags such as `number`, `url`, `color`, ...], plus a final type of `list`
+   * `list_element`,  a dictionary with the same `default` and `input_type` keys as a `Parameters` entry, used to render each element of the list for parameters with input_type `list`
+   * finally, extras such as `min`, `step` and `max` may be used by `number` tags for validation
 
 Example:
 
@@ -143,17 +149,18 @@ Parameters:
 Troubleshooting
 ---------------
 
-If you encounter problems with this config page, you can:
+If you encounter problems with this server extension, you can:
  * check the [issues page][this repo issues] for the [github repository][this repo].
    If you can't find one that fits your problem, please create a new one!
  * ask in the project's [gitter chatroom][gitter url]
 
 For debugging, useful information can (sometimes) be found by:
 
- * Checking for any error messages in the notebook server output logs
- * Check for error messages in the [JavaScript console][javascript console howto] of the browser.
+ * Checking for error messages in the browser's [JavaScript console][javascript console howto].
+ * Checking for messages in the notebook server's logs. This is partiularly useful when the server is run with the `--debug` flag, to get as many logs as possible.
 
 [this repo]: https://github.com/jcb91/jupyter_nbextensions_configurator
 [this repo issues]: https://github.com/jcb91/jupyter_nbextensions_configurator/issues
+[gitter url]: https://gitter.im/jcb91/jupyter_nbextensions_configurator
 [javascript console howto]: webmasters.stackexchange.com/questions/8525/how-to-open-the-javascript-console-in-different-browsers
 

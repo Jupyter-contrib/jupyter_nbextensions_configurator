@@ -1,121 +1,95 @@
-Introduction
-============
+Jupyter Nbextensions Configurator
+=================================
 
-This jupyter server extension provides a web page
-(which you can find by going to the `/nbextensions` URL)
-which allows you to enable or disable installed notebook extensions,
-if they provide a `YAML` file description.
+[![Join the chat at https://gitter.im/jcb91/jupyter_nbextensions_configurator](https://img.shields.io/gitter/room/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://gitter.im/jcb91/jupyter_nbextensions_configurator?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+A server extension for [jupyter notebook](https://github.com/jupyter/notebook)
+which provides configuration interfaces for notebook extensions (nbextensions).
+
+The `jupyter_nbextensions_configurator` jupyter server extension provides
+graphical user interfaces for configuring which nbextensions are enabled
+(load automatically for every notebook), and display their readme files.
+In addition, for extensions which include an appropriate yaml descripor file
+(see below), the interface also provides controls to configure the extensions'
+options.
+
+This project was spun out of work from
+[`ipython-contrib/IPython-notebook-extensions`][contrib repo url].
+
+[contrib repo url]: https://github.com/ipython-contrib/IPython-notebook-extensions
+
+
+Usage
+-----
+
+Once `jupyter_nbextensions_configurator` is installed and enabled, and your
+notebook server has been restarted, you should be able to find the nbextensions
+configuration interface at the url `<base_url>nbextensions`, where
+`<base_url>` is described below (for simple installs, it's usually just `/`, so
+the UI is at `/nbextensions`).
+
+![configurator UI page](icon.png)
+
+
+### base_url
+
+For most single-user notebook servers, the dashboard (the file-browser view)
+is at
+
+    http://localhost:8888/tree
+
+So the `base_url` is the part between the host (`http://localhost:8888`) and
+`tree`, so in this case it's the default value of just `/`.
 If you have a non-default base url (such as with JupyterHub), you'll need to
 prepend it to the url. So, if your dashboard is at
 
-```
-http://localhost:8888/custom/base/url/tree
-```
-
-then you'll find the nbextensions configuration page at
-
-```
-http://localhost:8888/custom/base/url/nbextensions
-```
-
-Enabling an extension means it is loaded automatically when working with a
-notebook document.
-
-If you encounter problems with this config page, please create an issue at the
-[ipython-contrib](https://github.com/ipython-contrib/IPython-notebook-extensions)
-repository.
-
-![](icon.png)
-
-The configurator page is realized using a notebook server extension, new in
-IPython 3.x. In order to work, this server extension needs to be installed.
-
-In addition, any notebook extensions it will configure will require a YAML
-description file under the `nbextensions` directory
-(see installation notes, below) in order to be found.
-
-You can see a video of the config extension in action on youtube:
-
-[![config extension on youtube](https://i.ytimg.com/vi_webp/h9DEfxZSz2M/maxresdefault.webp)](https://youtu.be/h9DEfxZSz2M)
+    http://localhost:8888/custom/base/url/tree
 
 
-Setup procedure
-===============
+then you'll find the configurator UI page at
+
+    http://localhost:8888/custom/base/url/nbextensions
 
 
-The simplest way to install the config extension is to install the
-ipython-contrib extensions repository.
-There are several ways to install the IPython-contrib extensions repository.
-See the [main repository readme][main repository readme url] for details.
+### tree tab
 
-[main repository readme url]: https://github.com/ipython-contrib/IPython-notebook-extensions/README.md
+In addition to the main standalone page, the nbextensions configurator
+interface is also available as a tab on the dashboard, once it's been
+configured to appear there.
+To do this, go to the `/nbextensions` url described above, and enable the
+nbextension `Nbextensions dashboard tab`.
 
-Having restarted the server after the installation, you should be able to see the configuration page by going to the URL `/nbextensions`.
+![configurator UI in a dashboard tab](tree_tab/icon.png)
 
-
-Internals
-=========
-
-The configuration for which notebook extensions are enabled is stored in
-`jupyter_config_dir()/nbconfig/notebook.json`.
-There are also some extensions for other parts of jupyter which are enabled in
-other config section, such as the `tree-filter` extension for the file tree
-view, which is enabled/disabled in the config file
-`jupyter_config_dir()/nbconfig/tree.json`.
-
-
-You can generate a table of currently enabled extensions for the notebook
-section by executing the following in a notebook cell:
-
-```Python
-from notebook.services.config.manager import ConfigManager
-from IPython.display import HTML
-
-cm = ConfigManager()
-extensions = cm.get('notebook').get('load_extensions', {})
-table = """
-<table border="1">
-  <tr><th>Extension name</th><th>Enabled</th></tr>
-  {}
-</table>
-""".format(
-    '\n  '.join([
-        '<tr><td>{}</td><td>{}</td>'.format(ext, bool(enabled))
-        for ext, enabled in extensions.items()
-    ])
-)
-HTML(table)
-```
-
-If you reload the notebook after enabling a notebook extension, the extension
-should be loaded. You can also check the Javascript console to confirm.
 
 YAML file format
 ----------------
-A notebook extension is 'found' by the configurator server extension when a
-special YAML file describing the nbextension and its options is found in the
-notebook server's `nbextensions_path`.
-The YAML file can have any name with the extension `.yaml` or `.yml`, and
-describes the notebook extension and its options to the configurator server
-extension.
-Note that keys (in bold) are case-sensitive.
-The keys `Type` and `Main` are required, all others are optional (though recommended!).
 
-* **Type**          - (*required*) identifier, must be `IPython Notebook Extension` or `Jupyter Notebook Extension` (case sensitive)
-* **Name**          - unique name of the extension
-* **Description**   - short explanation of the extension
-* **Link**          - a url for more documentation. If this is a relative url with a `.md` extension (recommended!), the markdown readme is rendered on the config page.
-* **Icon**          - a url for a small icon for the config page (rendered 120px high, should preferably end up 400px wide. Recall HDPI displays may benefit from a 2x resolution icon).
-* **Main**          - (*required*) main javascript file that is loaded, typically `main.js`
-* **Compatibility** - IPython/Jupyter major version compatibility, e.g. `3.x` or `4.x`, `3.x 4.x`, `3.x, 4.x, 5.x`
-* **Parameters**    - Optional list of configuration parameters. Each item is a dictionary with (some of) the following keys:
-  * **name**        - (*required*) this is the name used to store the configuration variable in the config json. It follows a json-like structure, so you can use `.` to separate sub-objects e.g. `myextension.buttons_to_add.play`.
-  * **description** - description of the configuration parameter
-  * **default**     - a default value used to populate the tag on the nbextensions config page if no value is found in config. Note that this is more of a hint to the user than anything functional - since it's only set in the yaml file, the javascript implementing the extension in question might actually use a different default, depending on the implementation.
-  * **input_type**  - controls the type of html tag used to render the parameter on the configuration page. Valid values include `text`, `textarea`, `checkbox`, [html5 input tags such as `number`, `url`, `color`, ...], plus a final type of `list`
-  * **list_element** - for parameters with input_type `list`, this is used in place of `input_type` to render each element of the list
-  * finally, extras such as **min** **step** **max** may be used by `number` tags for validation
+You don't need to know about the yaml files in order simply to use
+`jupyter_nbextensions_configurator`.
+A notebook extension is 'found' by the `jupyter_nbextensions_configurator`
+server extension when a special yaml file describing the nbextension and its
+options is found in the notebook server's `nbextensions_path`.
+The yaml file can have any name with the extension `.yaml` or `.yml`, and
+describes the notebook extension and its options to
+`jupyter_nbextensions_configurator`.
+
+The case-sensitive keys in the yaml file are as follows:
+
+ * `Type`,            (**required**) a case-sensitive identifier, must be `IPython Notebook Extension` or `Jupyter Notebook Extension`
+ * `Main`,            (**required**) the main javascript file that is loaded, typically `main.js`
+ * `Name`,            the name of the extension
+ * `Description`,     a short explanation of the extension
+ * `Link`,            a URL for more documentation. If this is a relative url with a `.md` extension (recommended!), the markdown readme is rendered in the configurator UI.
+ * `Icon`,            a URL for a small icon for the configurator UI (rendered 120px high, should preferably end up 400px wide. Recall HDPI displays may benefit from a 2x resolution icon).
+ * `Compatibility`,   Jupyter major version compatibility, e.g. `3.x` or `4.x`, `3.x 4.x`, `3.x, 4.x, 5.x`
+ * `Parameters`,      an optional list of configuration parameters. Each item is a dictionary with (some of) the following keys
+   * `name`,          (**required**) the name used to store the configuration variable in the config json. It follows a json-like structure, so you can use `.` to separate sub-objects e.g. `myextension.buttons_to_add.play`.
+   * `description`,   a description of the configuration parameter
+   * `default`,       a default value used to populate the tag in the configurator UI, if no value is found in config. Note that this is more of a hint to the user than anything functional - since it's only set in the yaml file, the javascript implementing the extension in question might actually use a different default, depending on the implementation.
+   * `input_type`,    controls the type of html tag used to render the parameter in the configurator UI. Valid values include `text`, `textarea`, `checkbox`, [html5 input tags such as `number`, `url`, `color`, ...], plus a final type of `list`
+   * `list_element`,  a dictionary with the same `default` and `input_type` keys as a `Parameters` entry, used to render each element of the list for parameters with input_type `list`
+   * finally, extras such as `min`, `step` and `max` may be used by `number` tags for validation
 
 Example:
 
@@ -142,13 +116,19 @@ Parameters:
 
 
 Troubleshooting
-===============
+---------------
 
-If an extension doesn't work, here are some ways you can check what is wrong:
+If you encounter problems with this server extension, you can:
+ * check the [issues page][this repo issues] for the [github repository][this repo].
+   If you can't find one that fits your problem, please create a new one!
+ * ask in the project's [gitter chatroom][gitter url]
 
-1. Clear your browser cache or start a private browser tab.
-2. Verify the extension can be loaded by the notebook, for example,
-   load the javascript file directly:
-   `http://127.0.0.1:8888/nbextensions/usability/runtools/main.js`
-3. Check for error messages in the JavaScript console of the browser.
-4. Check for any error messages in the notebook server output logs
+For debugging, useful information can (sometimes) be found by:
+
+ * Checking for error messages in the browser's [JavaScript console][javascript console howto].
+ * Checking for messages in the notebook server's logs. This is partiularly useful when the server is run with the `--debug` flag, to get as many logs as possible.
+
+[this repo]: https://github.com/jcb91/jupyter_nbextensions_configurator
+[this repo issues]: https://github.com/jcb91/jupyter_nbextensions_configurator/issues
+[gitter url]: https://gitter.im/jcb91/jupyter_nbextensions_configurator
+[javascript console howto]: webmasters.stackexchange.com/questions/8525/how-to-open-the-javascript-console-in-different-browsers
