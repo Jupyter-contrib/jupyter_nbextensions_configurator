@@ -32,9 +32,15 @@ try:
 except ImportError:
     from mock import patch  # py2
 
+app_classes = (DisableJupyterNbextensionsConfiguratorApp,
+               EnableJupyterNbextensionsConfiguratorApp,
+               JupyterNbextensionsConfiguratorApp)
+
 
 def reset_app_class(app_class):
     """Reset all app traits and clear the instance."""
+    if app_class._instance is None:
+        return
     for name, traitlet in app_class._instance.traits().items():
         if isinstance(traitlet.this_class, JupyterNbextensionsConfiguratorApp):
             setattr(app_class._instance, name, traitlet.default_value)
@@ -76,9 +82,7 @@ class AppTest(TestCase):
             klass._log_default = new_default_log
             klass.log_level.default_value = logging.DEBUG
 
-        for klass in (DisableJupyterNbextensionsConfiguratorApp,
-                      EnableJupyterNbextensionsConfiguratorApp,
-                      JupyterNbextensionsConfiguratorApp):
+        for klass in app_classes:
             patch_klass_logs(klass)
 
         self.dirs = {
@@ -134,7 +138,8 @@ class AppTest(TestCase):
             'Install should create files in {}'.format(dirs['conf']))
 
         # a bit of a hack to allow initializing a new app instance
-        reset_app_class(EnableJupyterNbextensionsConfiguratorApp)
+        for klass in app_classes:
+            reset_app_class(klass)
 
         # do uninstall
         main_app(argv=['disable'] + argv)
@@ -170,6 +175,8 @@ class AppTest(TestCase):
             # sys.exit should be called if extra args specified
             with nt.assert_raises(SystemExit):
                 main_app([subcom, 'arbitrary_extension_name'])
+            for klass in app_classes:
+                reset_app_class(klass)
 
     def test_01_help_output(self):
         """Check that app help works."""
