@@ -61,6 +61,11 @@ the interface also provides controls to configure the extensions' options.
         # we can't be zip safe as we require templates etc to be accessible to
         # jupyter server
         zip_safe=False,
+        entry_points={
+            'console_scripts': [
+                'jupyter_nbextensions_configurator = jupyter_nbextensions_configurator.application:main',  # noqa
+            ],
+        },
         classifiers=[
             'Intended Audience :: End Users/Desktop',
             'Intended Audience :: Science/Research',

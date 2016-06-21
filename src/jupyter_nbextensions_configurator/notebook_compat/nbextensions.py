@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import copy
 import os
 import shutil
 import tarfile
@@ -17,10 +18,14 @@ from os.path import basename, normpath
 from ipython_genutils.path import ensure_dir_exists
 from ipython_genutils.py3compat import cast_unicode_py2
 from ipython_genutils.tempdir import TemporaryDirectory
+from jupyter_core.application import JupyterApp
 from jupyter_core.paths import (
     ENV_CONFIG_PATH, ENV_JUPYTER_PATH, SYSTEM_CONFIG_PATH, SYSTEM_JUPYTER_PATH,
     jupyter_config_dir, jupyter_data_dir,
 )
+from notebook import __version__
+from tornado.log import LogFormatter
+from traitlets import Bool
 from traitlets.config.manager import BaseJSONConfigManager
 from traitlets.utils.importstring import import_item
 
@@ -394,6 +399,56 @@ def validate_nbextension_python(spec, full_dest, logger=None):
 
     return warnings
 
+
+# -----------------------------------------------------------------------------
+# Applications. Many ommited from notebook version.
+# -----------------------------------------------------------------------------
+
+
+class BaseNBExtensionApp(JupyterApp):
+    """Base nbextension installer app"""
+    _log_formatter_cls = LogFormatter
+    version = __version__
+
+    flags = copy.deepcopy(JupyterApp.flags)
+    flags.update({
+        'user': ({
+            'BaseNBExtensionApp': {
+                'user': True,
+            }}, 'Apply the operation only for the given user'
+        ),
+        'system': ({
+            'BaseNBExtensionApp': {
+                'user': False,
+                'sys_prefix': False,
+            }}, 'Apply the operation system-wide'
+        ),
+        'sys-prefix': ({
+            'BaseNBExtensionApp': {
+                'sys_prefix': True,
+            }}, ('Use sys.prefix as the prefix for configuration operations ' +
+                 'and installing nbextensions (for environments, packaging)')
+        ),
+        'py': ({
+            'BaseNBExtensionApp': {
+                'python': True,
+            }}, 'Install from a Python package'
+        )
+    })
+    flags['python'] = flags['py']
+    flags.pop('y', None)
+    flags.pop('generate-config', None)
+
+    user = Bool(False, config=True, help="Whether to do a user install")
+    sys_prefix = Bool(False, config=True,
+                      help="Use the sys.prefix as the prefix")
+    python = Bool(False, config=True, help="Install from a Python package")
+
+    # stuff about verbose from notebook version omitted
+
+    def _log_format_default(self):
+        """A default format for messages"""
+        return '%(message)s'
 
 # -----------------------------------------------------------------------------
 # Private API

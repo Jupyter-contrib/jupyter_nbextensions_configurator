@@ -16,14 +16,21 @@ NotebookApp.nbserver_extensions (a dict) in notebook >= 4.2.0
 from __future__ import print_function
 
 import importlib
+import sys
 
+from jupyter_core.application import JupyterApp
+from traitlets import Bool
 from traitlets.config.manager import BaseJSONConfigManager
 from traitlets.utils.importstring import import_item
 
 try:
-    from notebook.nbextensions import _get_config_dir, GREEN_OK, RED_X
+    from notebook.nbextensions import (
+        _get_config_dir, BaseNBExtensionApp, GREEN_OK, RED_X,
+    )
 except ImportError:
-    from .nbextensions import _get_config_dir, GREEN_OK, RED_X
+    from .nbextensions import (
+        _get_config_dir, BaseNBExtensionApp, GREEN_OK, RED_X,
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -137,6 +144,98 @@ def validate_serverextension(import_name, logger=None):
             logger.info(post_mortem.format(import_name, "", GREEN_OK))
 
     return warnings
+
+# ----------------------------------------------------------------------------
+# Applications. Some from the notebook version of serverextensions are skipped
+# ----------------------------------------------------------------------------
+
+flags = {}
+flags.update(JupyterApp.flags)
+flags.pop('y', None)
+flags.pop('generate-config', None)
+flags.update({
+    'user': ({
+        'ToggleServerExtensionApp': {
+            'user': True,
+        }}, 'Perform the operation for the current user'
+    ),
+    'system': ({
+        'ToggleServerExtensionApp': {
+            'user': False,
+            'sys_prefix': False,
+        }}, 'Perform the operation system-wide'
+    ),
+    'sys-prefix': ({
+        'ToggleServerExtensionApp': {
+            'sys_prefix': True,
+        }}, 'Use sys.prefix as the prefix for installing server extensions'
+    ),
+    'py': ({
+        'ToggleServerExtensionApp': {
+            'python': True,
+        }}, 'Install from a Python package'
+    ),
+})
+flags['python'] = flags['py']
+
+
+class ToggleServerExtensionApp(BaseNBExtensionApp):
+    """A base class for enabling/disabling extensions."""
+    name = 'jupyter serverextension enable/disable'
+    description = 'Enable/disable a server extension in config files.'
+
+    aliases = {}
+    flags = flags
+
+    user = Bool(True, config=True, help='Whether to do a user install')
+    sys_prefix = Bool(
+        False, config=True, help='Use the sys.prefix as the prefix')
+    python = Bool(False, config=True, help='Install from a Python package')
+
+    def toggle_server_extension(self, import_name):
+        """Change the status of a named server extension.
+
+        Uses the value of `self._toggle_value`.
+
+        Parameters
+        ---------
+
+        import_name : str
+            Importable Python module (dotted-notation) exposing the magic-named
+            `load_jupyter_server_extension` function
+        """
+        toggle_serverextension_python(
+            import_name, self._toggle_value, parent=self, user=self.user,
+            sys_prefix=self.sys_prefix, logger=self.log)
+
+    def toggle_server_extension_python(self, package):
+        """Change the status of some server extensions in a Python package.
+
+        Uses the value of `self._toggle_value`.
+
+        Parameters
+        ---------
+
+        package : str
+            Importable Python module exposing the
+            magic-named `_jupyter_server_extension_paths` function
+        """
+        m, server_exts = _get_server_extension_metadata(package)
+        for server_ext in server_exts:
+            module = server_ext['module']
+            self.toggle_server_extension(module)
+
+    def start(self):
+        """Perform the App's actions as configured"""
+        if not self.extra_args:
+            sys.exit(
+                'Please specify a server extension/package '
+                'to enable or disable')
+        for arg in self.extra_args:
+            if self.python:
+                self.toggle_server_extension_python(arg)
+            else:
+                self.toggle_server_extension(arg)
 
 # -----------------------------------------------------------------------------
 # Private API
