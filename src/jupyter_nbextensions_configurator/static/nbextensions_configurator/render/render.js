@@ -28,6 +28,8 @@ define([
     runMode,
     marked
 ){
+    'use strict';
+
     /**
      * Custom marked options,
      * lifted from notebook/js/notebook
@@ -126,6 +128,13 @@ define([
         return root + url.join('/');
     };
 
+    function absolutize_url(absolute_url_regex, relative_url_root, url) {
+        if (relative_url_root && !absolute_url_regex.test(url)) {
+            url = join_relative_urls(relative_url_root, url);
+        }
+        return url;
+    }
+
     /**
      * Render given markdown into html, returning as a jquery element.
      * Optionally absolutify relative href/src attributes using the parameter relative_url_root
@@ -140,25 +149,6 @@ define([
             var text = text_and_math[0];
             var math = text_and_math[1];
             var options = custom_marked_options;
-            if (relative_url_root) {
-                // patch the renderer to fix relative paths to be absolute
-                var renderer = new marked.Renderer();
-                var base_renderer_link = renderer.link;
-                renderer.link = function (href, title, text) {
-                    if (!/^#|mailto:|(f|ht)tps?:\/\//i.test(href)) {
-                        href = join_relative_urls(relative_url_root, href);
-                    }
-                    return base_renderer_link.call(this, href, title, text);
-                };
-                base_renderer_image = renderer.image;
-                renderer.image = function (href, title, text) {
-                    if (!/^(f|ht)tps?:\/\//i.test(href)) {
-                        href = join_relative_urls(relative_url_root, href);
-                    }
-                    return base_renderer_image.call(this, href, title, text);
-                };
-                options = $.extend(custom_marked_options, {renderer: renderer});
-            }
             marked(text, options, function (err, html) {
                 html = mathjaxutils.replace_math(html, math);
                 html = security.sanitize_html(html);
@@ -177,6 +167,16 @@ define([
                 });
                 // links in markdown cells should open in new tabs
                 html.find("a[href]").not('[href^="#"]').attr("target", "_blank");
+                // begin edit: make a.href & img.src absolute.
+                // We use element.getAttribute('href') to get the raw href
+                // since element.href always returns a fully-qualified url
+                html.find('img[src]').each(function (index, element) {
+                    element.src = absolutize_url(/^(f|ht)tps?:\/\//i, relative_url_root, element.getAttribute('src'));
+                });
+                html.find('a[href]').each(function (index, element) {
+                    element.href = absolutize_url(/^#|mailto:|(f|ht)tps?:\/\//i, relative_url_root, element.getAttribute('href'));
+                });
+                // end edit
                 div.html(html);
             });
         }
