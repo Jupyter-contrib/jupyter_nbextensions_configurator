@@ -90,7 +90,7 @@ configured to appear there.
 To do this, go to the `/nbextensions` url described above, and enable the
 nbextension `Nbextensions dashboard tab`.
 
-![configurator UI in a dashboard tab](src/jupyter_nbextensions_configurator/static/nbextensions_configurator/tree_tab/icon.png)
+<img alt="configurator UI in a dashboard tab" src="src/jupyter_nbextensions_configurator/static/nbextensions_configurator/tree_tab/icon.png" width="440">
 
 
 YAML file format

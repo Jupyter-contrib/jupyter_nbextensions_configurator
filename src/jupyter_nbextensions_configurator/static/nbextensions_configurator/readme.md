@@ -59,7 +59,7 @@ configured to appear there.
 To do this, go to the `/nbextensions` url described above, and enable the
 nbextension `Nbextensions dashboard tab`.
 
-![configurator UI in a dashboard tab](tree_tab/icon.png)
+<img alt="configurator UI in a dashboard tab" src="tree_tab/icon.png" width="440">
 
 
 YAML file format
