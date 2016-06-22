@@ -63,9 +63,12 @@ the interface also provides controls to configure the extensions' options.
         zip_safe=False,
         entry_points={
             'console_scripts': [
-                'jupyter_nbextensions_configurator = jupyter_nbextensions_configurator.application:main',  # noqa
+                'jupyter-nbextensions_configurator = jupyter_nbextensions_configurator.application:main',  # noqa
             ],
         },
+        scripts=[os.path.join('scripts', p) for p in [
+            'jupyter-nbextensions_configurator',
+        ]],
         classifiers=[
             'Intended Audience :: End Users/Desktop',
             'Intended Audience :: Science/Research',

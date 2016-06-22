@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import copy
-import operator
 import sys
 
 from jupyter_nbextensions_configurator import __version__
@@ -39,7 +38,7 @@ Enable the jupyter_nbextensions_configurator server extension in configuration.
 
 Usage
     jupyter_nbextensions_configurator {} [--system|--sys-prefix|--user]
-""".format('Enable' if self._toggle_value else 'Disable')
+""".format('enable' if self._toggle_value else 'disable')
 
     def start(self):
         """Perform the App's actions as configured."""
@@ -53,19 +52,21 @@ Usage
 class EnableJupyterNbextensionsConfiguratorApp(
         ToggleJupyterNbextensionsConfiguratorApp):
     """An App that enables the jupyter_nbextensions_configurator extension."""
+    name = 'jupyter nbextensions_configurator enable'
     _toggle_value = True
 
 
 class DisableJupyterNbextensionsConfiguratorApp(
         ToggleJupyterNbextensionsConfiguratorApp):
     """An App that disables the jupyter_nbextensions_configurator extension."""
+    name = 'jupyter nbextensions_configurator disable'
     _toggle_value = False
 
 
 class JupyterNbextensionsConfiguratorApp(nbextensions.BaseNBExtensionApp):
     """Root level jupyter_nbextensions_configurator app."""
 
-    name = 'jupyter_nbextensions_configurator'
+    name = 'jupyter nbextensions_configurator'
     version = __version__
     description = (
         'Enable or disable '
@@ -79,9 +80,8 @@ class JupyterNbextensionsConfiguratorApp(nbextensions.BaseNBExtensionApp):
             'Disable the jupyter_nbextensions_configurator server extension.'),
     )
     examples = '\n'.join([
-        '{} # {}'.format(appname, comment)
-        for appname, comment in sorted(
-            subcommands.values(), key=operator.itemgetter(1))
+        'jupyter nbextensions_configurator enable  # Enable the jupyter_nbextensions_configurator server extension.',  # noqa
+        'jupyter nbextensions_configurator disable # Disable the jupyter_nbextensions_configurator server extension.',  # noqa
     ])
 
     def start(self):
@@ -93,9 +93,7 @@ class JupyterNbextensionsConfiguratorApp(nbextensions.BaseNBExtensionApp):
         subcmds = ", ".join(sorted(self.subcommands))
         sys.exit("Please supply at least one subcommand: %s" % subcmds)
 
-
 main = JupyterNbextensionsConfiguratorApp.launch_instance
-
 
 if __name__ == '__main__':  # pragma: no cover
     main()
