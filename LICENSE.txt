@@ -2,10 +2,11 @@
  The IPython-contrib licensing terms
 ====================================
 
-IPython-contrib is licensed under the terms of the Modified BSD License (also
-known as New or Revised or 3-Clause BSD), as follows:
+This project is licensed under the terms of the Modified BSD License
+(also known as New or Revised or 3-Clause BSD), as follows:
 
-- Copyright (c) 2013-2015, IPython-contrib Developers
+- Copyright (c) 2013-2016, IPython-contrib Developers
+- Copyright (c) 2016, jupyter-contrib Developers
 
 All rights reserved.
 
@@ -19,7 +20,7 @@ Redistributions in binary form must reproduce the above copyright notice, this
 list of conditions and the following disclaimer in the documentation and/or
 other materials provided with the distribution.
 
-Neither the name of the IPython-contrib Developers nor the names of its
+Neither the name of the project development team nor the names of its
 contributors may be used to endorse or promote products derived from this
 software without specific prior written permission.
 

@@ -10,9 +10,9 @@ Jupyter Nbextensions Configurator
 [![Codecov python test coverage](https://img.shields.io/codecov/c/github/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Codecov)](https://codecov.io/gh/jcb91/jupyter_nbextensions_configurator)
 
 [![PyPI](https://img.shields.io/pypi/v/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://pypi.python.org/pypi/jupyter_nbextensions_configurator)
-[![PyPI](https://img.shields.io/pypi/dm/jupyter_nbextensions_configurator.svg?maxAge=2592000)](https://pypi.python.org/pypi/jupyter_nbextensions_configurator)
+[![PyPI](https://img.shields.io/pypi/dm/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://pypi.python.org/pypi/jupyter_nbextensions_configurator)
 
-[![GitHub release](https://img.shields.io/github/release/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://github.com/jcb91/jupyter_nbextensions_configurator)
+[![GitHub tag](https://img.shields.io/github/tag/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://github.com/jcb91/jupyter_nbextensions_configurator)
 [![Github All Releases](https://img.shields.io/github/downloads/jcb91/jupyter_nbextensions_configurator/total.svg?maxAge=3600)](https://github.com/jcb91/jupyter_nbextensions_configurator)
 
 A server extension for [jupyter notebook](https://github.com/jupyter/notebook)

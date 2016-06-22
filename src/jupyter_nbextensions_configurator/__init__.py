@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) IPython-Contrib Team.
+# - Copyright (c) 2001-2016, IPython-Contrib Development Team
+# - Copyright (c) 2016-, jupyter-contrib development team
 
 """Jupyter server extension to enable, disable and configure nbextensions."""
 
