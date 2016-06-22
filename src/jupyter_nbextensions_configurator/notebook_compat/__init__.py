@@ -1,29 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Shim providing notebook 4.2 extension stuff for use in earlier versions."""
+"""
+Shim providing notebook-4.2 compatible extensions stuff for earlier versions.
 
-try:
-    from notebook.nbextensions import (
-        GREEN_OK, RED_X, BaseNBExtensionApp, _get_config_dir,
-    )
-except ImportError:
-    from ._compat.nbextensions import (
-        GREEN_OK, RED_X, BaseNBExtensionApp, _get_config_dir,
-    )
+objects imported from notebook_compat.nbextensions will be
+ - objects from notebook.nbextensions where notebook-4.2-compatible versions
+   are available
+ - versions from notebook_compat._compat.nbextensions shim scripts otherwise
 
-try:
-    from notebook.serverextensions import (
-        ToggleServerExtensionApp, toggle_serverextension_python,
-    )
-except ImportError:
-    from ._compat.serverextensions import (
-        ToggleServerExtensionApp, toggle_serverextension_python,
-    )
-
-__all__ = [
-    '_get_config_dir',
-    'BaseNBExtensionApp',
-    'GREEN_OK',
-    'RED_X',
-    'toggle_serverextension_python',
-    'ToggleServerExtensionApp',
-]
+and similarly for objects from notebook_compat.serverextensions
+"""

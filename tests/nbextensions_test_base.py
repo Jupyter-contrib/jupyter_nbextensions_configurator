@@ -20,8 +20,7 @@ from traitlets.config import Config
 from traitlets.config.application import LevelFormatter
 from traitlets.traitlets import default
 
-from jupyter_nbextensions_configurator.notebook_compat import \
-    toggle_serverextension_python
+from jupyter_nbextensions_configurator.notebook_compat import serverextensions
 from testing_utils import stringify_env
 
 try:
@@ -209,11 +208,11 @@ class NbextensionTestBase(NotebookTestBase):
 
         # added to install things!
         cls.log.info('Enabling jupyter_nbextensions_configurator')
-        inst_func = toggle_serverextension_python
+        inst_func = serverextensions.toggle_serverextension_python
         inst_funcname = '.'.join([inst_func.__module__, inst_func.__name__])
         logger = get_wrapped_logger(
             name=inst_funcname, log_level=logging.DEBUG)
-        toggle_serverextension_python(
+        serverextensions.toggle_serverextension_python(
             'jupyter_nbextensions_configurator', enabled=True, logger=logger)
 
     @classmethod

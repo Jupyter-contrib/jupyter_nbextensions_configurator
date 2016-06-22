@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import shutil
+import sys
 import tempfile
 from unittest import TestCase
 
@@ -24,7 +25,7 @@ from jupyter_nbextensions_configurator.application import (
     EnableJupyterNbextensionsConfiguratorApp,
     JupyterNbextensionsConfiguratorApp,
 )
-from jupyter_nbextensions_configurator.notebook_compat import _get_config_dir
+from jupyter_nbextensions_configurator.notebook_compat import nbextensions
 from testing_utils import stringify_env
 
 try:
@@ -95,20 +96,25 @@ class AppTest(TestCase):
             'JUPYTER_DATA_DIR': self.dirs['env_vars']['data'],
         })))
 
-        mod_to_patch_paths = _get_config_dir.__module__
-        self.patches.append(patch.multiple(
-            mod_to_patch_paths,
+        # find the appropriate modules to patch according to compat.
+        # Should include either
+        # notebook.nbextensions
+        # or
+        # jupyter_nbextensions_configurator.notebook_compat._compat.nbextensions
+        modules_to_patch = (
+            jupyter_core.paths,
+            sys.modules[nbextensions._get_config_dir.__module__])
+        path_patches = dict(
             SYSTEM_CONFIG_PATH=[self.dirs['system']['conf']],
             ENV_CONFIG_PATH=[self.dirs['sys_prefix']['conf']],
-        ))
-        if hasattr(jupyter_core.paths, 'SYSTEM_JUPYTER_PATH'):
-            self.patches.append(patch.multiple(
-                mod_to_patch_paths,
-                SYSTEM_JUPYTER_PATH=[self.dirs['system']['data']]))
-        if hasattr(jupyter_core.paths, 'ENV_JUPYTER_PATH'):
-            self.patches.append(patch.multiple(
-                mod_to_patch_paths,
-                ENV_JUPYTER_PATH=[self.dirs['sys_prefix']['data']]))
+            SYSTEM_JUPYTER_PATH=[self.dirs['system']['data']],
+            ENV_JUPYTER_PATH=[self.dirs['sys_prefix']['data']],
+        )
+        for mod in modules_to_patch:
+            applicable_patches = {
+                attrname: newval for attrname, newval in path_patches.items()
+                if hasattr(mod, attrname)}
+            self.patches.append(patch.multiple(mod, **applicable_patches))
 
         for ptch in self.patches:
             ptch.start()
