@@ -191,7 +191,7 @@ define([
         page.show_header();
 
         var base_url = utils.get_body_data('baseUrl');
-        var encoded_md_url = utils.encode_uri_components($('body').data('md-url'));
+        var encoded_md_url = utils.get_body_data('mdUrl');
         var url = utils.url_path_join(base_url, encoded_md_url);
 
         $.ajax({
@@ -213,7 +213,7 @@ define([
                         body_txt = 'no markdown file at ' + url;
                         break;
                 }
-                $("#render-container").append(body_txt);
+                $("#render-container").append($('<p/>').text(body_txt));
             },
             complete: function(jqXHR, textStatus) {
                 page.show();
