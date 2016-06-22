@@ -25,6 +25,11 @@
     border-radius: 2px;
 }
 
+.rendered_html p img:not(:only-child),
+.rendered_html p a:not(:only-child) img {
+  display: inline;
+}
+
 .rendered_html pre {
   background-color: #f5f5f5;
   padding: 4px;
