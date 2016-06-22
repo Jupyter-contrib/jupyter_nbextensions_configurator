@@ -6,7 +6,7 @@ try:
         GREEN_OK, RED_X, BaseNBExtensionApp, _get_config_dir,
     )
 except ImportError:
-    from .nbextensions import (
+    from ._compat.nbextensions import (
         GREEN_OK, RED_X, BaseNBExtensionApp, _get_config_dir,
     )
 
@@ -15,7 +15,7 @@ try:
         ToggleServerExtensionApp, toggle_serverextension_python,
     )
 except ImportError:
-    from .serverextensions import (
+    from ._compat.serverextensions import (
         ToggleServerExtensionApp, toggle_serverextension_python,
     )
 
