@@ -41,7 +41,6 @@ the interface also provides controls to configure the extensions' options.
             for path in glob('src/*.py')
         ],
         install_requires=[
-            'ipython_genutils',
             'jupyter_core',
             'notebook >=4.0',
             'pyyaml',
@@ -50,6 +49,7 @@ the interface also provides controls to configure the extensions' options.
         ],
         extras_require={
             'test': [
+                'ipython_genutils',
                 'nose',
                 'requests',
                 'selenium',
