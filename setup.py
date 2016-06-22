@@ -26,13 +26,13 @@ the interface also provides controls to configure the extensions' options.
         version='0.0.0',
         author='IPython-contrib Developers',
         author_email='joshuacookebarnes@gmail.com',
-        url='https://github.com/jcb91/IPython-notebook-extensions.git',
+        url='https://github.com/jcb91/jupyter_nbextensions_configurator',
         download_url=('https://github.com/'
                       'jcb91/jupyter_nbextensions_configurator/'
                       'tarball/0.0.0'),
         keywords=['Jupyter', 'notebook'],
-        license='BSD',
-        platform=['Any'],
+        license='BSD 3-clause',
+        platforms=['any'],
         packages=find_packages('src'),
         package_dir={'': 'src'},
         include_package_data=True,
