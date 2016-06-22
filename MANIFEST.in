@@ -8,6 +8,7 @@ include .bumpversion.cfg
 exclude .travis.yml
 exclude appveyor.yml
 
+prune conda.recipe
 graft src
 graft tests
 
