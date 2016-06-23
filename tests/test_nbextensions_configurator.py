@@ -60,8 +60,10 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
             len(enable_links), 0, 'some nbextensions should have enable links')
 
     def test_04_readme_rendering(self):
-        # load the collapsible headings UI, as it has a readme to render
-        sel_link = self.driver.find_element_by_partial_link_text('dashboard')
+        # load an extension UI which has a readme containing an image to render
+        partial_txt = 'dashboard'
+        self.wait_for_partial_link_text(partial_txt)
+        sel_link = self.driver.find_element_by_partial_link_text(partial_txt)
         sel_link.click()
         self.wait_for_selector('.nbext-readme-contents img',
                                'there should be an image in the readme')
@@ -75,7 +77,9 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         self.driver.get(self.nbext_configurator_url)
         self.wait_for_selector('.nbext-row', 'an extension ui should load')
         # now enable the appropriate nbextension
-        sel_link = self.driver.find_element_by_partial_link_text('dashboard')
+        partial_txt = 'dashboard'
+        self.wait_for_partial_link_text(partial_txt)
+        sel_link = self.driver.find_element_by_partial_link_text(partial_txt)
         sel_link.find_element_by_css_selector('.nbext-enable-toggle').click()
         self.check_extension_enabled(
             'tree', 'nbextensions_configurator/tree_tab/main',
@@ -90,7 +94,9 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
 
     def test_08_disable_tree_tab(self):
         # now disable the appropriate nbextension & wait for update to config
-        sel_link = self.driver.find_element_by_partial_link_text('dashboard')
+        partial_txt = 'dashboard'
+        self.wait_for_partial_link_text(partial_txt)
+        sel_link = self.driver.find_element_by_partial_link_text(partial_txt)
         sel_link.find_element_by_css_selector('.nbext-enable-toggle').click()
         self.check_extension_enabled(
             'tree', 'nbextensions_configurator/tree_tab/main',

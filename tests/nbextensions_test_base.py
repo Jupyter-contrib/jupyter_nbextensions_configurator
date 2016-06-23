@@ -239,15 +239,34 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
 
         super(SeleniumNbextensionTestBase, cls).teardown_class()
 
-    def wait_for_selector(self, css_selector, message='', timeout=5):
-        """WebDriverWait for a selector to appear, fail test on timeout."""
+    def wait_for_element(self, presence_cond, message, timeout=5):
+        """WebDriverWait for an element to appear, fail test on timeout."""
         try:
             WebDriverWait(self.driver, 5).until(
-                ec.presence_of_element_located((
-                    By.CSS_SELECTOR, css_selector)))
+                ec.presence_of_element_located(presence_cond))
         except TimeoutException:
             if message:
-                message += '\n'
-            self.fail(
-                '{}No element matching selector {!r} found in {}s'.format(
-                    message, css_selector, timeout))
+                self.fail(message)
+            else:
+                self.fail(
+                    '{}No element matching condition {!r} found in {}s'.format(
+                        message, presence_cond, timeout))
+
+    def wait_for_selector(self, css_selector, message='', timeout=5):
+        """WebDriverWait for a selector to appear, fail test on timeout."""
+        if message:
+            message += '\n'
+        message = '{}No element matching selector {!r} found in {}s'.format(
+            message, css_selector, timeout)
+        self.wait_for_element(
+            (By.CSS_SELECTOR, css_selector), message=message, timeout=timeout)
+
+    def wait_for_partial_link_text(self, link_text, message='', timeout=5):
+        """WebDriverWait for a link to appear, fail test on timeout."""
+        if message:
+            message += '\n'
+        message = (
+            '{}No element matching partial link text '
+            '{!r} found in {}s').format(message, link_text, timeout)
+        self.wait_for_element((By.PARTIAL_LINK_TEXT, link_text),
+                              message=message, timeout=timeout)
