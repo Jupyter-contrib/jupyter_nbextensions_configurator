@@ -5,6 +5,7 @@ from __future__ import (
     absolute_import, division, print_function, unicode_literals,
 )
 
+import itertools
 import json
 import logging
 import os
@@ -21,8 +22,9 @@ from jupyter_nbextensions_configurator.application import (
     EnableJupyterNbextensionsConfiguratorApp,
     JupyterNbextensionsConfiguratorApp,
 )
-from testing_utils import patch_traitlets_app_logs
+from testing_utils import patch_traitlets_app_logs, get_logger
 from testing_utils.jupyter_env import patch_jupyter_dirs
+from jupyter_nbextensions_configurator.notebook_compat import serverextensions
 
 app_classes = (DisableJupyterNbextensionsConfiguratorApp,
                EnableJupyterNbextensionsConfiguratorApp,
@@ -41,6 +43,12 @@ def reset_app_class(app_class):
 
 class AppTest(TestCase):
     """Tests for the main app."""
+
+    @classmethod
+    def setup_class(cls):
+        cls.log = cls.log = get_logger(cls.__name__)
+        cls.log.handlers = []
+        cls.log.propagate = True
 
     def setUp(self):
         """Set up test fixtures for each test."""
@@ -144,3 +152,15 @@ class AppTest(TestCase):
     def test_05_system_install(self):
         """Check that install works correctly using --system flag."""
         self.check_install(argv=['--system'], dirs=self.jupyter_dirs['system'])
+
+    def test_06_argument_conflict(self):
+        """Check that install objects to multiple flags."""
+        conflicting_flags = ('--user', '--system', '--sys-prefix')
+        conflicting_flagsets = []
+        for nn in range(2, len(conflicting_flags) + 1):
+            conflicting_flagsets.extend(
+                itertools.combinations(conflicting_flags, nn))
+        for flagset in conflicting_flagsets:
+            self.log.info('testing conflicting flagset {}'.format(flagset))
+            nt.assert_raises(serverextensions.ArgumentConflict,
+                             main_app, ['enable'] + list(flagset))
