@@ -22,9 +22,9 @@ from jupyter_nbextensions_configurator.application import (
     EnableJupyterNbextensionsConfiguratorApp,
     JupyterNbextensionsConfiguratorApp,
 )
-from testing_utils import patch_traitlets_app_logs, get_logger
-from testing_utils.jupyter_env import patch_jupyter_dirs
 from jupyter_nbextensions_configurator.notebook_compat import serverextensions
+from testing_utils import get_logger, patch_traitlets_app_logs
+from testing_utils.jupyter_env import patch_jupyter_dirs
 
 app_classes = (DisableJupyterNbextensionsConfiguratorApp,
                EnableJupyterNbextensionsConfiguratorApp,
