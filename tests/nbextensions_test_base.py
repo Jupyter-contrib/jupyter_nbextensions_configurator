@@ -130,22 +130,29 @@ class NbextensionTestBase(NotebookTestBase):
         for ptch in cls.jupyter_patches:
             ptch.start()
 
-        cls.log = get_wrapped_logger(cls.__name__)
-        cls.pre_server_setup()
-        started = Event()
-        cls.notebook_thread = Thread(
-            target=cls.start_server_thread, args=[started])
-        cls.notebook_thread.start()
-        started.wait()
-        cls.wait_until_alive()
+        try:
+            # patches for items called in NotebookTestBase.teardown_class
+            # env_patch needs a start method as well because of a typo in
+            # notebook 4.0 which calls it in the teardown_class method
+            cls.env_patch = cls.path_patch = Mock(['start', 'stop'])
+            cls.home_dir = cls.config_dir = cls.data_dir = Mock(['cleanup'])
+            cls.runtime_dir = cls.notebook_dir = Mock(['cleanup'])
+
+            cls.log = get_wrapped_logger(cls.__name__)
+            cls.pre_server_setup()
+            started = Event()
+            cls.notebook_thread = Thread(
+                target=cls.start_server_thread, args=[started])
+            cls.notebook_thread.start()
+            started.wait()
+            cls.wait_until_alive()
+        except Exception:
+            remove_jupyter_dirs()
+            raise
 
     @classmethod
     def teardown_class(cls):
         try:
-            # patches for items called in NotebookTestBase.teardown_class:
-            cls.env_patch = cls.path_patch = Mock(['stop'])
-            cls.home_dir = cls.config_dir = cls.data_dir = Mock(['cleanup'])
-            cls.runtime_dir = cls.notebook_dir = Mock(['cleanup'])
             # call superclass to stop notebook server
             super(NbextensionTestBase, cls).teardown_class()
         finally:
