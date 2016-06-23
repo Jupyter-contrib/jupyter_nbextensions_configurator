@@ -170,3 +170,12 @@ For debugging, useful information can (sometimes) be found by:
 [this repo issues]: https://github.com/jcb91/jupyter_nbextensions_configurator/issues
 [gitter url]: https://gitter.im/jcb91/jupyter_nbextensions_configurator
 [javascript console howto]: webmasters.stackexchange.com/questions/8525/how-to-open-the-javascript-console-in-different-browsers
+
+
+CHANGELOG
+=========
+
+
+0.1.0
+-----
+First public release!
