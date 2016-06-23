@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Base TestCase classes for nbextensions tests."""
 
 from __future__ import (
     absolute_import, division, print_function, unicode_literals,
@@ -8,9 +9,6 @@ import logging
 import os
 from threading import Event, Thread
 
-import jupyter_core.paths
-from ipython_genutils.tempdir import TemporaryDirectory
-from nose.plugins.attrib import attr as nose_attr
 from nose.plugins.skip import SkipTest
 from notebook.notebookapp import NotebookApp
 from notebook.tests.launchnotebook import NotebookTestBase
@@ -20,14 +18,14 @@ from traitlets.traitlets import default
 
 from jupyter_nbextensions_configurator.notebook_compat import serverextensions
 from testing_utils import (
-    GlobalMemoryHandler, get_wrapped_logger, stringify_env,
-    wrap_logger_handlers,
+    GlobalMemoryHandler, get_wrapped_logger, wrap_logger_handlers,
 )
+from testing_utils.jupyter_env import patch_jupyter_dirs
 
 try:
-    from unittest.mock import patch  # py3
+    from unittest.mock import Mock
 except ImportError:
-    from mock import patch  # py2
+    from mock import Mock  # py2
 
 no_selenium = True
 try:
@@ -43,7 +41,7 @@ else:
 
 
 class NoseyNotebookApp(NotebookApp):
-    """Wrap the regular logging handler(s). for use inside nose tests."""
+    """Wrap the regular logging handler(s). For use inside nose tests."""
 
     @default('log')
     def _log_default(self):
@@ -75,24 +73,7 @@ class NbextensionTestBase(NotebookTestBase):
 
     @classmethod
     def pre_server_setup(cls):
-        """Setup a temporary environment in which to run a notebook server."""
-        cls.config_dir = TemporaryDirectory()
-        cls.data_dir = TemporaryDirectory()
-        cls.home_dir = TemporaryDirectory()
-        cls.notebook_dir = TemporaryDirectory()
-        cls.runtime_dir = TemporaryDirectory()
-
-        cls.env_patch = patch.dict('os.environ', stringify_env({
-            'HOME': cls.home_dir.name,
-            'IPYTHONDIR': os.path.join(cls.home_dir.name, '.ipython'),
-            'JUPYTER_DATA_DIR': cls.data_dir.name
-        }))
-        cls.env_patch.start()
-
-        cls.path_patch = patch.object(
-            jupyter_core.paths, 'SYSTEM_JUPYTER_PATH', [])
-        cls.path_patch.start()
-
+        """Setup extensions etc before running the notebook server."""
         # added to install things!
         cls.log.info('Enabling jupyter_nbextensions_configurator')
         inst_func = serverextensions.toggle_serverextension_python
@@ -108,10 +89,8 @@ class NbextensionTestBase(NotebookTestBase):
             port=cls.port,
             port_retries=0,
             open_browser=False,
-            config_dir=cls.config_dir.name,
-            data_dir=cls.data_dir.name,
-            runtime_dir=cls.runtime_dir.name,
-            notebook_dir=cls.notebook_dir.name,
+            runtime_dir=cls.jupyter_dirs['server']['runtime'],
+            notebook_dir=cls.jupyter_dirs['server']['notebook'],
             base_url=cls.url_prefix,
             config=cls.config,
         )
@@ -144,6 +123,13 @@ class NbextensionTestBase(NotebookTestBase):
     @classmethod
     def setup_class(cls):
         """Install things & setup a notebook server in a separate thread."""
+        (cls.jupyter_patches, cls.jupyter_dirs,
+         remove_jupyter_dirs) = patch_jupyter_dirs()
+        # store in a list to avoid confusion over bound/unbound method in pypy
+        cls.removal_funcs = [remove_jupyter_dirs]
+        for ptch in cls.jupyter_patches:
+            ptch.start()
+
         cls.log = get_wrapped_logger(cls.__name__)
         cls.pre_server_setup()
         started = Event()
@@ -153,8 +139,24 @@ class NbextensionTestBase(NotebookTestBase):
         started.wait()
         cls.wait_until_alive()
 
+    @classmethod
+    def teardown_class(cls):
+        try:
+            # patches for items called in NotebookTestBase.teardown_class:
+            cls.env_patch = cls.path_patch = Mock(['stop'])
+            cls.home_dir = cls.config_dir = cls.data_dir = Mock(['cleanup'])
+            cls.runtime_dir = cls.notebook_dir = Mock(['cleanup'])
+            # call superclass to stop notebook server
+            super(NbextensionTestBase, cls).teardown_class()
+        finally:
+            try:
+                for ptch in cls.jupyter_patches:
+                    ptch.stop()
+            finally:
+                for func in cls.removal_funcs:
+                    func()
 
-@nose_attr('js')
+
 class SeleniumNbextensionTestBase(NbextensionTestBase):
 
     @classmethod

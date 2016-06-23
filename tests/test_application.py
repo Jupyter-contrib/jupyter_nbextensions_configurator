@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests for the main themysto app."""
+"""Tests for the main app."""
 
 from __future__ import (
     absolute_import, division, print_function, unicode_literals,
@@ -8,16 +8,12 @@ from __future__ import (
 import json
 import logging
 import os
-import shutil
-import sys
-import tempfile
 from unittest import TestCase
 
 import jupyter_core.paths
 import nose.tools as nt
 from traitlets.config import Config
 from traitlets.tests.utils import check_help_all_output, check_help_output
-from traitlets.traitlets import default
 
 from jupyter_nbextensions_configurator.application import main as main_app
 from jupyter_nbextensions_configurator.application import (
@@ -25,13 +21,8 @@ from jupyter_nbextensions_configurator.application import (
     EnableJupyterNbextensionsConfiguratorApp,
     JupyterNbextensionsConfiguratorApp,
 )
-from jupyter_nbextensions_configurator.notebook_compat import nbextensions
-from testing_utils import stringify_env
-
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch  # py2
+from testing_utils import patch_traitlets_app_logs
+from testing_utils.jupyter_env import patch_jupyter_dirs
 
 app_classes = (DisableJupyterNbextensionsConfiguratorApp,
                EnableJupyterNbextensionsConfiguratorApp,
@@ -51,60 +42,14 @@ def reset_app_class(app_class):
 class AppTest(TestCase):
     """Tests for the main app."""
 
-    def make_dirs(self, base_dir):
-        """Return a dict of root, config and data directory paths."""
-        dirs = {
-            'root': os.path.join(self.test_dir, base_dir),
-            'conf': os.path.join(self.test_dir, base_dir, 'config'),
-            'data': os.path.join(self.test_dir, base_dir, 'data'),
-        }
-        if not os.path.exists(dirs['root']):
-            os.makedirs(dirs['root'])
-        return dirs
-
-    def remove_dirs(self):
-        """Remove any temporary directories created."""
-        shutil.rmtree(self.test_dir)
-
     def setUp(self):
-        """Set up test fixtures."""
-        self.test_dir = tempfile.mkdtemp(prefix='jupyter_')
-        self.patches = []
-
-        self.dirs = {
-            name: self.make_dirs(name) for name in (
-                'user_home', 'env_vars', 'system', 'sys_prefix', 'custom')}
-
-        self.patches.append(patch.dict('os.environ', stringify_env({
-            'HOME': self.dirs['user_home']['root'],
-            'JUPYTER_CONFIG_DIR': self.dirs['env_vars']['conf'],
-            'JUPYTER_DATA_DIR': self.dirs['env_vars']['data'],
-        })))
-
-        # find the appropriate modules to patch according to compat.
-        # Should include either
-        # notebook.nbextensions
-        # or
-        # jupyter_nbextensions_configurator.notebook_compat._compat.nbextensions
-        modules_to_patch = (
-            jupyter_core.paths,
-            sys.modules[nbextensions._get_config_dir.__module__])
-        path_patches = dict(
-            SYSTEM_CONFIG_PATH=[self.dirs['system']['conf']],
-            ENV_CONFIG_PATH=[self.dirs['sys_prefix']['conf']],
-            SYSTEM_JUPYTER_PATH=[self.dirs['system']['data']],
-            ENV_JUPYTER_PATH=[self.dirs['sys_prefix']['data']],
-        )
-        for mod in modules_to_patch:
-            applicable_patches = {
-                attrname: newval for attrname, newval in path_patches.items()
-                if hasattr(mod, attrname)}
-            self.patches.append(patch.multiple(mod, **applicable_patches))
-
-        for ptch in self.patches:
+        """Set up test fixtures for each test."""
+        (jupyter_patches, self.jupyter_dirs,
+         remove_jupyter_dirs) = patch_jupyter_dirs()
+        for ptch in jupyter_patches:
             ptch.start()
             self.addCleanup(ptch.stop)
-        self.addCleanup(self.remove_dirs)
+        self.addCleanup(remove_jupyter_dirs)
 
         for klass in app_classes:
             patch_traitlets_app_logs(klass)
@@ -189,12 +134,13 @@ class AppTest(TestCase):
 
     def test_03_user_install(self):
         """Check that install works correctly using --user flag."""
-        self.check_install(argv=['--user'], dirs=self.dirs['env_vars'])
+        self.check_install(argv=['--user'], dirs=self.jupyter_dirs['env_vars'])
 
     def test_04_sys_prefix_install(self):
         """Check that install works correctly using --sys-prefix flag."""
-        self.check_install(argv=['--sys-prefix'], dirs=self.dirs['sys_prefix'])
+        self.check_install(
+            argv=['--sys-prefix'], dirs=self.jupyter_dirs['sys_prefix'])
 
     def test_05_system_install(self):
         """Check that install works correctly using --system flag."""
-        self.check_install(argv=['--system'], dirs=self.dirs['system'])
+        self.check_install(argv=['--system'], dirs=self.jupyter_dirs['system'])
