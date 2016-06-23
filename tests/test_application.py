@@ -71,21 +71,6 @@ class AppTest(TestCase):
         self.test_dir = tempfile.mkdtemp(prefix='jupyter_')
         self.patches = []
 
-        # patch the App methods which returns the default logs
-        def patch_klass_logs(klass):
-            @default('log')
-            def new_default_log(self):
-                logger = super(klass, self)._log_default()
-                # clear log handlers and propagate to root for nose to capture
-                logger.propagate = True
-                logger.handlers = []
-                return logger
-            klass._log_default = new_default_log
-            klass.log_level.default_value = logging.DEBUG
-
-        for klass in app_classes:
-            patch_klass_logs(klass)
-
         self.dirs = {
             name: self.make_dirs(name) for name in (
                 'user_home', 'env_vars', 'system', 'sys_prefix', 'custom')}
@@ -120,6 +105,10 @@ class AppTest(TestCase):
             ptch.start()
             self.addCleanup(ptch.stop)
         self.addCleanup(self.remove_dirs)
+
+        for klass in app_classes:
+            patch_traitlets_app_logs(klass)
+            klass.log_level.default_value = logging.DEBUG
 
     def check_install(self, argv=None, dirs=None):
         """Check files were installed in the correct place."""
