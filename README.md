@@ -172,8 +172,8 @@ For debugging, useful information can (sometimes) be found by:
 [javascript console howto]: webmasters.stackexchange.com/questions/8525/how-to-open-the-javascript-console-in-different-browsers
 
 
-CHANGELOG
-=========
+Changes
+=======
 
 
 0.1.0
