@@ -7,10 +7,10 @@ cache:
   - '%LOCALAPPDATA%\pip\Cache'
 environment:
   COVERALLS_REPO_TOKEN:
-    secure: vTJ+1pZImRjZSGK9EPW1AHiSbB4TSUy24ebsdTtk4syvYTey2cjc+KXe3rnBc9EK
-  SAUCE_USERNAME: jcb91
+    secure: S3EBGxvldWiG3LObRlB3lqqg4pABw3OzBtwu/4OiJOYRwls5DokJjXTT8N0wbCmW
+  SAUCE_USERNAME: jupyter-contrib
   SAUCE_ACCESS_KEY:
-    secure: sZFZZTfDscyqemIjZBN6nTGVnydd6oSJJ0R5Mt7+tm8Nz3smvkFwMWlI5dzAA5jM
+    secure: B5VK1YhWE9WmgkdCa3cLBPXIM0u3qBnV1jg8LgAI0tQYmQgl+URn5Y3LTHUaD9GX
   matrix:
 
     - TOXENV: 'py27-notebook'

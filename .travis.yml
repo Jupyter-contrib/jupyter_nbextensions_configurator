@@ -1,4 +1,4 @@
-# http://travis-ci.org/#!/jcb91/jupyter_nbextensions_configurator
+# http://travis-ci.org/#!/jupyter-contrib/jupyter_nbextensions_configurator
 language: python
 sudo: false
 addons:
@@ -57,9 +57,9 @@ env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
-    - SAUCE_USERNAME=jcb91
+    - SAUCE_USERNAME=jupyter-contrib
     # sauce access key
-    - secure: "eOtQauIuEGnKazIJ2qQTVxnPiiQJR1KXhRiVWGgKAHojrFcV3+RS0AfLalokfOlwxrjBQg2kQwpYZ7b1EeVfxvs0hyjicDm3wpluf36/b3oh8O/kPP87gfd62bDaiYaamN9cHUzFA0a8Qcfla5GRsOcqUzdTfhV2tAZRqTiAjyvdEomtDlcJFnHdB65SJOW6yatBeGakzUmKG9TR6ZQAfTthAFF9Ud4nP6BT6RkOjzThg4SzZZbyc/wKEVNgkS5S8R3D/vx59remkeTW7q54dbzAFtrvOLXzLHydd35xuef1PB9xsgvrGmv7bCsSH01cArl7lOk18vIGps35JzkoScFVyaK6xFLscvaHPykbVDC0+sUgRJkdrLXGmQP13ZQSH1iZoq3anbMFnood8p5qgtPve1oMY8ctsMLvjvE/+56Cze64MleZZzXrgSqOT3Tr0qWI4IpHKMlUeGTrDumC9EvIRmlGys9C8Vl6BTgNFALZpizVDpcnGCYqA9dZZ5BVharuExy+ddnbx6YuWYzhOkeZkjUpRm/Us12Skh5/uqBMfLzyBLp40rSKXl3IOjjOTktAJC7ZGtyMKmtE1ruQvxvjMYCLkhibA3pAmV1E+RDwMH0WNNxhyHOgXZLZVtkMKp4KHjMmf8UjHt9CBwYo996jyVpATWzGx3nITdvlVLc="
+    - secure: "ZwWiciHICZsrYzAMEgy8QIt31/eBLoqBr6Q9O+SiDq/ZVIsVKJmN+w300xnyxfW/MHEPuXwNA4HCOXmg0v9I4PFmBdBmc6OtvoDP7X+hc86QY6br7iUj0Bt4bx/GS2jqAlMKI84y1z9Ut+Z+sxJrGL1wIVJV66InCBuqdI8j9MjoQFfymGGVaOF4UDsdfxuzFAzz+ndKAkXyAwgpSFUbbKQ9G4swHUh0wfOvLiDE1vxeTPpwdlXbfckv++gMgwTYmDvojHpM6E3oa7TNZ6/9x5lPCs2FKYHZDFC0BLfxx74AZE+JbS61q4cumM0DgZrCP1z436zPCxljbYtasKlLTVlS0uiDtrybiIoNM//S3NNL4V0KGMvEijnYzEB16o1sRIgIi5mF2tpOqNAQTGMDI2hup+OPbrYbA6wtyyame4yxQab37g2pTUv4B9aLk9RXCIgT9jGOFn+S2cB2e/Z9eXSunVRKgMfmAcZWxg9KjrmKuyDQgyfeio1+C0HwnqCKEHC3jQfo1pVII5u3isOAe3lqZzrbqPMhPdbNQ1zFXRrbV2xU10UySTY1XmKIxtKEfBU54nofODkobLPrAugbS1r6mlI2/obeyHXELWpIxD5frvvIYBtYj8opRK9481ROZGy2TXevlCQDWuOxOlCeNTK2nIhWvNECjOThYCEMDDQ="
 before_install:
   - uname -a
   - id -un
