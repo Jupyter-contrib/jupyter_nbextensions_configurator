@@ -1,19 +1,11 @@
 Jupyter Nbextensions Configurator
 =================================
 
-[![Join the chat at https://gitter.im/jcb91/jupyter_nbextensions_configurator](https://img.shields.io/gitter/room/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://gitter.im/jcb91/jupyter_nbextensions_configurator?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![GitHub issues](https://img.shields.io/github/issues/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://github.com/jcb91/jupyter_nbextensions_configurator/issues)
-
-[![Travis-CI Build Status](https://img.shields.io/travis/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600&label=Travis)](https://travis-ci.org/jcb91/jupyter_nbextensions_configurator)
-[![Appveyor Build status](https://img.shields.io/appveyor/ci/jcb91/jupyter-nbextensions-configurator.svg?maxAge=3600&label=Appveyor)](https://ci.appveyor.com/project/jcb91/jupyter-nbextensions-configurator)
-[![Coveralls python test coverage](https://img.shields.io/coveralls/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Coveralls)](https://coveralls.io/github/jcb91/jupyter_nbextensions_configurator)
-[![Codecov python test coverage](https://img.shields.io/codecov/c/github/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Codecov)](https://codecov.io/gh/jcb91/jupyter_nbextensions_configurator)
-
-[![PyPI](https://img.shields.io/pypi/v/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://pypi.python.org/pypi/jupyter_nbextensions_configurator)
-[![PyPI](https://img.shields.io/pypi/dm/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://pypi.python.org/pypi/jupyter_nbextensions_configurator)
-
-[![GitHub tag](https://img.shields.io/github/tag/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://github.com/jcb91/jupyter_nbextensions_configurator)
-[![Github All Releases](https://img.shields.io/github/downloads/jcb91/jupyter_nbextensions_configurator/total.svg?maxAge=3600)](https://github.com/jcb91/jupyter_nbextensions_configurator)
+[![Join the chat at https://gitter.im/jcb91/jupyter_nbextensions_configurator](https://img.shields.io/gitter/room/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://gitter.im/jcb91/jupyter_nbextensions_configurator?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![GitHub issues](https://img.shields.io/github/issues/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://github.com/jcb91/jupyter_nbextensions_configurator/issues)
+<br/>
+[![Travis-CI Build Status](https://img.shields.io/travis/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600&label=Travis)](https://travis-ci.org/jcb91/jupyter_nbextensions_configurator) [![Appveyor Build status](https://img.shields.io/appveyor/ci/jcb91/jupyter-nbextensions-configurator.svg?maxAge=3600&label=Appveyor)](https://ci.appveyor.com/project/jcb91/jupyter-nbextensions-configurator) [![Coveralls python test coverage](https://img.shields.io/coveralls/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Coveralls)](https://coveralls.io/github/jcb91/jupyter_nbextensions_configurator) [![Codecov python test coverage](https://img.shields.io/codecov/c/github/jcb91/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Codecov)](https://codecov.io/gh/jcb91/jupyter_nbextensions_configurator)
+<br/>
+[![GitHub tag](https://img.shields.io/github/tag/jcb91/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://github.com/jcb91/jupyter_nbextensions_configurator) [![Github All Releases](https://img.shields.io/github/downloads/jcb91/jupyter_nbextensions_configurator/total.svg?maxAge=3600)](https://github.com/jcb91/jupyter_nbextensions_configurator) [![PyPI](https://img.shields.io/pypi/v/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://pypi.python.org/pypi/jupyter_nbextensions_configurator) [![PyPI](https://img.shields.io/pypi/dm/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://pypi.python.org/pypi/jupyter_nbextensions_configurator)
 
 A server extension for [jupyter notebook](https://github.com/jupyter/notebook)
 which provides configuration interfaces for notebook extensions (nbextensions).
@@ -21,7 +13,7 @@ which provides configuration interfaces for notebook extensions (nbextensions).
 The `jupyter_nbextensions_configurator` jupyter server extension provides
 graphical user interfaces for configuring which nbextensions are enabled
 (load automatically for every notebook), and display their readme files.
-In addition, for extensions which include an appropriate yaml descripor file
+In addition, for extensions which include an appropriate yaml descriptor file
 (see below), the interface also provides controls to configure the extensions'
 options.
 
@@ -56,7 +48,6 @@ If you have a non-default base url (such as with JupyterHub), you'll need to
 prepend it to the url. So, if your dashboard is at
 
     http://localhost:8888/custom/base/url/tree
-
 
 then you'll find the configurator UI page at
 
@@ -138,7 +129,7 @@ If you encounter problems with this server extension, you can:
 For debugging, useful information can (sometimes) be found by:
 
  * Checking for error messages in the browser's [JavaScript console][javascript console howto].
- * Checking for messages in the notebook server's logs. This is partiularly useful when the server is run with the `--debug` flag, to get as many logs as possible.
+ * Checking for messages in the notebook server's logs. This is particularly useful when the server is run with the `--debug` flag, to get as many logs as possible.
 
 [this repo]: https://github.com/jcb91/jupyter_nbextensions_configurator
 [this repo issues]: https://github.com/jcb91/jupyter_nbextensions_configurator/issues
