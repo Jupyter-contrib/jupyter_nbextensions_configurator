@@ -49,7 +49,6 @@ the interface also provides controls to configure the extensions' options.
         ],
         extras_require={
             'test': [
-                'ipython_genutils',
                 'nose',
                 'requests',
                 'selenium',

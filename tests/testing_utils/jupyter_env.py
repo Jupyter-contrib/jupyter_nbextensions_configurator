@@ -42,10 +42,9 @@ def patch_jupyter_dirs():
     appropriate.
     """
     test_dir = tempfile.mkdtemp(prefix='jupyter_')
-    jupyter_patches = []
-
     jupyter_dirs = {name: make_dirs(test_dir, name) for name in (
         'user_home', 'env_vars', 'system', 'sys_prefix', 'custom', 'server')}
+    jupyter_dirs['root'] = test_dir
 
     for name in ('notebook', 'runtime'):
         d = jupyter_dirs['server'][name] = os.path.join(
@@ -54,6 +53,7 @@ def patch_jupyter_dirs():
             os.makedirs(d)
 
     # patch relevant environment variables
+    jupyter_patches = []
     jupyter_patches.append(
         patch.dict('os.environ', stringify_env({
             'HOME': jupyter_dirs['user_home']['root'],

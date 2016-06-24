@@ -12,7 +12,6 @@ import time
 
 import nose.tools as nt
 import yaml
-from ipython_genutils.tempdir import TemporaryDirectory
 from notebook.utils import url_path_join
 
 import jupyter_nbextensions_configurator
@@ -121,14 +120,14 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
     @classmethod
     def add_dodgy_yaml_files(cls):
         """Add in dodgy yaml files in an extra nbextensions dir."""
-        dodgy_nbext_dir = cls.dodgy_nbext_dir = TemporaryDirectory()
-        dodgy_nbext_dir_path = os.path.join(
-            dodgy_nbext_dir.name, 'dodgy_nbextensions')
-        os.mkdir(dodgy_nbext_dir_path)
+        cls.jupyter_dirs['dodgy'] = {
+            'nbexts': os.path.join(cls.jupyter_dirs['root'], 'dodgy', 'nbext')}
+        dodgy_nbext_dir_path = cls.jupyter_dirs['dodgy']['nbexts']
+        os.makedirs(dodgy_nbext_dir_path)
         cls.config.NotebookApp.setdefault(
             'extra_nbextensions_path', []).append(dodgy_nbext_dir_path)
 
-        # an invlaid yaml file
+        # an invalid yaml file
         yaml_path_invalid = os.path.join(
             dodgy_nbext_dir_path, 'nbext_invalid_yaml.yaml')
         with io.open(yaml_path_invalid, 'w') as f:
