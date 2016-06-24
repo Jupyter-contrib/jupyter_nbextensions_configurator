@@ -1,8 +1,3 @@
-// Copyright (c) IPython-Contrib Team.
-// Distributed under the terms of the Modified BSD License.
-
-// Show notebook extension configuration
-
 define([
     'jquery',
     'require',

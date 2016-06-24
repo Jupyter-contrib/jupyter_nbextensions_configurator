@@ -1,8 +1,3 @@
-// Copyright (c) IPython-Contrib Team.
-// Distributed under the terms of the Modified BSD License.
-
-// Render markdown url
-
 define([
     'require',
     'jquery',

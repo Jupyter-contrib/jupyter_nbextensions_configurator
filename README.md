@@ -132,7 +132,7 @@ The case-sensitive keys in the yaml file are as follows:
 Example:
 
 ```yaml
-Type: IPython Notebook Extension
+Type: Jupyter Notebook Extension
 Name: Limit Output
 Description: This extension limits the number of characters that can be printed below a codecell
 Link: readme.md

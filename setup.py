@@ -24,7 +24,7 @@ In addition, for extensions which include an appropriate yaml descriptor file,
 the interface also provides controls to configure the extensions' options.
 """,
         version='0.1.0',
-        author='jcb91, IPython-contrib Developers',
+        author='jcb91, jupyter-contrib developers',
         author_email='joshuacookebarnes@gmail.com',
         url='https://github.com/jcb91/jupyter_nbextensions_configurator',
         download_url=('https://github.com/'
