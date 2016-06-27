@@ -77,6 +77,7 @@ the interface also provides controls to configure the extensions' options.
             'Operating System :: OS Independent',
             'Programming Language :: JavaScript',
             'Programming Language :: Python',
+            'Programming Language :: Python :: 3',
             'Topic :: Utilities',
         ],
     )

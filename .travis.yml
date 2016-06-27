@@ -57,9 +57,9 @@ env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
-    - SAUCE_USERNAME=jupyter-contrib
+    - SAUCE_USERNAME=nbext_configurator
     # sauce access key
-    - secure: "ZwWiciHICZsrYzAMEgy8QIt31/eBLoqBr6Q9O+SiDq/ZVIsVKJmN+w300xnyxfW/MHEPuXwNA4HCOXmg0v9I4PFmBdBmc6OtvoDP7X+hc86QY6br7iUj0Bt4bx/GS2jqAlMKI84y1z9Ut+Z+sxJrGL1wIVJV66InCBuqdI8j9MjoQFfymGGVaOF4UDsdfxuzFAzz+ndKAkXyAwgpSFUbbKQ9G4swHUh0wfOvLiDE1vxeTPpwdlXbfckv++gMgwTYmDvojHpM6E3oa7TNZ6/9x5lPCs2FKYHZDFC0BLfxx74AZE+JbS61q4cumM0DgZrCP1z436zPCxljbYtasKlLTVlS0uiDtrybiIoNM//S3NNL4V0KGMvEijnYzEB16o1sRIgIi5mF2tpOqNAQTGMDI2hup+OPbrYbA6wtyyame4yxQab37g2pTUv4B9aLk9RXCIgT9jGOFn+S2cB2e/Z9eXSunVRKgMfmAcZWxg9KjrmKuyDQgyfeio1+C0HwnqCKEHC3jQfo1pVII5u3isOAe3lqZzrbqPMhPdbNQ1zFXRrbV2xU10UySTY1XmKIxtKEfBU54nofODkobLPrAugbS1r6mlI2/obeyHXELWpIxD5frvvIYBtYj8opRK9481ROZGy2TXevlCQDWuOxOlCeNTK2nIhWvNECjOThYCEMDDQ="
+    - secure: "QZb4I+/3mFnc826CdstgYTFrmcvIkXiGmp3tkL9FLLPOEN2MHxPauKZ5J0qnzhIkug9mhCz68GBTlxMU4CpfLXWnKNDV85x1H+TI5K2qLaAPFjL9o7DOvAZW5EmMYac3Vgb022iXy/IbmZOjv9jyNzkqCrLqAaWriyo3c0+J6Onj+Q5JG5HjiJqlLhF9/yzsbqhlFmV42MqpZP3PTXEgrJZlwjNYK9DoBrmNg0Oq2rWoa6qMsaVrC0wiDAclx7PQOQRHr/ocbzAmqqSrBhjZdeRnFNiKiuVLfOr4fq5VLKYkFlSNKp91WzVDWKySXf+gp/zzTM5BCIgawuAD5i3z4cM9JqNGEYyod63QNlR6h04jYuUd6Y6y+5fqkx0uW8CiZtLwU8B4aifcNMMpdSg4eGMVnKsOMB/TcNQ9/4ZN2JijjCPk4x0bSYSJmSNcdPtQS39dXVUuVNRAN9fPrmIRAfmS4/MU2BlHz0OlMfxucby2FyYVI1ng8suc8/xRJMws3qrUlO6HYDGzdOko913/m11HCxinunLVCEfo+kLz2RGWz5aZfVUWuSf/D5jKP5GiIKb1wIV6syfOeNzGzEwu2VPuQ2NVlNshVXAi0+mkEqPHIO9yIDoyF2ktTl1KEKGQjPiz57MBRj2Zr8bNx2GigFpeEHkaxEmqyHgNaF7bJ+E="
 before_install:
   - uname -a
   - id -un
@@ -87,9 +87,9 @@ install:
 before_script:
   # from https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
   #  we need to start xvfb for selenium to work correctly
-  - 'if [ -n "${SAUCE_ACCESS_KEY}" ]; then export DISPLAY=:99.0; fi'
-  - 'if [ -n "${SAUCE_ACCESS_KEY}" ]; then sh -e /etc/init.d/xvfb start; fi'
-  - 'if [ -n "${SAUCE_ACCESS_KEY}" ]; then sleep 3; fi # give xvfb some time to start'
+  - 'if [[ ${TOXENV} == py* ]] && [[ ${TRAVIS_OS_NAME} == "linux" ]]; then export DISPLAY=:99.0; fi'
+  - 'if [[ ${TOXENV} == py* ]] && [[ ${TRAVIS_OS_NAME} == "linux" ]]; then sh -e /etc/init.d/xvfb start; fi'
+  - 'if [[ ${TOXENV} == py* ]] && [[ ${TRAVIS_OS_NAME} == "linux" ]]; then sleep 3; fi # give xvfb some time to start'
 script:
   - tox -v -e ${TOXENV}
 after_script:

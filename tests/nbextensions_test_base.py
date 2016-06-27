@@ -175,7 +175,8 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
             raise SkipTest("Don't do selenium tests on travis osx")
         super(SeleniumNbextensionTestBase, cls).setup_class()
 
-        if os.environ.get('CI') and os.environ.get('TRAVIS'):
+        if (os.environ.get('CI') and os.environ.get('TRAVIS') and
+                os.environ.get('SAUCE_ACCESS_KEY')):
             cls.log.info('Running in CI environment. Using Sauce.')
             username = os.environ['SAUCE_USERNAME']
             access_key = os.environ['SAUCE_ACCESS_KEY']
