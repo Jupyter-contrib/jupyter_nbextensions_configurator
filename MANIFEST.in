@@ -5,6 +5,7 @@ include tox.ini
 include .bumpversion.cfg
 
 # explicit excludes
+exclude .codecov.yml
 exclude .travis.yml
 exclude appveyor.yml
 
