@@ -63,8 +63,8 @@ class AppTest(TestCase):
             patch_traitlets_app_logs(klass)
             klass.log_level.default_value = logging.DEBUG
 
-    def check_install(self, argv=None, dirs=None):
-        """Check files were installed in the correct place."""
+    def check_enable(self, argv=None, dirs=None):
+        """Check files were enabled in the correct place."""
         if argv is None:
             argv = []
         if dirs is None:
@@ -74,46 +74,46 @@ class AppTest(TestCase):
             }
         conf_dir = dirs['conf']
 
-        # do install
+        # do enable
         main_app(argv=['enable'] + argv)
 
-        # list everything that got installed
-        installed_files = []
+        # list everything that got enabled
+        created_files = []
         for root, subdirs, files in os.walk(dirs['conf']):
-            installed_files.extend([os.path.join(root, f) for f in files])
+            created_files.extend([os.path.join(root, f) for f in files])
         nt.assert_true(
-            installed_files,
-            'Install should create files in {}'.format(dirs['conf']))
+            created_files,
+            'enable should create files in {}'.format(dirs['conf']))
 
         # a bit of a hack to allow initializing a new app instance
         for klass in app_classes:
             reset_app_class(klass)
 
-        # do uninstall
+        # do disable
         main_app(argv=['disable'] + argv)
         # check the config directory
-        conf_installed = [
-            path for path in installed_files
+        conf_enabled = [
+            path for path in created_files
             if path.startswith(conf_dir) and os.path.exists(path)]
-        for path in conf_installed:
+        for path in conf_enabled:
             with open(path, 'r') as f:
                 conf = Config(json.load(f))
             nbapp = conf.get('NotebookApp', {})
             nt.assert_not_in(
                 'jupyter_nbextensions_configurator',
                 nbapp.get('server_extensions', []),
-                'Uninstall should empty'
+                'conf after disable should empty'
                 'server_extensions list'.format(path))
             nbservext = nbapp.get('nbserver_extensions', {})
             nt.assert_false(
                 {k: v for k, v in nbservext.items() if v},
-                'Uninstall should disable all '
+                'disable command should disable all '
                 'nbserver_extensions in file {}'.format(path))
             confstrip = {}
             confstrip.update(conf)
             confstrip.pop('NotebookApp', None)
             confstrip.pop('version', None)
-            nt.assert_false(confstrip, 'Uninstall should leave config empty.')
+            nt.assert_false(confstrip, 'disable should leave config empty.')
 
         reset_app_class(DisableJupyterNbextensionsConfiguratorApp)
 
@@ -136,25 +136,25 @@ class AppTest(TestCase):
         with nt.assert_raises(SystemExit):
             main_app([])
 
-    def test_02_default_install(self):
-        """Check that install works correctly using defaults."""
-        self.check_install()
+    def test_02_default_enable(self):
+        """Check that enable works correctly using defaults."""
+        self.check_enable()
 
-    def test_03_user_install(self):
-        """Check that install works correctly using --user flag."""
-        self.check_install(argv=['--user'], dirs=self.jupyter_dirs['env_vars'])
+    def test_03_user_enable(self):
+        """Check that enable works correctly using --user flag."""
+        self.check_enable(argv=['--user'], dirs=self.jupyter_dirs['env_vars'])
 
-    def test_04_sys_prefix_install(self):
-        """Check that install works correctly using --sys-prefix flag."""
-        self.check_install(
+    def test_04_sys_prefix_enable(self):
+        """Check that enable works correctly using --sys-prefix flag."""
+        self.check_enable(
             argv=['--sys-prefix'], dirs=self.jupyter_dirs['sys_prefix'])
 
-    def test_05_system_install(self):
-        """Check that install works correctly using --system flag."""
-        self.check_install(argv=['--system'], dirs=self.jupyter_dirs['system'])
+    def test_05_system_enable(self):
+        """Check that enable works correctly using --system flag."""
+        self.check_enable(argv=['--system'], dirs=self.jupyter_dirs['system'])
 
     def test_06_argument_conflict(self):
-        """Check that install objects to multiple flags."""
+        """Check that enable objects to multiple flags."""
         conflicting_flags = ('--user', '--system', '--sys-prefix')
         conflicting_flagsets = []
         for nn in range(2, len(conflicting_flags) + 1):
