@@ -166,11 +166,15 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
-
-0.1.0
+0.1.2
 -----
-First public release!
+* Replace references to CI and other services attached to `jcb91` in favour of
+  [`Jupyter-contrib` repository][this repo url] versions, where possible.
 
 0.1.1
 -----
 Remove tests dependency on `ipython_genutils`
+
+0.1.0
+-----
+First public release!
