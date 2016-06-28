@@ -5,9 +5,9 @@ include tox.ini
 
 # explicit excludes
 exclude .bumpversion.cfg
-exclude .codecov.yml
 exclude .travis.yml
 exclude appveyor.yml
+exclude codecov.yml
 
 prune conda.recipe
 graft src
