@@ -15,6 +15,10 @@ matrix:
     - os: linux
       python: '3.4'
       env: TOXENV=lint
+    # conda build/install works
+    - os: linux
+      python: '3.4'
+      env: TOXENV=condarecipe
     # linux, various python and notebook versions
     - os: linux
       python: '3.4'
@@ -81,6 +85,15 @@ before_install:
   - 'if [[ ${TRAVIS_OS_NAME} != "linux" ]]; then unset SAUCE_USERNAME && unset SAUCE_ACCESS_KEY && echo unset; fi'
   # don't need sauce for builds which don't start with 'py'
   - 'if [[ ${TOXENV} != py* ]]; then unset SAUCE_USERNAME && unset SAUCE_ACCESS_KEY && echo unset; fi'
+  # stuff for conda recipe
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then bash miniconda.sh -b -p $HOME/miniconda; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then export PATH="$HOME/miniconda/bin:$PATH"; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then hash -r; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda config --set always_yes yes --set changeps1 no; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda update -q conda; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda info -a; fi  # Useful for debugging any issues with conda'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda install conda-build; fi'
 install:
   - pip install tox
   - virtualenv --version
@@ -95,7 +108,7 @@ script:
 after_script:
   # test if TOXENV not in set
   # see http://unix.stackexchange.com/a/111518
-  - 'if ! [[ ${TOXENV} =~ ^(appveyorartifacts|check)$ ]]; then tox -e coveralls,codecov; fi'
+  - 'if ! [[ ${TOXENV} =~ ^(appveyorartifacts|check|lint|condarecipe)$ ]]; then tox -e coveralls,codecov; fi'
 after_failure:
   - more .tox/log/* | cat
   - more .tox/*/log/* | cat
