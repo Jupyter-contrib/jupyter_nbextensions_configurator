@@ -1,4 +1,4 @@
-# http://travis-ci.org/#!/jcb91/jupyter_nbextensions_configurator
+# http://travis-ci.org/#!/jupyter-contrib/jupyter_nbextensions_configurator
 language: python
 sudo: false
 addons:
@@ -57,9 +57,9 @@ env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
-    - SAUCE_USERNAME=jcb91
+    - SAUCE_USERNAME=nbext_configurator
     # sauce access key
-    - secure: "eOtQauIuEGnKazIJ2qQTVxnPiiQJR1KXhRiVWGgKAHojrFcV3+RS0AfLalokfOlwxrjBQg2kQwpYZ7b1EeVfxvs0hyjicDm3wpluf36/b3oh8O/kPP87gfd62bDaiYaamN9cHUzFA0a8Qcfla5GRsOcqUzdTfhV2tAZRqTiAjyvdEomtDlcJFnHdB65SJOW6yatBeGakzUmKG9TR6ZQAfTthAFF9Ud4nP6BT6RkOjzThg4SzZZbyc/wKEVNgkS5S8R3D/vx59remkeTW7q54dbzAFtrvOLXzLHydd35xuef1PB9xsgvrGmv7bCsSH01cArl7lOk18vIGps35JzkoScFVyaK6xFLscvaHPykbVDC0+sUgRJkdrLXGmQP13ZQSH1iZoq3anbMFnood8p5qgtPve1oMY8ctsMLvjvE/+56Cze64MleZZzXrgSqOT3Tr0qWI4IpHKMlUeGTrDumC9EvIRmlGys9C8Vl6BTgNFALZpizVDpcnGCYqA9dZZ5BVharuExy+ddnbx6YuWYzhOkeZkjUpRm/Us12Skh5/uqBMfLzyBLp40rSKXl3IOjjOTktAJC7ZGtyMKmtE1ruQvxvjMYCLkhibA3pAmV1E+RDwMH0WNNxhyHOgXZLZVtkMKp4KHjMmf8UjHt9CBwYo996jyVpATWzGx3nITdvlVLc="
+    - secure: "QZb4I+/3mFnc826CdstgYTFrmcvIkXiGmp3tkL9FLLPOEN2MHxPauKZ5J0qnzhIkug9mhCz68GBTlxMU4CpfLXWnKNDV85x1H+TI5K2qLaAPFjL9o7DOvAZW5EmMYac3Vgb022iXy/IbmZOjv9jyNzkqCrLqAaWriyo3c0+J6Onj+Q5JG5HjiJqlLhF9/yzsbqhlFmV42MqpZP3PTXEgrJZlwjNYK9DoBrmNg0Oq2rWoa6qMsaVrC0wiDAclx7PQOQRHr/ocbzAmqqSrBhjZdeRnFNiKiuVLfOr4fq5VLKYkFlSNKp91WzVDWKySXf+gp/zzTM5BCIgawuAD5i3z4cM9JqNGEYyod63QNlR6h04jYuUd6Y6y+5fqkx0uW8CiZtLwU8B4aifcNMMpdSg4eGMVnKsOMB/TcNQ9/4ZN2JijjCPk4x0bSYSJmSNcdPtQS39dXVUuVNRAN9fPrmIRAfmS4/MU2BlHz0OlMfxucby2FyYVI1ng8suc8/xRJMws3qrUlO6HYDGzdOko913/m11HCxinunLVCEfo+kLz2RGWz5aZfVUWuSf/D5jKP5GiIKb1wIV6syfOeNzGzEwu2VPuQ2NVlNshVXAi0+mkEqPHIO9yIDoyF2ktTl1KEKGQjPiz57MBRj2Zr8bNx2GigFpeEHkaxEmqyHgNaF7bJ+E="
 before_install:
   - uname -a
   - id -un
@@ -87,9 +87,9 @@ install:
 before_script:
   # from https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
   #  we need to start xvfb for selenium to work correctly
-  - 'if [ -n "${SAUCE_ACCESS_KEY}" ]; then export DISPLAY=:99.0; fi'
-  - 'if [ -n "${SAUCE_ACCESS_KEY}" ]; then sh -e /etc/init.d/xvfb start; fi'
-  - 'if [ -n "${SAUCE_ACCESS_KEY}" ]; then sleep 3; fi # give xvfb some time to start'
+  - 'if [[ ${TOXENV} == py* ]] && [[ ${TRAVIS_OS_NAME} == "linux" ]]; then export DISPLAY=:99.0; fi'
+  - 'if [[ ${TOXENV} == py* ]] && [[ ${TRAVIS_OS_NAME} == "linux" ]]; then sh -e /etc/init.d/xvfb start; fi'
+  - 'if [[ ${TOXENV} == py* ]] && [[ ${TRAVIS_OS_NAME} == "linux" ]]; then sleep 3; fi # give xvfb some time to start'
 script:
   - tox -v -e ${TOXENV}
 after_script:
