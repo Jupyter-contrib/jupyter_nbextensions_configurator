@@ -9,18 +9,17 @@ import logging
 import os
 from threading import Event, Thread
 
+from jupyter_contrib_core.notebook_compat import serverextensions
+from jupyter_contrib_core.testing_utils import (
+    GlobalMemoryHandler, get_wrapped_logger, wrap_logger_handlers,
+)
+from jupyter_contrib_core.testing_utils.jupyter_env import patch_jupyter_dirs
 from nose.plugins.skip import SkipTest
 from notebook.notebookapp import NotebookApp
 from notebook.tests.launchnotebook import NotebookTestBase
 from tornado.ioloop import IOLoop
 from traitlets.config import Config
 from traitlets.traitlets import default
-
-from jupyter_nbextensions_configurator.notebook_compat import serverextensions
-from testing_utils import (
-    GlobalMemoryHandler, get_wrapped_logger, wrap_logger_handlers,
-)
-from testing_utils.jupyter_env import patch_jupyter_dirs
 
 try:
     from unittest.mock import Mock

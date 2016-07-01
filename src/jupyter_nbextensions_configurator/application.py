@@ -9,10 +9,9 @@ from __future__ import print_function
 import copy
 import sys
 
+from jupyter_contrib_core.notebook_compat import nbextensions, serverextensions
+
 from jupyter_nbextensions_configurator import __version__
-from jupyter_nbextensions_configurator.notebook_compat import (
-    nbextensions, serverextensions,
-)
 
 
 class ToggleJupyterNbextensionsConfiguratorApp(

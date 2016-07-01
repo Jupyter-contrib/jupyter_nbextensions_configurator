@@ -18,6 +18,7 @@ requirements:
     - setuptools
   run:
     - python
+    - jupyter_contrib_core
     - jupyter_core
     - nbconvert
     - notebook >=4.0
@@ -29,12 +30,6 @@ test:
   imports:
     - jupyter_nbextensions_configurator
     - jupyter_nbextensions_configurator.application
-    - jupyter_nbextensions_configurator.notebook_compat
-    - jupyter_nbextensions_configurator.notebook_compat.nbextensions
-    - jupyter_nbextensions_configurator.notebook_compat.serverextensions
-    - jupyter_nbextensions_configurator.notebook_compat._compat
-    - jupyter_nbextensions_configurator.notebook_compat._compat.nbextensions
-    - jupyter_nbextensions_configurator.notebook_compat._compat.serverextensions
 
   commands:
     - jupyter nbextensions_configurator --help

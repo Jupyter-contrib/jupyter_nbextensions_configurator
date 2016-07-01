@@ -13,6 +13,11 @@ from unittest import TestCase
 
 import jupyter_core.paths
 import nose.tools as nt
+from jupyter_contrib_core.notebook_compat import serverextensions
+from jupyter_contrib_core.testing_utils import (
+    get_logger, patch_traitlets_app_logs,
+)
+from jupyter_contrib_core.testing_utils.jupyter_env import patch_jupyter_dirs
 from traitlets.config import Config
 from traitlets.tests.utils import check_help_all_output, check_help_output
 
@@ -22,9 +27,6 @@ from jupyter_nbextensions_configurator.application import (
     EnableJupyterNbextensionsConfiguratorApp,
     JupyterNbextensionsConfiguratorApp,
 )
-from jupyter_nbextensions_configurator.notebook_compat import serverextensions
-from testing_utils import get_logger, patch_traitlets_app_logs
-from testing_utils.jupyter_env import patch_jupyter_dirs
 
 app_classes = (DisableJupyterNbextensionsConfiguratorApp,
                EnableJupyterNbextensionsConfiguratorApp,

@@ -42,6 +42,7 @@ the interface also provides controls to configure the extensions' options.
             for path in glob('src/*.py')
         ],
         install_requires=[
+            'jupyter_contrib_core',
             'jupyter_core',
             'notebook >=4.0',
             'pyyaml',
@@ -50,6 +51,7 @@ the interface also provides controls to configure the extensions' options.
         ],
         extras_require={
             'test': [
+                'jupyter_contrib_core[testing_utils]',
                 'nose',
                 'requests',
                 'selenium',
