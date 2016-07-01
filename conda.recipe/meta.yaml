@@ -18,7 +18,7 @@ requirements:
     - setuptools
   run:
     - python
-    - jupyter_contrib_core
+    - jupyter_contrib_core >=0.2
     - jupyter_core
     - nbconvert
     - notebook >=4.0

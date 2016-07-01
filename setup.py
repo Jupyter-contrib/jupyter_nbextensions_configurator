@@ -42,7 +42,7 @@ the interface also provides controls to configure the extensions' options.
             for path in glob('src/*.py')
         ],
         install_requires=[
-            'jupyter_contrib_core',
+            'jupyter_contrib_core >=0.2',
             'jupyter_core',
             'notebook >=4.0',
             'pyyaml',
