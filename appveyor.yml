@@ -53,6 +53,9 @@ init:
   - ps: echo $env:TOXENV
   - ps: ls C:\Python*
 install:
+  # downgrade firefox to enable us to use older webdriver through selenium
+  # see https://github.com/appveyor/website/blob/d656e6c5436a89c0d9c3e7f9066dd9c6653defd8/NJekyll/site/docs/how-to/selenium-testing.md
+  - choco install firefox -version 46.0.1
   # Prepend newly installed Python to the PATH of this build (this cannot be
   # done from inside a powershell script as it would require us to restart the
   # parent CMD process).
