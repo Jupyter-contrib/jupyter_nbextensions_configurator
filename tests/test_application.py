@@ -111,11 +111,6 @@ class AppTest(TestCase):
                 {k: v for k, v in nbservext.items() if v},
                 'disable command should disable all '
                 'nbserver_extensions in file {}'.format(path))
-            confstrip = {}
-            confstrip.update(conf)
-            confstrip.pop('NotebookApp', None)
-            confstrip.pop('version', None)
-            nt.assert_false(confstrip, 'disable should leave config empty.')
 
         reset_app_class(DisableJupyterNbextensionsConfiguratorApp)
 
