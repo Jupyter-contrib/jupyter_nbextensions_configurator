@@ -25,7 +25,13 @@ This project was spun out of work from
 Installation
 ------------
 
-The installation has three steps:
+For those using conda, you can now get `jupyter_nbextensions_configurator` from
+the excellent [conda-forge](https://conda-forge.github.io/)
+[channel](https://anaconda.org/conda-forge) in a single command:
+
+    conda install -c conda-forge jupyter_nbextensions_configurator
+
+For those not using conda, the installation has two steps:
 
  1. Installing the pip package. This should be as simple as
 
@@ -46,8 +52,9 @@ The installation has three steps:
     `jupyter serverextension`, for notebook >= 4.2, one can use that command
     equivalently.
 
- 3. Finally, you'll need to restart the notebook server. Once restarted, you
-    should be able to find the configurator user interfaces as described below.
+
+Once installed, you'll need to restart the notebook server. Once restarted, you
+should be able to find the configurator user interfaces as described below.
 
 
 Usage
@@ -155,7 +162,9 @@ If you encounter problems with this server extension, you can:
 For debugging, useful information can (sometimes) be found by:
 
  * Checking for error messages in the browser's [JavaScript console][javascript console howto].
- * Checking for messages in the notebook server's logs. This is particularly useful when the server is run with the `--debug` flag, to get as many logs as possible.
+ * Checking for messages in the notebook server's logs. This is particularly
+   useful when the server is run with the `--debug` flag, to get as many logs
+   as possible.
 
 [this repo]: https://github.com/jupyter-contrib/jupyter_nbextensions_configurator
 [this repo issues]: https://github.com/jupyter-contrib/jupyter_nbextensions_configurator/issues
@@ -166,8 +175,11 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
-0.1.2
+0.2.0
 -----
+* Use `jupyter_contrib_core` package for notebook compatibility shims and some
+  testing utilities.
+* Automatically enable configurator's own nbextensions when running the app.
 * Replace references to CI and other services attached to `jcb91` in favour of
   [`Jupyter-contrib` repository][this repo url] versions, where possible.
 
