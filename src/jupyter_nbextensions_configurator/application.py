@@ -63,14 +63,17 @@ Usage
         else:
             self.toggle_server_extension_python(
                 'jupyter_nbextensions_configurator')
-            enabled = self._toggle_value
-            nbextensions._set_nbextension_state(
-                'notebook', 'nbextensions_configurator/config_menu/main',
-                enabled,
-                user=self.user, sys_prefix=self.sys_prefix, logger=self.log)
-            nbextensions._set_nbextension_state(
-                'tree', 'nbextensions_configurator/tree_tab/main', enabled,
-                user=self.user, sys_prefix=self.sys_prefix, logger=self.log)
+            nbexts = [
+                ('notebook', 'nbextensions_configurator/config_menu/main'),
+                ('tree', 'nbextensions_configurator/tree_tab/main'),
+            ]
+            for section, require in nbexts:
+                enabled = self._toggle_value
+                self.log.info('{} {} extension {}...'.format(
+                    'Enabling' if enabled else 'Disabling', section, require))
+                nbextensions._set_nbextension_state(
+                    section, require, enabled,
+                    user=self.user, sys_prefix=self.sys_prefix)
 
 
 class EnableJupyterNbextensionsConfiguratorApp(
