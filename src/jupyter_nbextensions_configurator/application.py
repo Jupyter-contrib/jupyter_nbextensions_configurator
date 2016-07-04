@@ -19,8 +19,11 @@ class ToggleJupyterNbextensionsConfiguratorApp(
     """An App that toggles the jupyter_nbextensions_configurator extension."""
 
     flags = copy.deepcopy(serverextensions.ToggleServerExtensionApp.flags)
-    flags['sys-prefix'] = (
-        flags['sys-prefix'][0],
+    flags['sys-prefix'] = ({
+        'ToggleServerExtensionApp': {
+            'sys_prefix': True,
+            'user': False,
+        }},
         'Use sys.prefix as the prefix for configuring the server extension')
     for f in ('py', 'python'):
         flags.pop(f, None)
