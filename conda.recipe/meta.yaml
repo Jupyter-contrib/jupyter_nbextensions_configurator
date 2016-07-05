@@ -1,3 +1,7 @@
+# This conda recipe is for use with the git repo (hence the local url).
+# For a simple conda install (non bleeding-edge), see the conda-forge recipe at
+# https://github.com/conda-forge/jupyter_nbextensions_configurator-feedstock
+
 {% set version = '0.1.1' %}
 
 package:
@@ -5,7 +9,7 @@ package:
   version: {{ version }}
 
 source:
-  git_url: https://github.com/jcb91/jupyter_nbextensions_configurator.git
+  git_url: ../
   git_tag: {{ version }}
 
 build:
