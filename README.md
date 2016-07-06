@@ -181,7 +181,7 @@ Changes
   testing utilities.
 * Automatically enable configurator's own nbextensions when running the app.
 * Replace references to CI and other services attached to `jcb91` in favour of
-  [`Jupyter-contrib` repository][this repo url] versions, where possible.
+  [`Jupyter-contrib` repository][this repo] versions, where possible.
 
 0.1.1
 -----
