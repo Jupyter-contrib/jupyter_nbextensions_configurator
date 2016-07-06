@@ -86,7 +86,7 @@ before_install:
   # don't need sauce for builds which don't start with 'py'
   - 'if [[ ${TOXENV} != py* ]]; then unset SAUCE_USERNAME && unset SAUCE_ACCESS_KEY && echo unset; fi'
   # stuff for conda recipe
-  - 'if [[ ${TOXENV} == "condarecipe" ]]; then wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then bash miniconda.sh -b -p $HOME/miniconda; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then export PATH="$HOME/miniconda/bin:$PATH"; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then hash -r; fi'
@@ -94,6 +94,7 @@ before_install:
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda update -q conda; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda info -a; fi  # Useful for debugging any issues with conda'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda install conda-build; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then git fetch --unshallow; fi'
 install:
   - pip install tox
   - virtualenv --version
