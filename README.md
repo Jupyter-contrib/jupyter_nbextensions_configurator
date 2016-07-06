@@ -38,8 +38,8 @@ For those not using conda, the installation has two steps:
         pip install jupyter_nbextensions_configurator
 
  2. Configuring the notebook server to load the server extension. A `jupyter`
-    subcommand is provided for this. You can enable the serverextension for the
-    current user with
+    subcommand is provided for this. You can enable the serverextension and the
+    configurator nbextensions listed below for the current user with
 
         jupyter nbextensions_configurator enable --user
 
@@ -48,9 +48,7 @@ For those not using conda, the installation has two steps:
     system-wide config (the default), or `--sys-prefix` to enable in config
     files inside python's `sys.prefix`, such as for a virtual environment.
     The provided `jupyter nbextensions_configurator` command can also be used
-    to `disable`, and since it is essentially a wrapper around
-    `jupyter serverextension`, for notebook >= 4.2, one can use that command
-    equivalently.
+    to `disable`.
 
 
 Once installed, you'll need to restart the notebook server. Once restarted, you
