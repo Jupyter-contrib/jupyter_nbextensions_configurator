@@ -5,7 +5,7 @@ package:
   version: {{ version }}
 
 source:
-  git_url: https://github.com/jcb91/jupyter_nbextensions_configurator.git
+  git_url: https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator.git
   git_tag: {{ version }}
 
 build:
@@ -43,7 +43,7 @@ test:
 
 about:
   summary: A server extension for jupyter notebook providing configuration interfaces for notebook extensions (nbextensions).
-  home: https://github.com/jcb91/jupyter_nbextensions_configurator
+  home: https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator
   license_file: LICENSE.txt
   license: BSD 3-clause
 
