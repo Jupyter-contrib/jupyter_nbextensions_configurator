@@ -173,6 +173,13 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
+0.2.1
+-----
+* Fix bug introduced in bc2f8b821b2164823cbba4e85d5e921dfd484b11, which
+  prevented disabling nbextensions when using notebook versions < 4.2.
+  Add test to ensure that a disabled extension's js doesn't load, rather than
+  just checking json config file.
+
 0.2.0
 -----
 * Use `jupyter_contrib_core` package for notebook compatibility shims and some
