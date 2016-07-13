@@ -31,6 +31,24 @@ define([
     var extensions_dict = {}; // dictionary storing extensions by their 'require' value
 
     /**
+     * function for comparing arbitrary version numbers, taken from
+     * http://stackoverflow.com/questions/7717109/how-can-i-compare-arbitrary-version-numbers
+     */
+    function version_compare (a, b) {
+        var cmp, trailing_re = /(\.0)+[^\.]*$/;
+        a = (a + '').replace(trailing_re, '').split('.');
+        b = (b + '').replace(trailing_re, '').split('.');
+        var len = Math.min(a.length, b.length);
+        for (var ii = 0; ii < len; ii++) {
+            cmp = parseInt(a[ii], 10) - parseInt(b[ii], 10);
+            if( cmp !== 0 ) {
+                return cmp;
+            }
+        }
+        return a.length - b.length;
+    }
+
+    /**
      * create configs var from json files on server.
      * we still need to call configs[].load later to actually fetch them though!
      */
@@ -141,10 +159,15 @@ define([
      * Update server's json config file to reflect changed enable state
      */
     function set_config_enabled (extension, state) {
-        state = state === undefined ? true : state;
+        state = state === undefined ? true : Boolean(state);
         console.log('Notebook extension "' + extension.Name + '"', state ? 'enabled' : 'disabled');
+        // for pre-4.2 versions, the javascript loading extensions actually
+        // ignores the true/false state, so to disable we have to delete the key
+        if ((version_compare(Jupyter.version, '4.2') < 0) && !state) {
+            state = null;
+        }
         var to_load = {};
-        to_load[extension.require] = Boolean(state);
+        to_load[extension.require] = state;
         configs[extension.Section].update({load_extensions: to_load});
     }
 

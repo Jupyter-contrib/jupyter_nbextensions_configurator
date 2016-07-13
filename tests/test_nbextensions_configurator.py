@@ -100,6 +100,10 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         self.check_extension_enabled(
             'tree', 'nbextensions_configurator/tree_tab/main',
             expected_status=False)
+        self.driver.get(self.base_url())
+        tab_selector = '#tabs a[href$=nbextensions_configurator]'
+        with nt.assert_raises(AssertionError):
+            self.wait_for_selector(tab_selector)
 
     @classmethod
     def check_extension_enabled(cls, section, require, expected_status=True,
