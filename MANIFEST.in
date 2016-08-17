@@ -1,4 +1,4 @@
-# explicit includes
+# explicit includes
 include LICENSE.txt
 include README.md
 include tox.ini
