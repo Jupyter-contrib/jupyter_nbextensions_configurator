@@ -2,18 +2,15 @@
 # For a simple conda install (non bleeding-edge), see the conda-forge recipe at
 # https://github.com/conda-forge/jupyter_nbextensions_configurator-feedstock
 
-{% set version = '0.2.1' %}
-
 package:
   name: jupyter_nbextensions_configurator
-  version: {{ version }}
+  version: {{ GIT_DESCRIBE_TAG }}
 
 source:
   git_url: ../
-  git_tag: {{ version }}
 
 build:
-  number: 0
+  number: {{ GIT_DESCRIBE_NUMBER }}
   script: python setup.py install --single-version-externally-managed --record=record.txt
 
 requirements:
