@@ -66,6 +66,10 @@ define(function (require, exports, module) {
             .append(tab_link)
             .appendTo('#tabs');
 
+        // select tab if hash is set appropriately
+        if (window.location.hash == '#' + tab_id) {
+            tab_link.click();
+        }
     }
 
     function load_ipython_extension () {
