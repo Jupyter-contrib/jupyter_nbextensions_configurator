@@ -28,7 +28,7 @@ define([
 
     var base_url = utils.get_body_data('baseUrl');
     var first_load_done = false; // flag used to not push history on first load
-    var extensions_dict = {}; // dictionary storing extensions by their 'require' value
+    var extensions_dict = {}; // dictionary storing nbextensions by their 'require' value
 
     /**
      * function for comparing arbitrary version numbers, taken from
@@ -161,7 +161,7 @@ define([
     function set_config_enabled (extension, state) {
         state = state === undefined ? true : Boolean(state);
         console.log('Notebook extension "' + extension.Name + '"', state ? 'enabled' : 'disabled');
-        // for pre-4.2 versions, the javascript loading extensions actually
+        // for pre-4.2 versions, the javascript loading nbextensions actually
         // ignores the true/false state, so to disable we have to delete the key
         if ((version_compare(Jupyter.version, '4.2') < 0) && !state) {
             state = null;
@@ -191,7 +191,7 @@ define([
     }
 
     /**
-     * Handle button click event to enable/disable extension
+     * Handle button click event to enable/disable nbextension
      */
     function handle_buttons_click (evt) {
         var btn = $(evt.target);
@@ -259,7 +259,7 @@ define([
     }
 
     /**
-     * handle form input for extension parameters, updating parameters in
+     * handle form input for nbextension parameters, updating parameters in
      * server's json config file
      */
     function handle_input (evt) {
@@ -416,7 +416,7 @@ define([
 
     /*
      * Build and return a div containing the buttons to enable/disable an
-     * extension with the given id.
+     * nbextension with the given id.
      */
     function build_enable_buttons () {
         var div_buttons = $('<div class="btn-group nbext-enable-btns"/>');
@@ -457,10 +457,10 @@ define([
     }
 
     /**
-     * if the extension's readme is a relative url with extension .md,
+     * if the nbextension's readme is a relative url with file extension .md,
      *     render the referenced markdown file
      * otherwise
-     *     add an anchor element to the extension's description
+     *     add an anchor element to the nbextension's description
      */
     function load_readme (extension) {
         var readme_div = $('.nbext-readme .nbext-readme-contents').empty();
@@ -551,9 +551,9 @@ define([
     }
 
     /**
-     * open the user interface the extension corresponding to the given
+     * open the user interface for the nbextension corresponding to the given
      * link
-     * @param extension the extension
+     * @param extension the nbextension
      * @param opts options for the reveal animation
      */
     function open_ext_ui (extension, opts) {
@@ -563,7 +563,7 @@ define([
         /**
          * If we're in a standalone page,
          * Set window search string to allow reloading settings for a given
-         * extension.
+         * nbextension.
          * Use history.pushState if available, to avoid reloading the page
          */
         var new_search = '?nbextension=' + utils.encode_uri_components(extension.require);
@@ -602,7 +602,7 @@ define([
 
     /**
      * Callback for the nav links
-     * open the user interface the extension corresponding to the clicked
+     * open the user interface for the nbextension corresponding to the clicked
      * link, and scroll it into view
      */
     function selector_nav_link_callback (evt) {
@@ -648,7 +648,7 @@ define([
     }
 
     /**
-     * delete all of the values for an extension's parameters from the config,
+     * delete all of the values for an nbextension's parameters from the config,
      * then rebuild their ui elements, to give default values.
      */
     function reset_params (extension) {
@@ -749,7 +749,7 @@ define([
     }
 
     /**
-     * build and return UI elements for a single extension
+     * build and return UI elements for a single nbextension
      */
     function build_extension_ui (extension) {
         var ext_row = $('<div/>')
@@ -802,10 +802,10 @@ define([
             // Duplicate warning
             if (extension.duplicate) {
                 var duplicate_warning_p = $('<p/>').text([
-                    'This extension\'s require url (' + extension.require + ')',
+                    'This nbextension\'s require url (' + extension.require + ')',
                     'is referenced by two different yaml files on the server.',
                     'This probably means that there are two installations of the',
-                    'same extension in different directories on the server.',
+                    'same nbextension in different directories on the server.',
                     'If they are different, only one will be loaded by the',
                     'notebook, and this may prevent configuration from working',
                     'correctly.',
@@ -895,14 +895,14 @@ define([
             }
         }
         catch (err) {
-            console.error('nbext error loading extension', extension.Name);
+            console.error('[nbext] error loading nbextension', extension.Name);
             console.error(err);
             $('<div/>')
                 .addClass('alert alert-warning')
                 .css('margin-top', '5px')
                 .append(
                     $('<p/>')
-                        .text('error loading extension ' + extension.Name)
+                        .text('[nbext] error loading nbextension ' + extension.Name)
                 )
                 .appendTo(ext_row);
         }
@@ -920,7 +920,7 @@ define([
             .addClass('row nbext-row container-fluid nbext-selector')
             .appendTo(config_ui);
 
-        $('<h4>Configurable extensions</h4>').appendTo(selector);
+        $('<h4>Configurable nbextensions</h4>').appendTo(selector);
 
         var showhide = $('<div/>')
             .addClass('nbext-showhide-incompat')
@@ -934,7 +934,7 @@ define([
                         set_hide_incompat(handle_input(evt));
                     })
             )
-            .append(' disable configuration for extensions without explicit compatibility (they may break your notebook environment, but can be useful to show for extension development)')
+            .append(' disable configuration for nbextensions without explicit compatibility (they may break your notebook environment, but can be useful to show for nbextension development)')
             .appendTo(selector);
 
         var selector_nav = $('<nav/>')
@@ -961,7 +961,7 @@ define([
     }
 
     /**
-     * build html body listing all extensions.
+     * build html body listing all nbextensions.
      */
     function build_page () {
         add_css('./main.css');
@@ -978,7 +978,7 @@ define([
         events.trigger('resize-header.Page');
 
         load_all_configs().then(function () {
-            // get list of extensions from value set by script embedded in page by the python backend
+            // get list of nbextensions from value set by script embedded in page by the python backend
             build_extension_list(window.extension_list);
             nbext_config_page.show();
         });
@@ -991,12 +991,12 @@ define([
 
     /**
      * Callback for the window.popstate event, used to handle switching to the
-     * correct selected extension
+     * correct selected nbextension
      */
     function popstateCallback (evt) {
         var require_url;
         if (evt === undefined) {
-            // attempt to select an extension specified by a URL search parameter
+            // attempt to select an nbextension specified by a URL search parameter
             var queries = window.location.search.replace(/^\?/, '').split('&');
             for (var ii = 0; ii < queries.length; ii++) {
                 var keyValuePair = queries[ii].split('=');
@@ -1023,15 +1023,15 @@ define([
     }
 
     /**
-     * build html body listing all extensions.
+     * build html body listing all nbextensions.
      *
      * Since this function uses the contents of config.data,
      * it should only be called after config.load() has been executed
      */
     function build_extension_list (extension_list) {
-        // add enabled-but-unconfigurable extensions to the list
-        // construct a set of enabled extension urls from the configs
-        // this is used later to add unconfigurable extensions to the list
+        // add enabled-but-unconfigurable nbextensions to the list
+        // construct a set of enabled nbextension urls from the configs
+        // this is used later to add unconfigurable nbextensions to the list
         var unconfigurable_enabled_extensions = {};
         var section;
         for (section in configs) {
@@ -1042,15 +1042,15 @@ define([
             extension = extension_list[i];
             extension.Section = (extension.Section || 'notebook').toString();
             extension.Name = (extension.Name || (extension.Section + ':' + extension.require)).toString();
-            // extension *is* configurable
+            // nbextension *is* configurable
             delete unconfigurable_enabled_extensions[extension.Section][extension.require];
         }
-        // add any remaining unconfigurable extensions as stubs
+        // add any remaining unconfigurable nbextensions as stubs
         for (section in configs) {
             for (var require_url in unconfigurable_enabled_extensions[section]) {
                 extension_list.push({
                     Name: require_url,
-                    Description: 'This extension is enabled in the ' + section + ' json config, ' +
+                    Description: 'This nbextension is enabled in the ' + section + ' json config, ' +
                         "but doesn't provide a yaml file to tell us how to configure it. " +
                         "You can still enable or disable it from here, though.",
                     Section: section,
@@ -1064,7 +1064,7 @@ define([
 
         var selector_nav = $('.nbext-selector ul');
 
-        // sort extensions alphabetically
+        // sort nbextensions alphabetically
         extension_list.sort(function (a, b) {
             var an = (a.Name || '').toLowerCase();
             var bn = (b.Name || '').toLowerCase();
@@ -1077,7 +1077,7 @@ define([
         for (i = 0; i < extension_list.length; i++) {
             extension = extension_list[i];
             extensions_dict[extension.require] = extension;
-            console.log('Notebook extension "' + extension.Name + '" found');
+            console.log('[nbext] found nbextension "' + extension.Name + '"');
 
             extension.is_compatible = (extension.Compatibility || '?.x').toLowerCase().indexOf(
                 Jupyter.version.substring(0, 2) + 'x') >= 0;
@@ -1117,7 +1117,7 @@ define([
             .closest('a')
             .on('click', selector_nav_link_callback);
 
-        // en/disable incompatible extensions
+        // en/disable incompatible nbextensions
         var hide_incompat = true;
         if (configs['common'].data.hasOwnProperty('nbext_hide_incompat')) {
             hide_incompat = configs['common'].data.nbext_hide_incompat;

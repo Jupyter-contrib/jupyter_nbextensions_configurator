@@ -17,11 +17,11 @@
 .nbext-showhide-incompat {
     padding-bottom: 0.5em;
     /* the selector is hidden by default, revealed by js if any incompatible
-       extensions are found */
+       nbextensions are found */
     display: none;
 }
 
-/* styles for the extension-selector nav links */
+/* styles for the nbextension-selector nav links */
 
 .nbext-selector {
     border-bottom: 1px solid #888;
@@ -100,7 +100,7 @@
             box-shadow: 0 0 12px 1px rgba(87, 87, 87, 0.2);
 }
 
-/* styles for elements in an extension's UI */
+/* styles for elements in an nbextension's UI */
 
 .nbext-enable-btns .btn {
     border-radius: 4px;

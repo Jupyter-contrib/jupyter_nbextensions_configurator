@@ -16,7 +16,7 @@ from jupyter_nbextensions_configurator import __version__
 
 class ToggleJupyterNbextensionsConfiguratorApp(
         serverextensions.ToggleServerExtensionApp):
-    """An App that toggles the jupyter_nbextensions_configurator extension."""
+    """App to toggle server extension jupyter_nbextensions_configurator."""
 
     flags = copy.deepcopy(serverextensions.ToggleServerExtensionApp.flags)
     flags['sys-prefix'] = ({
@@ -69,7 +69,7 @@ Usage
             ]
             for section, require in nbexts:
                 enabled = self._toggle_value
-                self.log.info('{} {} extension {}...'.format(
+                self.log.info('{} {} nbextension {}...'.format(
                     'Enabling' if enabled else 'Disabling', section, require))
                 nbextensions._set_nbextension_state(
                     section, require, enabled,
@@ -78,14 +78,14 @@ Usage
 
 class EnableJupyterNbextensionsConfiguratorApp(
         ToggleJupyterNbextensionsConfiguratorApp):
-    """An App that enables the jupyter_nbextensions_configurator extension."""
+    """App to enable server extension jupyter_nbextensions_configurator."""
     name = 'jupyter nbextensions_configurator enable'
     _toggle_value = True
 
 
 class DisableJupyterNbextensionsConfiguratorApp(
         ToggleJupyterNbextensionsConfiguratorApp):
-    """An App that disables the jupyter_nbextensions_configurator extension."""
+    """App to disable server extension jupyter_nbextensions_configurator."""
     name = 'jupyter nbextensions_configurator disable'
     _toggle_value = False
 
