@@ -180,9 +180,11 @@ def load_jupyter_server_extension(nbapp):
     # ensure our template gets into search path
     templates_dir = os.path.join(os.path.dirname(__file__), 'templates')
     nbapp.log.debug('  Editing template path to add {}'.format(templates_dir))
-    searchpath = webapp.settings['jinja2_env'].loader.searchpath
-    if templates_dir not in searchpath:
-        searchpath.append(templates_dir)
+    rootloader = webapp.settings['jinja2_env'].loader
+    for loader in getattr(rootloader, 'loaders', [rootloader]):
+        if hasattr(loader, 'searchpath') and \
+                templates_dir not in loader.searchpath:
+            loader.searchpath.append(templates_dir)
 
     base_url = webapp.settings['base_url']
 
