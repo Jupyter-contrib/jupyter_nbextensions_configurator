@@ -173,6 +173,13 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
+0.2.2
+-----
+* Bugfix courtesy of [@bielern](https://github.com/bielern). Fix for a bug
+  which was preventing the serverextension from loading from a
+  `jupyterhub`-spawned singleuser notebook server
+* Alterations to the in-repo conda recipe, to use git versioning & build number
+
 0.2.1
 -----
 * Fix bug introduced in bc2f8b821b2164823cbba4e85d5e921dfd484b11, which
