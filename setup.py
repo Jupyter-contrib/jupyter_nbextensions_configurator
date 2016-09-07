@@ -23,14 +23,14 @@ automatically for every notebook), and display their readme files.
 In addition, for extensions which include an appropriate yaml descriptor file,
 the interface also provides controls to configure the extensions' options.
 """,
-        version='0.2.1',
+        version='0.2.2',
         author='jcb91, jupyter-contrib developers',
         author_email='joshuacookebarnes@gmail.com',
         url=('https://github.com/'
              'jupyter-contrib/jupyter_nbextensions_configurator'),
         download_url=('https://github.com/'
                       'jupyter-contrib/jupyter_nbextensions_configurator/'
-                      'tarball/0.2.1'),
+                      'tarball/0.2.2'),
         keywords=['Jupyter', 'notebook'],
         license='BSD 3-clause',
         platforms=['any'],
