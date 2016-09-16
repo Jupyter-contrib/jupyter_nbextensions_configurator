@@ -134,3 +134,81 @@
 .input-group .nbext-list-btn-add {
     font-size: inherit;
 }
+
+/* stuff for filter -------------------------------------------------------- */
+
+.nbext-filter-grp {
+    padding-bottom: 0.5em;
+}
+
+.nbext-filter-label:after {
+    content: 'filter:';
+}
+
+/* make actual input transparent, and its parent look like it's the input */
+.nbext-filter-input-wrap {
+    cursor: text;
+}
+.nbext-filter-input-wrap input {
+    border: none;
+    outline: none;
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+/* limit max height of tag menu */
+.nbext-filter-menu {
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+/* override jquery-ui styling as we can't remove the ui-menu-item class (it's used by jqueryui script) */
+.nbext-filter-menu.dropdown-menu > li > a:hover,
+.nbext-filter-menu.dropdown-menu > li > a:focus,
+.nbext-filter-menu.dropdown-menu > li > a.ui-state-focus {
+    color: #555;
+    border: none;
+    background-color: #e7e7e7;
+    background-image: none;
+    border-radius: 0;
+}
+
+/* ensure spacing between tags in the filter box */
+.nbext-filter-tag {
+    margin-right: 6px;
+}
+
+/* tag classes to mimic bootstrap primary buttons */
+.nbext-filter-tag > * {
+    position: relative;
+    float: left;
+    white-space: nowrap;
+    border-radius: 2px;
+    padding: 0 6px;
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #2e6da4;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.nbext-filter-tag > :first-child {
+    padding-right: 3px;
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.nbext-filter-tag > :last-child {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.nbext-filter-tag > :last-child:hover {
+    background-color: #286090;
+    border-color: #204d74;
+}

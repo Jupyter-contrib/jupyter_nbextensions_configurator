@@ -29,6 +29,7 @@ define([
     var base_url = utils.get_body_data('baseUrl');
     var first_load_done = false; // flag used to not push history on first load
     var extensions_dict = {}; // dictionary storing nbextensions by their 'require' value
+    var filter_timeout_id = null; // timeout ref used to prevent lots of consecutive requests
 
     /**
      * function for comparing arbitrary version numbers, taken from
@@ -58,6 +59,9 @@ define([
         'tree' : new configmod.ConfigSection('tree', {base_url: base_url}),
         'common'   : new configmod.ConfigSection('common', {base_url: base_url}),
     };
+
+    // tags used to filter visible nbextensions
+    var tags = [];
 
     // the prefix added to all parameter input id's
     var param_id_prefix = 'input_';
@@ -610,7 +614,7 @@ define([
          * Use history.pushState if available, to avoid reloading the page
          */
         if (first_load_done && $('body').hasClass(page_class) && extension.require !== undefined) {
-        var new_search = '?nbextension=' + utils.encode_uri_components(extension.require);
+            var new_search = '?nbextension=' + utils.encode_uri_components(extension.require);
             if (window.history.pushState) {
                 window.history.pushState(extension.require, undefined, new_search);
             }
@@ -697,7 +701,6 @@ define([
     function reset_params (extension) {
         // first remove config values:
         return conf_dot_delete_keys(
-
             configs[extension.Section],
             extension.Parameters.map(function (param) {
                 return param.name;
@@ -966,6 +969,175 @@ define([
         }
     }
 
+    /**
+     * callback function for changes to filters. This is essentially just a way
+     * of preventing multiple callbacks from executing simultaneously, so that
+     * huge numbers of filter change callbacks don't make the UI laggy.
+     */
+    function filter_callback_queue_refresh (evt) {
+        clearTimeout(filter_timeout_id);
+        filter_timeout_id = setTimeout(filter_refresh_visible_nbexts, 100);
+    }
+
+    function filter_refresh_visible_nbexts () {
+        var to_show = [], to_hide = [];
+        $('.nbext-selector ul li a').each(function (idx, el) {
+            var ext = $(el).data('extension');
+            var active_tag_elems = $('.nbext-filter-tag');
+            var show = true;
+            for (var ii=0; ii < active_tag_elems.length && show; ii++) {
+                var tag = active_tag_elems.eq(ii).data('nbext_tag_object');
+                switch (tag.category) {
+                    case 'name':
+                        show = show && (tag.value === ext.Name);
+                        break;
+                    case 'section':
+                        show = show && (tag.value === ext.Section);
+                        break;
+                    case 'tag':
+                        show = show && (ext.tags.indexOf(tag.value) > 0);
+                        break;
+                }
+            }
+            (show ? to_show: to_hide).push(ext.selector_link.parent()[0]);
+
+        });
+        $(to_hide).slideUp(100);
+        to_show = $(to_show); // convert to jquery obj
+        to_show.slideDown(100)
+        // make sure a visible nbextensions is selected
+        if (!to_show.is('.active')) {
+            var candidate = to_show.filter(':not(.disabled)').first().children('a');
+            if (candidate.length > 0 ) {
+                candidate.click();
+            }
+            else {
+                open_ext_ui(undefined);
+            }
+        }
+    }
+
+    function filter_build_tag_element (tag_object) {
+        var tag_elem = $('<div>')
+            .data('nbext_tag_object', tag_object)
+            .addClass('nbext-filter-tag btn-group');
+        $('<span/>')
+            // .addClass('btn btn-primary')
+            .text(tag_object.label)
+            .appendTo(tag_elem);
+        $('<span/>')
+            // .addClass('btn btn-primary')
+            .on('click', function (evt) {
+                evt.preventDefault();
+                tag_elem.remove();
+                filter_callback_queue_refresh();
+            })
+            .append('<i class="fa fa-close">')
+            .appendTo(tag_elem);
+        return tag_elem;
+    }
+
+    function filter_register_new_tag (new_tag_object) {
+        for (var ii=0; ii < tags.length; ii++) {
+            if (tags[ii].value == new_tag_object.value && tags[ii].category == new_tag_object.category) {
+                return //tag already exists, so don't insert
+            }
+        }
+        new_tag_object.label = new_tag_object.category + ': ' + new_tag_object.value;
+        tags.push(new_tag_object);
+    }
+
+    function filter_build_ui () {
+        // define a custom jqueryui autocomplete widget
+        $.widget('custom.nbextfilterer', $.ui.autocomplete, {
+            _create: function () {
+                this._super();
+                this.widget().menu('option', 'items', '> :not(.nbext-filter-category)');
+            },
+            _renderMenu: function (ul, items) {
+                ul.addClass('nbext-filter-menu dropdown-menu');
+                ul.removeClass('ui-menu ui-autocomplete ui-front ui-widget ui-widget-content ui-corner-all');
+                var nbextfiltererwidget = this;
+                // leave already-applied tags out of the menu
+                var active_tag_labels = $.map(
+                    $(this.element).siblings('.nbext-filter-tag'),
+                    function (elem, idx) {
+                        return $(elem).data('nbext_tag_object').label;
+                    }
+                );
+                $.each(items, function (index, item) {
+                    if (active_tag_labels.indexOf(item.label) < 0) {
+                        nbextfiltererwidget._renderItemData(ul, item);
+                    }
+                });
+            }
+        });
+
+        var filter_input_group = $('<div/>')
+            .attr('id', 'nbext-filter-grp')
+            .addClass('nbext-filter-grp input-group');
+        $('<span/>')
+            .attr('id', 'nbext-filter-label')
+            .addClass('nbext-filter-label input-group-addon')
+            .appendTo(filter_input_group);
+        // add a wrapper to hold both applied tags and an input.
+        // It will be styled to look like an input using the form-control css class.
+        var filter_input_wrap = $('<div/>')
+            .addClass('nbext-filter-input-wrap form-control')
+            .attr('aria-describedby', 'nbext-filter-label')
+            .on('click', function (evt) {
+                if (evt.target == this) { //only if we clicked the div, not a child of it
+                    var input = $(this).find('input').first();
+                    input.focus();
+                    input.data('custom-nbextfilterer').search(input[0].value);
+                }
+            }).appendTo(filter_input_group);
+
+        // add the actual input
+        $('<input />')
+            .on('focus', function (evt) {
+                $(this).data('custom-nbextfilterer').search(this.value);
+            })
+            // register an extra keydown handler for stuff where we want to
+            // override default autocomplete behaviour
+            .on('keydown', function (evt) {
+                var $this = $(this);
+                if (evt.keyCode === $.ui.keyCode.TAB) {
+                    // don't navigate away from the field on tab when selecting an item
+                    var menu_active = $this.data('custom-nbextfilterer').menu.active;
+                    if (menu_active) {
+                        evt.preventDefault();
+                    }
+                    filter_callback_queue_refresh();
+                }
+                else if (evt.keyCode === $.ui.keyCode.BACKSPACE && !this.value) {
+                    $this.siblings('.nbext-filter-tag').last().remove();
+                    filter_callback_queue_refresh();
+                }
+            })
+            .nbextfilterer({
+                delay: 20,
+                source: tags,
+                minLength: 0,
+                autoFocus: true,
+                focus: function() {
+                    return false; // prevent value inserted on focus
+                },
+                select: function(event, ui) {
+                    // add the selected item (tag)
+                    filter_build_tag_element(ui.item).insertBefore(this);
+                    // clear input
+                    this.value = '';
+                    // queue updating filter
+                    filter_callback_queue_refresh();
+                    return false;
+                }
+            })
+            .appendTo(filter_input_wrap);
+
+        return filter_input_group;
+    }
+
     function build_configurator_ui () {
         var config_ui = $('<div/>')
             .attr('id', 'nbextensions-configurator-container')
@@ -991,6 +1163,8 @@ define([
             )
             .append(' disable configuration for nbextensions without explicit compatibility (they may break your notebook environment, but can be useful to show for nbextension development)')
             .appendTo(selector);
+
+        filter_build_ui().appendTo(selector);
 
         var selector_nav = $('<nav/>')
             .addClass('row')
@@ -1171,7 +1345,29 @@ define([
                 ext_enabled = (conf.data.load_extensions[extension.require] === true);
             }
             set_buttons_enabled(extension, ext_enabled);
+
+            filter_register_new_tag({category: 'section', value: extension.Section});
+            filter_register_new_tag({category: 'name', value: extension.Name});
+            extension.tags = (extension.tags || []);
+            for (var tt=0; tt < extension.tags.length; tt++) {
+                filter_register_new_tag({category: 'tag', value: extension.tags[tt]});
+            }
         }
+        // sort tags
+        tags.sort(function (a, b) {
+            var cat_order = ['section', 'tag', 'name'];
+            var an = cat_order.indexOf(a.category);
+            var bn = cat_order.indexOf(b.category);
+            if (an != bn) {
+                return an - bn;
+            }
+            an = (a.label  || '').toLowerCase();
+            bn = (b.label  || '').toLowerCase();
+            if (an < bn) return -1;
+            if (an > bn) return 1;
+            return 0;
+        });
+
         // attach click handlers
         $('.nbext-enable-toggle')
             .on('click', selector_checkbox_callback)
