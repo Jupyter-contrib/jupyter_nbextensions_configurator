@@ -387,7 +387,8 @@ define([
                 // add a button to add list elements
                 var add_button = $('<a/>')
                     .addClass('btn btn-default input-group-btn nbext-list-btn-add')
-                    .append($('<i/>', {'class': 'fa fa-plus'}).text(' new item'))
+                    .text(' new item')
+                    .prepend('<i class="fa fa-plus"/>')
                     .on('click', function () {
                         $(this).parent().siblings('ul').append(
                             wrap_list_input(
