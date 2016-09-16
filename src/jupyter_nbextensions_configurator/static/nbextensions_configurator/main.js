@@ -504,6 +504,8 @@ define([
         url = require.toUrl(
             utils.url_path_join(
                 base_url, 'nbextensions', utils.encode_uri_components(url)));
+        // remove search component, as it's just a datestamp from require.js
+        url = $('<a>').attr('href', url)[0].pathname;
         readme_title.text(url);
         // add rendered markdown to readme_contents. Use pre-fetched if present
         if (extension.readme_content) {
