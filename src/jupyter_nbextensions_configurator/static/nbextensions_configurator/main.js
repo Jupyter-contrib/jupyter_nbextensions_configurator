@@ -951,7 +951,7 @@ define([
             .addClass('row nbext-row container-fluid nbext-selector')
             .appendTo(config_ui);
 
-        $('<h4>Configurable nbextensions</h4>').appendTo(selector);
+        $('<h3>Configurable nbextensions</h3>').appendTo(selector);
 
         var showhide = $('<div/>')
             .addClass('nbext-showhide-incompat')
