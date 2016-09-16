@@ -469,7 +469,7 @@ define([
 
         var selector = $('.nbext-selector');
         if (selector.find('li.active').first().hasClass('disabled')) {
-            selector.find('li:not(.disabled) a').first().click();
+            selector.find('li:not(.disabled):visible a').first().click();
         }
     }
 
@@ -483,6 +483,12 @@ define([
         var readme = $('.nbext-readme');
         var readme_contents = readme.children('.nbext-readme-contents').empty();
         var readme_title = readme.find('.nbext-readme-title').empty();
+
+        if (extension.readme === undefined) {
+            readme.slideUp(100);
+            return;
+        }
+        readme.slideDown(100);
 
         var url = extension.readme;
         var is_absolute = /^(f|ht)tps?:\/\//i.test(url);
@@ -579,14 +585,32 @@ define([
         var default_opts = {duration: 100};
         opts = $.extend(true, {}, default_opts, opts);
 
+        if (extension === undefined) {
+            // just make a dummy to warn about selection
+            extension = {
+                ui: $('<div/>')
+                    .data('extension', extension)
+                    .addClass('row nbext-ext-row')
+                    .css('display', 'none')
+                    .insertBefore('.nbext-readme'),
+                selector_link: $(),
+            };
+            var warning = $('<div/>')
+                .addClass('alert alert-warning')
+                .appendTo(extension.ui);
+            $('<p/>')
+                .text('No nbextensions match the applied filters!')
+                .appendTo(warning);
+        }
+
         /**
          * If we're in a standalone page,
          * Set window search string to allow reloading settings for a given
          * nbextension.
          * Use history.pushState if available, to avoid reloading the page
          */
+        if (first_load_done && $('body').hasClass(page_class) && extension.require !== undefined) {
         var new_search = '?nbextension=' + utils.encode_uri_components(extension.require);
-        if (first_load_done && $('body').hasClass(page_class)) {
             if (window.history.pushState) {
                 window.history.pushState(extension.require, undefined, new_search);
             }
