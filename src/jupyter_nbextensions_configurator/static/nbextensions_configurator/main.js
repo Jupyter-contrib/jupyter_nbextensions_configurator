@@ -849,9 +849,18 @@ define([
             }
 
             // Section
-            var section = $('<div/>')
+            $('<div/>')
                 .text('section: ' + extension.Section)
                 .addClass('nbext-sect')
+                .appendTo(col_left);
+
+            // Require
+            $('<div/>')
+                .text('require path: ')
+                .addClass('nbext-req')
+                .append(
+                    $('<span/>').addClass('rendered_html').append(
+                        $('<code/>').text(extension.require)))
                 .appendTo(col_left);
 
             // Compatibility
