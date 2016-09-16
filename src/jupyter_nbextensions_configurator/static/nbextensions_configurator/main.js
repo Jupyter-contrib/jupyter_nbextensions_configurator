@@ -172,6 +172,22 @@ define([
     }
 
     /**
+     * Callback function for clicking on a collapsible panel heading
+     */
+    function panel_showhide_callback (evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        var head = $(evt.currentTarget);
+        var body = head.next();
+        var show = !body.is(':visible');
+        head.find('i.fa').first()
+            .toggleClass('fa-caret-down', show)
+            .toggleClass('fa-caret-right', !show);
+        body
+            .slideToggle({show: show, duration: 200});
+    }
+
+    /**
      * Update buttons to reflect changed enable state
      */
     function set_buttons_enabled (extension, state) {
@@ -463,9 +479,9 @@ define([
      *     add an anchor element to the nbextension's description
      */
     function load_readme (extension) {
-        var readme_div = $('.nbext-readme .nbext-readme-contents').empty();
-        var readme_title = $('.nbext-readme > h3').empty();
-        if (!extension.readme) return;
+        var readme = $('.nbext-readme');
+        var readme_contents = readme.children('.nbext-readme-contents').empty();
+        var readme_title = readme.find('.nbext-readme-title').empty();
 
         var url = extension.readme;
         var is_absolute = /^(f|ht)tps?:\/\//i.test(url);
@@ -488,11 +504,11 @@ define([
             utils.url_path_join(
                 base_url, 'nbextensions', utils.encode_uri_components(url)));
         readme_title.text(url);
-        // add rendered markdown to readme_div. Use pre-fetched if present
+        // add rendered markdown to readme_contents. Use pre-fetched if present
         if (extension.readme_content) {
             rendermd.render_markdown(extension.readme_content, url)
                 .addClass('rendered_html')
-                .appendTo(readme_div);
+                .appendTo(readme_contents);
             return;
         }
         $.ajax({
@@ -501,7 +517,7 @@ define([
             success: function (md_contents) {
                 rendermd.render_markdown(md_contents, url)
                     .addClass('rendered_html')
-                    .appendTo(readme_div);
+                    .appendTo(readme_contents);
                 // We can't rely on picking up the rendered html,
                 // since render_markdown returns
                 // before the actual rendering work is complete
@@ -515,7 +531,7 @@ define([
                     // Allow time for markdown to render
                     setTimeout( function () {
                         // use filter to avoid breaking jQuery selector syntax with weird id
-                        var hdr = readme_div.find(':header').filter(function (idx, elem) {
+                        var hdr = readme_contents.find(':header').filter(function (idx, elem) {
                             return elem.id === hash;
                         });
                         if (hdr.length > 0) {
@@ -540,7 +556,7 @@ define([
             error: function (jqXHR, textStatus, errorThrown) {
                 var error_div = $('<div class="text-danger bg-danger"/>')
                     .text(textStatus + ' : ' + jqXHR.status + ' ' + errorThrown)
-                    .appendTo(readme_div);
+                    .appendTo(readme_contents);
                 if (jqXHR.status === 404) {
                     $('<p/>')
                         .text('no markdown file at ' + url)
@@ -670,6 +686,7 @@ define([
      * Callback for the rest parameters control
      */
     function reset_params_callback (evt) {
+        evt.stopPropagation(); // don't want to toggle visibility too!
         var btn = $(evt.target);
         if (btn.children('.fa').length < 1) {
             btn.addClass('disabled');
@@ -886,6 +903,8 @@ define([
                         $('<div/>')
                             .addClass('panel-heading')
                             .text('Parameters')
+                            .prepend('<i class="fa fa-fw fa-caret-down"/>')
+                            .on('click', panel_showhide_callback)
                             .append(reset_control)
                     )
                     .append(
@@ -943,10 +962,16 @@ define([
             .appendTo(selector);
 
         var readme = $('<div/>')
-            .addClass('row nbext-readme')
-            .append('<h3/>')
-            .append('<div class="nbext-readme-contents"/>')
+            .addClass('row nbext-readme panel panel-default')
+            .css('display', 'none') // hide until an nbextension with a readme reveals it
             .appendTo(config_ui);
+        $('<div class="panel-heading"/>')
+            .append('<i class="fa fa-fw fa-caret-down"/>')
+            .append('<span class="nbext-readme-title">')
+            .on('click', panel_showhide_callback)
+            .appendTo(readme);
+        $('<div class="nbext-readme-contents panel-body"/>')
+            .appendTo(readme);
 
         return config_ui;
     }
