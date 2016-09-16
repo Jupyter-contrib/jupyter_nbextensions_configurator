@@ -5,3 +5,8 @@ Link: readme.md
 Main: main.js
 Section: tree
 Compatibility: 4.x
+tags:
+- configurator
+- dashboard
+- tree
+- tab

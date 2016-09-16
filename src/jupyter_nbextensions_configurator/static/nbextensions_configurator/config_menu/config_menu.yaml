@@ -4,3 +4,6 @@ Description: Add an edit-menu item to open the nbextensions configurator page
 Main: main.js
 Compatibility: 4.x
 Icon: icon.png
+tags:
+- configurator
+- menu
