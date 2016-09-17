@@ -1384,6 +1384,9 @@ define([
             );
         }
         set_hide_incompat(hide_incompat);
+
+        // select a link
+        selector_nav.children('li:not(.disabled)').last().children('a').click();
     }
 
     /**

@@ -20,7 +20,6 @@ define(function (require, exports, module) {
             });
         }).then(function (extension_list) {
             nbextensions_configurator.build_extension_list(extension_list);
-            $('.nbext-selector li:not(.disabled)').last().children('a').click();
         });
     }
 
