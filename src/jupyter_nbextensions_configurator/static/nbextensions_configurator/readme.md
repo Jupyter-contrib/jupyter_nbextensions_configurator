@@ -93,6 +93,7 @@ The case-sensitive keys in the yaml file are as follows:
    * `input_type`,    controls the type of html tag used to render the parameter in the configurator UI. Valid values include `text`, `textarea`, `checkbox`, [html5 input tags such as `number`, `url`, `color`, ...], plus a final type of `list`
    * `list_element`,  a dictionary with the same `default` and `input_type` keys as a `Parameters` entry, used to render each element of the list for parameters with input_type `list`
    * finally, extras such as `min`, `step` and `max` may be used by `number` tags for validation
+* `tags`,             a list of string tags describing the nbextension, to allow for filtering
 
 Example:
 
