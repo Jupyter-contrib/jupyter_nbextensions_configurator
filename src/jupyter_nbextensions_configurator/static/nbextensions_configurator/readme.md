@@ -101,6 +101,10 @@ Example:
 Type: Jupyter Notebook Extension
 Name: Limit Output
 Description: This nbextension limits the number of characters that can be printed below a codecell
+tags:
+- usability
+- limit
+- output
 Link: readme.md
 Icon: icon.png
 Main: main.js
