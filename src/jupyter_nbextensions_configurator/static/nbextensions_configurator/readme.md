@@ -70,11 +70,11 @@ YAML file format
 
 You don't need to know about the yaml files in order simply to use
 `jupyter_nbextensions_configurator`.
-A notebook extension is 'found' by the `jupyter_nbextensions_configurator`
-server extension when a special yaml file describing the nbextension and its
-options is found in the notebook server's `nbextensions_path`.
+An nbextension is 'found' by the `jupyter_nbextensions_configurator` server
+extension when a special yaml file describing the nbextension and its options
+is found in the notebook server's `nbextensions_path`.
 The yaml file can have any name with the file extension `.yaml` or `.yml`, and
-describes the notebook extension and its options to
+describes the nbextension and its options to
 `jupyter_nbextensions_configurator`.
 
 The case-sensitive keys in the yaml file are as follows:

@@ -57,6 +57,7 @@ should be able to find the configurator user interfaces as described below.
 
 Usage
 -----
+
 Once `jupyter_nbextensions_configurator` is installed and enabled, and your
 notebook server has been restarted, you should be able to find the nbextensions
 configuration interface at the url `<base_url>nbextensions`, where
