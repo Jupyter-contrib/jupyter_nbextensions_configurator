@@ -274,34 +274,37 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
         cls._print_logs_on_failure()
         super(SeleniumNbextensionTestBase, cls).teardown_class()
 
-    def wait_for_element(self, presence_cond, message, timeout=5):
+    @classmethod
+    def wait_for_element(cls, presence_cond, message, timeout=5):
         """WebDriverWait for an element to appear, fail test on timeout."""
         try:
-            WebDriverWait(self.driver, 5).until(
+            return WebDriverWait(cls.driver, timeout).until(
                 ec.presence_of_element_located(presence_cond))
         except TimeoutException:
             if message:
-                self.fail(message)
+                raise cls.failureException(message)
             else:
-                self.fail(
+                raise cls.failureException(
                     '{}No element matching condition {!r} found in {}s'.format(
                         message, presence_cond, timeout))
 
-    def wait_for_selector(self, css_selector, message='', timeout=5):
+    @classmethod
+    def wait_for_selector(cls, css_selector, message='', timeout=5):
         """WebDriverWait for a selector to appear, fail test on timeout."""
         if message:
             message += '\n'
         message = '{}No element matching selector {!r} found in {}s'.format(
             message, css_selector, timeout)
-        self.wait_for_element(
+        return cls.wait_for_element(
             (By.CSS_SELECTOR, css_selector), message=message, timeout=timeout)
 
-    def wait_for_partial_link_text(self, link_text, message='', timeout=5):
+    @classmethod
+    def wait_for_partial_link_text(cls, link_text, message='', timeout=5):
         """WebDriverWait for a link to appear, fail test on timeout."""
         if message:
             message += '\n'
         message = (
             '{}No element matching partial link text '
             '{!r} found in {}s').format(message, link_text, timeout)
-        self.wait_for_element((By.PARTIAL_LINK_TEXT, link_text),
-                              message=message, timeout=timeout)
+        return cls.wait_for_element((By.PARTIAL_LINK_TEXT, link_text),
+                                    message=message, timeout=timeout)
