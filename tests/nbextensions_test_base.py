@@ -35,8 +35,11 @@ else:
     no_selenium = False
     from selenium.common.exceptions import TimeoutException
     from selenium.webdriver.common.by import By
+    from selenium.webdriver.remote import remote_connection
     from selenium.webdriver.support import expected_conditions as ec
     from selenium.webdriver.support.ui import WebDriverWait
+    # don't show selenium debug logs
+    remote_connection.LOGGER.setLevel(logging.INFO)
 
 
 class NoseyNotebookApp(NotebookApp):
