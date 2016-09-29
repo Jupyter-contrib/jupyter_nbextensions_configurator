@@ -83,7 +83,8 @@ class NbextensionTestBase(NotebookTestBase):
         logger = get_wrapped_logger(
             name=inst_funcname, log_level=logging.DEBUG)
         serverextensions.toggle_serverextension_python(
-            'jupyter_nbextensions_configurator', enabled=True, logger=logger)
+            'jupyter_nbextensions_configurator',
+            enabled=True, user=False, logger=logger)
 
     @classmethod
     def get_server_kwargs(cls, **overrides):
@@ -123,25 +124,33 @@ class NbextensionTestBase(NotebookTestBase):
                 app.session_manager.close()
 
     @classmethod
-    def setup_class(cls):
-        """Install things & setup a notebook server in a separate thread."""
+    def _setup_patches(cls):
         (cls.jupyter_patches, cls.jupyter_dirs,
          remove_jupyter_dirs) = patch_jupyter_dirs()
         # store in a list to avoid confusion over bound/unbound method in pypy
         cls.removal_funcs = [remove_jupyter_dirs]
-        for ptch in cls.jupyter_patches:
-            ptch.start()
-
         try:
+            for ptch in cls.jupyter_patches:
+                ptch.start()
+
             # patches for items called in NotebookTestBase.teardown_class
             # env_patch needs a start method as well because of a typo in
             # notebook 4.0 which calls it in the teardown_class method
             cls.env_patch = cls.path_patch = Mock(['start', 'stop'])
             cls.home_dir = cls.config_dir = cls.data_dir = Mock(['cleanup'])
             cls.runtime_dir = cls.notebook_dir = Mock(['cleanup'])
+        except Exception:
+            for func in cls.removal_funcs:
+                func()
+            raise
 
-            cls.log = get_wrapped_logger(cls.__name__)
-            cls.pre_server_setup()
+    @classmethod
+    def setup_class(cls):
+        """Install things & setup a notebook server in a separate thread."""
+        cls.log = get_wrapped_logger(cls.__name__)
+        cls._setup_patches()
+        cls.pre_server_setup()
+        try:
             started = Event()
             cls.notebook_thread = Thread(
                 target=cls.start_server_thread, args=[started])
@@ -149,7 +158,8 @@ class NbextensionTestBase(NotebookTestBase):
             started.wait()
             cls.wait_until_alive()
         except Exception:
-            remove_jupyter_dirs()
+            for func in cls.removal_funcs:
+                func()
             raise
 
     @classmethod
@@ -166,20 +176,33 @@ class NbextensionTestBase(NotebookTestBase):
                     func()
 
 
+def _skip_if_no_selenium():
+    if no_selenium:
+        raise SkipTest('Selenium not installed. '
+                       'Skipping selenium-based test.')
+    if os.environ.get('TRAVIS_OS_NAME') == 'osx':
+        raise SkipTest("Don't do selenium tests on travis osx")
+
+
 class SeleniumNbextensionTestBase(NbextensionTestBase):
 
     @classmethod
     def setup_class(cls):
-        if no_selenium:
-            raise SkipTest('Selenium not installed. '
-                           'Skipping selenium-based test.')
-        if os.environ.get('TRAVIS_OS_NAME') == 'osx':
-            raise SkipTest("Don't do selenium tests on travis osx")
+        cls.init_webdriver()
+        cls._failure_occurred = False  # flag for logging
         super(SeleniumNbextensionTestBase, cls).setup_class()
 
+    @classmethod
+    def init_webdriver(cls):
+        cls.log = get_wrapped_logger(cls.__name__)
+        _skip_if_no_selenium()
+
+        if hasattr(cls, 'driver'):
+            return cls.driver
         if (os.environ.get('CI') and os.environ.get('TRAVIS') and
                 os.environ.get('SAUCE_ACCESS_KEY')):
-            cls.log.info('Running in CI environment. Using Sauce.')
+            cls.log.info(
+                'Running in CI environment. Using Sauce remote webdriver.')
             username = os.environ['SAUCE_USERNAME']
             access_key = os.environ['SAUCE_ACCESS_KEY']
             capabilities = {
@@ -202,10 +225,9 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
             cls.driver = webdriver.Remote(
                 desired_capabilities=capabilities, command_executor=hub_url)
         else:
-            # local test
+            cls.log.info('Using local webdriver.')
             cls.driver = webdriver.Firefox()
-
-        cls._failure_occurred = False  # flag for logging
+        return cls.driver
 
     def run(self, results):
         """Run a given test. Overridden in order to access results."""
@@ -219,7 +241,7 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
         return results
 
     @classmethod
-    def teardown_class(cls):
+    def _print_logs_on_failure(cls):
         if cls._failure_occurred:
             cls.log.info('\n'.join([
                 '',
@@ -247,6 +269,9 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
         else:
             cls.log.info('keeping webdriver open')
 
+    @classmethod
+    def teardown_class(cls):
+        cls._print_logs_on_failure()
         super(SeleniumNbextensionTestBase, cls).teardown_class()
 
     def wait_for_element(self, presence_cond, message, timeout=5):
