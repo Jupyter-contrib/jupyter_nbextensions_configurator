@@ -28,7 +28,8 @@ define([
 
     var base_url = utils.get_body_data('baseUrl');
     var first_load_done = false; // flag used to not push history on first load
-    var extensions_dict = {}; // dictionary storing extensions by their 'require' value
+    var extensions_dict = {}; // dictionary storing nbextensions by their 'require' value
+    var filter_timeout_id = null; // timeout ref used to prevent lots of consecutive requests
 
     /**
      * function for comparing arbitrary version numbers, taken from
@@ -58,6 +59,9 @@ define([
         'tree' : new configmod.ConfigSection('tree', {base_url: base_url}),
         'common'   : new configmod.ConfigSection('common', {base_url: base_url}),
     };
+
+    // tags used to filter visible nbextensions
+    var tags = [];
 
     // the prefix added to all parameter input id's
     var param_id_prefix = 'input_';
@@ -161,7 +165,7 @@ define([
     function set_config_enabled (extension, state) {
         state = state === undefined ? true : Boolean(state);
         console.log('Notebook extension "' + extension.Name + '"', state ? 'enabled' : 'disabled');
-        // for pre-4.2 versions, the javascript loading extensions actually
+        // for pre-4.2 versions, the javascript loading nbextensions actually
         // ignores the true/false state, so to disable we have to delete the key
         if ((version_compare(Jupyter.version, '4.2') < 0) && !state) {
             state = null;
@@ -169,6 +173,22 @@ define([
         var to_load = {};
         to_load[extension.require] = state;
         configs[extension.Section].update({load_extensions: to_load});
+    }
+
+    /**
+     * Callback function for clicking on a collapsible panel heading
+     */
+    function panel_showhide_callback (evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        var head = $(evt.currentTarget);
+        var body = head.next();
+        var show = !body.is(':visible');
+        head.find('i.fa').first()
+            .toggleClass('fa-caret-down', show)
+            .toggleClass('fa-caret-right', !show);
+        body
+            .slideToggle({show: show, duration: 200});
     }
 
     /**
@@ -191,7 +211,7 @@ define([
     }
 
     /**
-     * Handle button click event to enable/disable extension
+     * Handle button click event to enable/disable nbextension
      */
     function handle_buttons_click (evt) {
         var btn = $(evt.target);
@@ -259,7 +279,7 @@ define([
     }
 
     /**
-     * handle form input for extension parameters, updating parameters in
+     * handle form input for nbextension parameters, updating parameters in
      * server's json config file
      */
     function handle_input (evt) {
@@ -371,7 +391,8 @@ define([
                 // add a button to add list elements
                 var add_button = $('<a/>')
                     .addClass('btn btn-default input-group-btn nbext-list-btn-add')
-                    .append($('<i/>', {'class': 'fa fa-plus'}).text(' new item'))
+                    .text(' new item')
+                    .prepend('<i class="fa fa-plus"/>')
                     .on('click', function () {
                         $(this).parent().siblings('ul').append(
                             wrap_list_input(
@@ -416,7 +437,7 @@ define([
 
     /*
      * Build and return a div containing the buttons to enable/disable an
-     * extension with the given id.
+     * nbextension with the given id.
      */
     function build_enable_buttons () {
         var div_buttons = $('<div class="btn-group nbext-enable-btns"/>');
@@ -452,20 +473,26 @@ define([
 
         var selector = $('.nbext-selector');
         if (selector.find('li.active').first().hasClass('disabled')) {
-            selector.find('li:not(.disabled) a').first().click();
+            selector.find('li:not(.disabled):visible a').first().click();
         }
     }
 
     /**
-     * if the extension's readme is a relative url with extension .md,
+     * if the nbextension's readme is a relative url with file extension .md,
      *     render the referenced markdown file
      * otherwise
-     *     add an anchor element to the extension's description
+     *     add an anchor element to the nbextension's description
      */
     function load_readme (extension) {
-        var readme_div = $('.nbext-readme .nbext-readme-contents').empty();
-        var readme_title = $('.nbext-readme > h3').empty();
-        if (!extension.readme) return;
+        var readme = $('.nbext-readme');
+        var readme_contents = readme.children('.nbext-readme-contents').empty();
+        var readme_title = readme.find('.nbext-readme-title').empty();
+
+        if (extension.readme === undefined) {
+            readme.slideUp(100);
+            return;
+        }
+        readme.slideDown(100);
 
         var url = extension.readme;
         var is_absolute = /^(f|ht)tps?:\/\//i.test(url);
@@ -487,12 +514,14 @@ define([
         url = require.toUrl(
             utils.url_path_join(
                 base_url, 'nbextensions', utils.encode_uri_components(url)));
+        // remove search component, as it's just a datestamp from require.js
+        url = $('<a>').attr('href', url)[0].pathname;
         readme_title.text(url);
-        // add rendered markdown to readme_div. Use pre-fetched if present
+        // add rendered markdown to readme_contents. Use pre-fetched if present
         if (extension.readme_content) {
             rendermd.render_markdown(extension.readme_content, url)
                 .addClass('rendered_html')
-                .appendTo(readme_div);
+                .appendTo(readme_contents);
             return;
         }
         $.ajax({
@@ -501,7 +530,7 @@ define([
             success: function (md_contents) {
                 rendermd.render_markdown(md_contents, url)
                     .addClass('rendered_html')
-                    .appendTo(readme_div);
+                    .appendTo(readme_contents);
                 // We can't rely on picking up the rendered html,
                 // since render_markdown returns
                 // before the actual rendering work is complete
@@ -515,7 +544,7 @@ define([
                     // Allow time for markdown to render
                     setTimeout( function () {
                         // use filter to avoid breaking jQuery selector syntax with weird id
-                        var hdr = readme_div.find(':header').filter(function (idx, elem) {
+                        var hdr = readme_contents.find(':header').filter(function (idx, elem) {
                             return elem.id === hash;
                         });
                         if (hdr.length > 0) {
@@ -540,7 +569,7 @@ define([
             error: function (jqXHR, textStatus, errorThrown) {
                 var error_div = $('<div class="text-danger bg-danger"/>')
                     .text(textStatus + ' : ' + jqXHR.status + ' ' + errorThrown)
-                    .appendTo(readme_div);
+                    .appendTo(readme_contents);
                 if (jqXHR.status === 404) {
                     $('<p/>')
                         .text('no markdown file at ' + url)
@@ -551,23 +580,41 @@ define([
     }
 
     /**
-     * open the user interface the extension corresponding to the given
+     * open the user interface for the nbextension corresponding to the given
      * link
-     * @param extension the extension
+     * @param extension the nbextension
      * @param opts options for the reveal animation
      */
     function open_ext_ui (extension, opts) {
         var default_opts = {duration: 100};
         opts = $.extend(true, {}, default_opts, opts);
 
+        if (extension === undefined) {
+            // just make a dummy to warn about selection
+            extension = {
+                ui: $('<div/>')
+                    .data('extension', extension)
+                    .addClass('row nbext-ext-row')
+                    .css('display', 'none')
+                    .insertBefore('.nbext-readme'),
+                selector_link: $(),
+            };
+            var warning = $('<div/>')
+                .addClass('alert alert-warning')
+                .appendTo(extension.ui);
+            $('<p/>')
+                .text('No nbextensions match the applied filters!')
+                .appendTo(warning);
+        }
+
         /**
          * If we're in a standalone page,
          * Set window search string to allow reloading settings for a given
-         * extension.
+         * nbextension.
          * Use history.pushState if available, to avoid reloading the page
          */
-        var new_search = '?nbextension=' + utils.encode_uri_components(extension.require);
-        if (first_load_done && $('body').hasClass(page_class)) {
+        if (first_load_done && $('body').hasClass(page_class) && extension.require !== undefined) {
+            var new_search = '?nbextension=' + utils.encode_uri_components(extension.require);
             if (window.history.pushState) {
                 window.history.pushState(extension.require, undefined, new_search);
             }
@@ -602,7 +649,7 @@ define([
 
     /**
      * Callback for the nav links
-     * open the user interface the extension corresponding to the clicked
+     * open the user interface for the nbextension corresponding to the clicked
      * link, and scroll it into view
      */
     function selector_nav_link_callback (evt) {
@@ -648,13 +695,12 @@ define([
     }
 
     /**
-     * delete all of the values for an extension's parameters from the config,
+     * delete all of the values for an nbextension's parameters from the config,
      * then rebuild their ui elements, to give default values.
      */
     function reset_params (extension) {
         // first remove config values:
         return conf_dot_delete_keys(
-
             configs[extension.Section],
             extension.Parameters.map(function (param) {
                 return param.name;
@@ -670,6 +716,7 @@ define([
      * Callback for the rest parameters control
      */
     function reset_params_callback (evt) {
+        evt.stopPropagation(); // don't want to toggle visibility too!
         var btn = $(evt.target);
         if (btn.children('.fa').length < 1) {
             btn.addClass('disabled');
@@ -749,7 +796,7 @@ define([
     }
 
     /**
-     * build and return UI elements for a single extension
+     * build and return UI elements for a single nbextension
      */
     function build_extension_ui (extension) {
         var ext_row = $('<div/>')
@@ -802,10 +849,10 @@ define([
             // Duplicate warning
             if (extension.duplicate) {
                 var duplicate_warning_p = $('<p/>').text([
-                    'This extension\'s require url (' + extension.require + ')',
+                    'This nbextension\'s require url (' + extension.require + ')',
                     'is referenced by two different yaml files on the server.',
                     'This probably means that there are two installations of the',
-                    'same extension in different directories on the server.',
+                    'same nbextension in different directories on the server.',
                     'If they are different, only one will be loaded by the',
                     'notebook, and this may prevent configuration from working',
                     'correctly.',
@@ -829,9 +876,18 @@ define([
             }
 
             // Section
-            var section = $('<div/>')
+            $('<div/>')
                 .text('section: ' + extension.Section)
                 .addClass('nbext-sect')
+                .appendTo(col_left);
+
+            // Require
+            $('<div/>')
+                .text('require path: ')
+                .addClass('nbext-req')
+                .append(
+                    $('<span/>').addClass('rendered_html').append(
+                        $('<code/>').text(extension.require)))
                 .appendTo(col_left);
 
             // Compatibility
@@ -886,6 +942,8 @@ define([
                         $('<div/>')
                             .addClass('panel-heading')
                             .text('Parameters')
+                            .prepend('<i class="fa fa-fw fa-caret-down"/>')
+                            .on('click', panel_showhide_callback)
                             .append(reset_control)
                     )
                     .append(
@@ -895,20 +953,189 @@ define([
             }
         }
         catch (err) {
-            console.error('nbext error loading extension', extension.Name);
+            console.error('[nbext] error loading nbextension', extension.Name);
             console.error(err);
             $('<div/>')
                 .addClass('alert alert-warning')
                 .css('margin-top', '5px')
                 .append(
                     $('<p/>')
-                        .text('error loading extension ' + extension.Name)
+                        .text('[nbext] error loading nbextension ' + extension.Name)
                 )
                 .appendTo(ext_row);
         }
         finally {
             return ext_row;
         }
+    }
+
+    /**
+     * callback function for changes to filters. This is essentially just a way
+     * of preventing multiple callbacks from executing simultaneously, so that
+     * huge numbers of filter change callbacks don't make the UI laggy.
+     */
+    function filter_callback_queue_refresh (evt) {
+        clearTimeout(filter_timeout_id);
+        filter_timeout_id = setTimeout(filter_refresh_visible_nbexts, 100);
+    }
+
+    function filter_refresh_visible_nbexts () {
+        var to_show = [], to_hide = [];
+        $('.nbext-selector ul li a').each(function (idx, el) {
+            var ext = $(el).data('extension');
+            var active_tag_elems = $('.nbext-filter-tag');
+            var show = true;
+            for (var ii=0; ii < active_tag_elems.length && show; ii++) {
+                var tag = active_tag_elems.eq(ii).data('nbext_tag_object');
+                switch (tag.category) {
+                    case 'name':
+                        show = show && (tag.value === ext.Name);
+                        break;
+                    case 'section':
+                        show = show && (tag.value === ext.Section);
+                        break;
+                    case 'tag':
+                        show = show && (ext.tags.indexOf(tag.value) > 0);
+                        break;
+                }
+            }
+            (show ? to_show: to_hide).push(ext.selector_link.parent()[0]);
+
+        });
+        $(to_hide).slideUp(100);
+        to_show = $(to_show); // convert to jquery obj
+        to_show.slideDown(100)
+        // make sure a visible nbextensions is selected
+        if (!to_show.is('.active')) {
+            var candidate = to_show.filter(':not(.disabled)').first().children('a');
+            if (candidate.length > 0 ) {
+                candidate.click();
+            }
+            else {
+                open_ext_ui(undefined);
+            }
+        }
+    }
+
+    function filter_build_tag_element (tag_object) {
+        var tag_elem = $('<div>')
+            .data('nbext_tag_object', tag_object)
+            .addClass('nbext-filter-tag btn-group');
+        $('<span/>')
+            // .addClass('btn btn-primary')
+            .text(tag_object.label)
+            .appendTo(tag_elem);
+        $('<span/>')
+            // .addClass('btn btn-primary')
+            .on('click', function (evt) {
+                evt.preventDefault();
+                tag_elem.remove();
+                filter_callback_queue_refresh();
+            })
+            .append('<i class="fa fa-close">')
+            .appendTo(tag_elem);
+        return tag_elem;
+    }
+
+    function filter_register_new_tag (new_tag_object) {
+        for (var ii=0; ii < tags.length; ii++) {
+            if (tags[ii].value == new_tag_object.value && tags[ii].category == new_tag_object.category) {
+                return //tag already exists, so don't insert
+            }
+        }
+        new_tag_object.label = new_tag_object.category + ': ' + new_tag_object.value;
+        tags.push(new_tag_object);
+    }
+
+    function filter_build_ui () {
+        // define a custom jqueryui autocomplete widget
+        $.widget('custom.nbextfilterer', $.ui.autocomplete, {
+            _create: function () {
+                this._super();
+                this.widget().menu('option', 'items', '> :not(.nbext-filter-category)');
+            },
+            _renderMenu: function (ul, items) {
+                ul.addClass('nbext-filter-menu dropdown-menu');
+                ul.removeClass('ui-menu ui-autocomplete ui-front ui-widget ui-widget-content ui-corner-all');
+                var nbextfiltererwidget = this;
+                // leave already-applied tags out of the menu
+                var active_tag_labels = $.map(
+                    $(this.element).siblings('.nbext-filter-tag'),
+                    function (elem, idx) {
+                        return $(elem).data('nbext_tag_object').label;
+                    }
+                );
+                $.each(items, function (index, item) {
+                    if (active_tag_labels.indexOf(item.label) < 0) {
+                        nbextfiltererwidget._renderItemData(ul, item);
+                    }
+                });
+            }
+        });
+
+        var filter_input_group = $('<div/>')
+            .attr('id', 'nbext-filter-grp')
+            .addClass('nbext-filter-grp input-group');
+        $('<span/>')
+            .attr('id', 'nbext-filter-label')
+            .addClass('nbext-filter-label input-group-addon')
+            .appendTo(filter_input_group);
+        // add a wrapper to hold both applied tags and an input.
+        // It will be styled to look like an input using the form-control css class.
+        var filter_input_wrap = $('<div/>')
+            .addClass('nbext-filter-input-wrap form-control')
+            .attr('aria-describedby', 'nbext-filter-label')
+            .on('click', function (evt) {
+                if (evt.target == this) { //only if we clicked the div, not a child of it
+                    var input = $(this).find('input').first();
+                    input.focus();
+                    input.data('custom-nbextfilterer').search(input[0].value);
+                }
+            }).appendTo(filter_input_group);
+
+        // add the actual input
+        $('<input />')
+            .on('focus', function (evt) {
+                $(this).data('custom-nbextfilterer').search(this.value);
+            })
+            // register an extra keydown handler for stuff where we want to
+            // override default autocomplete behaviour
+            .on('keydown', function (evt) {
+                var $this = $(this);
+                if (evt.keyCode === $.ui.keyCode.TAB) {
+                    // don't navigate away from the field on tab when selecting an item
+                    var menu_active = $this.data('custom-nbextfilterer').menu.active;
+                    if (menu_active) {
+                        evt.preventDefault();
+                    }
+                    filter_callback_queue_refresh();
+                }
+                else if (evt.keyCode === $.ui.keyCode.BACKSPACE && !this.value) {
+                    $this.siblings('.nbext-filter-tag').last().remove();
+                    filter_callback_queue_refresh();
+                }
+            })
+            .nbextfilterer({
+                delay: 20,
+                source: tags,
+                minLength: 0,
+                autoFocus: true,
+                focus: function() {
+                    return false; // prevent value inserted on focus
+                },
+                select: function(event, ui) {
+                    // add the selected item (tag)
+                    filter_build_tag_element(ui.item).insertBefore(this);
+                    // clear input
+                    this.value = '';
+                    // queue updating filter
+                    filter_callback_queue_refresh();
+                    return false;
+                }
+            })
+            .appendTo(filter_input_wrap);
+
+        return filter_input_group;
     }
 
     function build_configurator_ui () {
@@ -920,7 +1147,7 @@ define([
             .addClass('row nbext-row container-fluid nbext-selector')
             .appendTo(config_ui);
 
-        $('<h4>Configurable extensions</h4>').appendTo(selector);
+        $('<h3>Configurable nbextensions</h3>').appendTo(selector);
 
         var showhide = $('<div/>')
             .addClass('nbext-showhide-incompat')
@@ -934,8 +1161,10 @@ define([
                         set_hide_incompat(handle_input(evt));
                     })
             )
-            .append(' disable configuration for extensions without explicit compatibility (they may break your notebook environment, but can be useful to show for extension development)')
+            .append(' disable configuration for nbextensions without explicit compatibility (they may break your notebook environment, but can be useful to show for nbextension development)')
             .appendTo(selector);
+
+        filter_build_ui().appendTo(selector);
 
         var selector_nav = $('<nav/>')
             .addClass('row')
@@ -943,10 +1172,16 @@ define([
             .appendTo(selector);
 
         var readme = $('<div/>')
-            .addClass('row nbext-readme')
-            .append('<h3/>')
-            .append('<div class="nbext-readme-contents"/>')
+            .addClass('row nbext-readme panel panel-default')
+            .css('display', 'none') // hide until an nbextension with a readme reveals it
             .appendTo(config_ui);
+        $('<div class="panel-heading"/>')
+            .append('<i class="fa fa-fw fa-caret-down"/>')
+            .append('<span class="nbext-readme-title">')
+            .on('click', panel_showhide_callback)
+            .appendTo(readme);
+        $('<div class="nbext-readme-contents panel-body"/>')
+            .appendTo(readme);
 
         return config_ui;
     }
@@ -961,7 +1196,7 @@ define([
     }
 
     /**
-     * build html body listing all extensions.
+     * build html body listing all nbextensions.
      */
     function build_page () {
         add_css('./main.css');
@@ -978,7 +1213,7 @@ define([
         events.trigger('resize-header.Page');
 
         load_all_configs().then(function () {
-            // get list of extensions from value set by script embedded in page by the python backend
+            // get list of nbextensions from value set by script embedded in page by the python backend
             build_extension_list(window.extension_list);
             nbext_config_page.show();
         });
@@ -991,12 +1226,12 @@ define([
 
     /**
      * Callback for the window.popstate event, used to handle switching to the
-     * correct selected extension
+     * correct selected nbextension
      */
     function popstateCallback (evt) {
         var require_url;
         if (evt === undefined) {
-            // attempt to select an extension specified by a URL search parameter
+            // attempt to select an nbextension specified by a URL search parameter
             var queries = window.location.search.replace(/^\?/, '').split('&');
             for (var ii = 0; ii < queries.length; ii++) {
                 var keyValuePair = queries[ii].split('=');
@@ -1023,15 +1258,15 @@ define([
     }
 
     /**
-     * build html body listing all extensions.
+     * build html body listing all nbextensions.
      *
      * Since this function uses the contents of config.data,
      * it should only be called after config.load() has been executed
      */
     function build_extension_list (extension_list) {
-        // add enabled-but-unconfigurable extensions to the list
-        // construct a set of enabled extension urls from the configs
-        // this is used later to add unconfigurable extensions to the list
+        // add enabled-but-unconfigurable nbextensions to the list
+        // construct a set of enabled nbextension urls from the configs
+        // this is used later to add unconfigurable nbextensions to the list
         var unconfigurable_enabled_extensions = {};
         var section;
         for (section in configs) {
@@ -1042,15 +1277,15 @@ define([
             extension = extension_list[i];
             extension.Section = (extension.Section || 'notebook').toString();
             extension.Name = (extension.Name || (extension.Section + ':' + extension.require)).toString();
-            // extension *is* configurable
+            // nbextension *is* configurable
             delete unconfigurable_enabled_extensions[extension.Section][extension.require];
         }
-        // add any remaining unconfigurable extensions as stubs
+        // add any remaining unconfigurable nbextensions as stubs
         for (section in configs) {
             for (var require_url in unconfigurable_enabled_extensions[section]) {
                 extension_list.push({
                     Name: require_url,
-                    Description: 'This extension is enabled in the ' + section + ' json config, ' +
+                    Description: 'This nbextension is enabled in the ' + section + ' json config, ' +
                         "but doesn't provide a yaml file to tell us how to configure it. " +
                         "You can still enable or disable it from here, though.",
                     Section: section,
@@ -1064,7 +1299,7 @@ define([
 
         var selector_nav = $('.nbext-selector ul');
 
-        // sort extensions alphabetically
+        // sort nbextensions alphabetically
         extension_list.sort(function (a, b) {
             var an = (a.Name || '').toLowerCase();
             var bn = (b.Name || '').toLowerCase();
@@ -1077,7 +1312,7 @@ define([
         for (i = 0; i < extension_list.length; i++) {
             extension = extension_list[i];
             extensions_dict[extension.require] = extension;
-            console.log('Notebook extension "' + extension.Name + '" found');
+            console.log('[nbext] found nbextension "' + extension.Name + '"');
 
             extension.is_compatible = (extension.Compatibility || '?.x').toLowerCase().indexOf(
                 Jupyter.version.substring(0, 2) + 'x') >= 0;
@@ -1110,14 +1345,36 @@ define([
                 ext_enabled = (conf.data.load_extensions[extension.require] === true);
             }
             set_buttons_enabled(extension, ext_enabled);
+
+            filter_register_new_tag({category: 'section', value: extension.Section});
+            filter_register_new_tag({category: 'name', value: extension.Name});
+            extension.tags = (extension.tags || []);
+            for (var tt=0; tt < extension.tags.length; tt++) {
+                filter_register_new_tag({category: 'tag', value: extension.tags[tt]});
+            }
         }
+        // sort tags
+        tags.sort(function (a, b) {
+            var cat_order = ['section', 'tag', 'name'];
+            var an = cat_order.indexOf(a.category);
+            var bn = cat_order.indexOf(b.category);
+            if (an != bn) {
+                return an - bn;
+            }
+            an = (a.label  || '').toLowerCase();
+            bn = (b.label  || '').toLowerCase();
+            if (an < bn) return -1;
+            if (an > bn) return 1;
+            return 0;
+        });
+
         // attach click handlers
         $('.nbext-enable-toggle')
             .on('click', selector_checkbox_callback)
             .closest('a')
             .on('click', selector_nav_link_callback);
 
-        // en/disable incompatible extensions
+        // en/disable incompatible nbextensions
         var hide_incompat = true;
         if (configs['common'].data.hasOwnProperty('nbext_hide_incompat')) {
             hide_incompat = configs['common'].data.nbext_hide_incompat;
@@ -1127,6 +1384,9 @@ define([
             );
         }
         set_hide_incompat(hide_incompat);
+
+        // select a link
+        selector_nav.children('li:not(.disabled)').last().children('a').click();
     }
 
     /**

@@ -1,5 +1,5 @@
-// extension by jcb91
-// Tiny extension to add an edit-menu item to open the NbExtensions config page
+// nbextension by jcb91
+// Tiny nbextension to add an edit-menu item to open the NbExtensions config page
 
 define(['jquery', 'base/js/namespace'], function ($, Jupyter) {
     "use strict";

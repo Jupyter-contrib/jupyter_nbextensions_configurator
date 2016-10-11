@@ -34,7 +34,7 @@ def get_configurable_nbextensions(
 
     descriptor files must:
       - be located under one of nbextension_dirs
-      - have the extension '.yaml'
+      - have the file extension '.yaml'
       - containing (at minimum) the following keys:
         - Type: must be 'IPython Notebook Extension' or
                 'Jupyter Notebook Extension'
@@ -94,7 +94,7 @@ def get_configurable_nbextensions(
                     else:
                         extension[to_key] = posixpath.normpath(
                             ujoin(yaml_dir_url, from_val))
-                # strip .js extension in require path
+                # strip .js file extension in require path
                 require = extension['require'] = os.path.splitext(
                     extension['require'])[0]
 
@@ -121,7 +121,7 @@ def get_configurable_nbextensions(
 
 class NBExtensionHandlerJSON(APIHandler):
     """
-    Returns a json list describing the configurable extensions.
+    Returns a json list describing the configurable nbextensions.
 
     Based on part of notebook.services.config.handlers.ConfigHandler
     """
@@ -138,11 +138,11 @@ class NBExtensionHandlerJSON(APIHandler):
 
 
 class NBExtensionHandlerPage(IPythonHandler):
-    """Renders the notebook extension configuration interface."""
+    """Renders the nbextension configuration interface."""
 
     @web.authenticated
     def get(self):
-        """Render the notebook extension configuration interface."""
+        """Render the nbextension configuration interface."""
         nbapp_webapp = self.application
         nbextension_dirs = nbapp_webapp.settings['nbextensions_path']
         extension_list = get_configurable_nbextensions(
@@ -150,7 +150,7 @@ class NBExtensionHandlerPage(IPythonHandler):
         self.finish(self.render_template(
             'nbextensions_configurator.html',
             extension_list_json=json.dumps(extension_list),
-            page_title='Notebook Extension Configuration',
+            page_title='Nbextensions Configuration',
             **self.application.settings
         ))
 
@@ -174,7 +174,7 @@ class RenderExtensionHandler(IPythonHandler):
 
 def load_jupyter_server_extension(nbapp):
     """Load and initialise the server extension."""
-    nbapp.log.debug('Loading extension {}'.format(__name__))
+    nbapp.log.debug('Loading server extension {}'.format(__name__))
     webapp = nbapp.web_app
 
     # ensure our template gets into search path
@@ -205,7 +205,7 @@ def load_jupyter_server_extension(nbapp):
     ]]
     webapp.add_handlers(".*$", new_handlers)
 
-    nbapp.log.info('Loaded extension {}'.format(__name__))
+    nbapp.log.info('Loaded server extension {}'.format(__name__))
 
 
 def _jupyter_server_extension_paths():

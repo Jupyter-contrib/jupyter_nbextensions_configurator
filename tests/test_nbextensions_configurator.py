@@ -52,14 +52,14 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
             len(nbext_list), 0, 'some nbextensions should be found')
 
     def test_03_extension_ui_presence(self):
-        self.wait_for_selector('.nbext-row', 'an extension ui should load')
+        self.wait_for_selector('.nbext-row', 'an nbextension ui should load')
         enable_links = self.driver.find_elements_by_css_selector(
             '.nbext-selector')
         nt.assert_greater(
             len(enable_links), 0, 'some nbextensions should have enable links')
 
     def test_04_readme_rendering(self):
-        # load an extension UI which has a readme containing an image to render
+        # load an nbextension UI whose readme contains an image to render
         partial_txt = 'dashboard'
         self.wait_for_partial_link_text(partial_txt)
         sel_link = self.driver.find_element_by_partial_link_text(partial_txt)
@@ -74,7 +74,7 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
 
     def test_06_enable_tree_tab(self):
         self.driver.get(self.nbext_configurator_url)
-        self.wait_for_selector('.nbext-row', 'an extension ui should load')
+        self.wait_for_selector('.nbext-row', 'an nbextension ui should load')
         # now enable the appropriate nbextension
         partial_txt = 'dashboard'
         self.wait_for_partial_link_text(partial_txt)
@@ -89,7 +89,7 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         tab_selector = '#tabs a[href$=nbextensions_configurator]'
         self.wait_for_selector(tab_selector)
         self.driver.find_element_by_css_selector(tab_selector).click()
-        self.wait_for_selector('.nbext-row', 'an extension ui should load')
+        self.wait_for_selector('.nbext-row', 'an nbextension ui should load')
 
     def test_08_disable_tree_tab(self):
         # now disable the appropriate nbextension & wait for update to config
@@ -149,7 +149,7 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
             with io.open(yaml_path, 'w') as f:
                 yaml.dump(yaml_obj, f)
 
-        # a yaml file which shadows an existing extension.
+        # a yaml file which shadows an existing nbextension.
         nbdir = os.path.join(
             os.path.dirname(jupyter_nbextensions_configurator.__file__),
             'static')

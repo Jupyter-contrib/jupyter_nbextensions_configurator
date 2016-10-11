@@ -13,9 +13,9 @@ which provides configuration interfaces for notebook extensions (nbextensions).
 The `jupyter_nbextensions_configurator` jupyter server extension provides
 graphical user interfaces for configuring which nbextensions are enabled
 (load automatically for every notebook), and display their readme files.
-In addition, for extensions which include an appropriate yaml descriptor file
-(see below), the interface also provides controls to configure the extensions'
-options.
+In addition, for nbextensions which include an appropriate yaml descriptor file
+(see below), the interface also provides controls to configure the
+nbextensions' options.
 
 This project was spun out of work from
 [`ipython-contrib/IPython-notebook-extensions`][contrib repo url].
@@ -101,36 +101,37 @@ YAML file format
 
 You don't need to know about the yaml files in order simply to use
 `jupyter_nbextensions_configurator`.
-A notebook extension is 'found' by the `jupyter_nbextensions_configurator`
-server extension when a special yaml file describing the nbextension and its
-options is found in the notebook server's `nbextensions_path`.
-The yaml file can have any name with the extension `.yaml` or `.yml`, and
-describes the notebook extension and its options to
+An nbextension is 'found' by the `jupyter_nbextensions_configurator` server
+extension when a special yaml file describing the nbextension and its options
+is found in the notebook server's `nbextensions_path`.
+The yaml file can have any name with the file extension `.yaml` or `.yml`, and
+describes the nbextension and its options to
 `jupyter_nbextensions_configurator`.
 
 The case-sensitive keys in the yaml file are as follows:
 
  * `Type`,            (**required**) a case-sensitive identifier, must be `IPython Notebook Extension` or `Jupyter Notebook Extension`
  * `Main`,            (**required**) the main javascript file that is loaded, typically `main.js`
- * `Name`,            the name of the extension
- * `Description`,     a short explanation of the extension
- * `Link`,            a URL for more documentation. If this is a relative url with a `.md` extension (recommended!), the markdown readme is rendered in the configurator UI.
+ * `Name`,            the name of the nbextension
+ * `Description`,     a short explanation of the nbextension
+ * `Link`,            a URL for more documentation. If this is a relative url with a `.md` file extension (recommended!), the markdown readme is rendered in the configurator UI.
  * `Icon`,            a URL for a small icon for the configurator UI (rendered 120px high, should preferably end up 400px wide. Recall HDPI displays may benefit from a 2x resolution icon).
  * `Compatibility`,   Jupyter major version compatibility, e.g. `3.x` or `4.x`, `3.x 4.x`, `3.x, 4.x, 5.x`
  * `Parameters`,      an optional list of configuration parameters. Each item is a dictionary with (some of) the following keys
    * `name`,          (**required**) the name used to store the configuration variable in the config json. It follows a json-like structure, so you can use `.` to separate sub-objects e.g. `myextension.buttons_to_add.play`.
    * `description`,   a description of the configuration parameter
-   * `default`,       a default value used to populate the tag in the configurator UI, if no value is found in config. Note that this is more of a hint to the user than anything functional - since it's only set in the yaml file, the javascript implementing the extension in question might actually use a different default, depending on the implementation.
+   * `default`,       a default value used to populate the tag in the configurator UI, if no value is found in config. Note that this is more of a hint to the user than anything functional - since it's only set in the yaml file, the javascript implementing the nbextension in question might actually use a different default, depending on the implementation.
    * `input_type`,    controls the type of html tag used to render the parameter in the configurator UI. Valid values include `text`, `textarea`, `checkbox`, [html5 input tags such as `number`, `url`, `color`, ...], plus a final type of `list`
    * `list_element`,  a dictionary with the same `default` and `input_type` keys as a `Parameters` entry, used to render each element of the list for parameters with input_type `list`
    * finally, extras such as `min`, `step` and `max` may be used by `number` tags for validation
+* `tags`,             a list of string tags describing the nbextension, to allow for filtering
 
 Example:
 
 ```yaml
 Type: Jupyter Notebook Extension
 Name: Limit Output
-Description: This extension limits the number of characters that can be printed below a codecell
+Description: This nbextension limits the number of characters that can be printed below a codecell
 Link: readme.md
 Icon: icon.png
 Main: main.js
@@ -184,7 +185,7 @@ Changes
 -----
 * Fix bug introduced in bc2f8b821b2164823cbba4e85d5e921dfd484b11, which
   prevented disabling nbextensions when using notebook versions < 4.2.
-  Add test to ensure that a disabled extension's js doesn't load, rather than
+  Add test to ensure that a disabled nbextension's js doesn't load, rather than
   just checking json config file.
 
 0.2.0
