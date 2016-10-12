@@ -65,13 +65,16 @@ class NbextensionTestBase(NotebookTestBase):
     # these are added for notebook < 4.1, where url_prefix wasn't defined.
     # However, due to the fact that the base_url body data attribute in the
     # page template isn't passed through the urlencode jinja2 filter,
-    # so we can't expect base_url which would need encoding to work :(
+    # we can't expect a base_url which would need encoding to work :(
     if not hasattr(NotebookTestBase, 'url_prefix'):
         url_prefix = '/ab/'
 
         @classmethod
         def base_url(cls):
             return 'http://localhost:%i%s' % (cls.port, cls.url_prefix)
+
+    _install_user = False
+    _install_sys_prefix = False
 
     @classmethod
     def pre_server_setup(cls):
@@ -83,8 +86,8 @@ class NbextensionTestBase(NotebookTestBase):
         logger = get_wrapped_logger(
             name=inst_funcname, log_level=logging.DEBUG)
         serverextensions.toggle_serverextension_python(
-            'jupyter_nbextensions_configurator',
-            enabled=True, user=False, logger=logger)
+            'jupyter_nbextensions_configurator', enabled=True, logger=logger,
+            user=cls._install_user, sys_prefix=cls._install_sys_prefix)
 
     @classmethod
     def get_server_kwargs(cls, **overrides):
@@ -186,6 +189,11 @@ def _skip_if_no_selenium():
 
 class SeleniumNbextensionTestBase(NbextensionTestBase):
 
+    # browser logs from selenium aren't very useful currently, but if you want
+    # them, you can set the class attribute show_driver_logs to have them
+    # output via the GlobalMemoryHandler on test failure
+    show_driver_logs = False
+
     @classmethod
     def setup_class(cls):
         cls.init_webdriver()
@@ -251,17 +259,19 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
             GlobalMemoryHandler.rotate_buffer(1)
             GlobalMemoryHandler.flush_to_target()
 
-            cls.log.info('\n\t\tjavascript console logs below...\n\n')
             browser_logger = get_wrapped_logger(
                 name=cls.__name__ + '.driver', log_level=logging.DEBUG)
-            for entry in cls.driver.get_log('browser'):
-                level = logging._nameToLevel.get(entry['level'], logging.ERROR)
-                msg = entry['message'].strip()
-                browser_logger.log(level, msg)
-                record, target = GlobalMemoryHandler._buffer[-1]
-                record.ct = entry['timestamp'] / 1000.
-                GlobalMemoryHandler._buffer[-1] = record, target
-            GlobalMemoryHandler.flush_to_target()
+            if cls.show_driver_logs:
+                cls.log.info('\n\t\tjavascript console logs below...\n\n')
+                for entry in cls.driver.get_log('browser'):
+                    level = logging._nameToLevel.get(
+                        entry['level'], logging.ERROR)
+                    msg = entry['message'].strip()
+                    browser_logger.log(level, msg)
+                    record, target = GlobalMemoryHandler._buffer[-1]
+                    record.ct = entry['timestamp'] / 1000.
+                    GlobalMemoryHandler._buffer[-1] = record, target
+                GlobalMemoryHandler.flush_to_target()
 
         if (not cls._failure_occurred) or os.environ.get('CI'):
             cls.log.info('closing webdriver')
