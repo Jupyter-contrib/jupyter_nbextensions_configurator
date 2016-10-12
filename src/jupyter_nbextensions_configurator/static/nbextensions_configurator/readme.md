@@ -1,11 +1,19 @@
 Jupyter Nbextensions Configurator
 =================================
 
-[![Join the chat at https://gitter.im/jupyter-contrib/jupyter_nbextensions_configurator](https://img.shields.io/gitter/room/jupyter-contrib/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://gitter.im/jupyter-contrib/jupyter_nbextensions_configurator?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![GitHub issues](https://img.shields.io/github/issues/jupyter-contrib/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://github.com/jupyter-contrib/jupyter_nbextensions_configurator/issues)
+[![Join the chat at https://gitter.im/jupyter-contrib/jupyter_nbextensions_configurator](https://img.shields.io/gitter/room/jupyter-contrib/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://gitter.im/jupyter-contrib/jupyter_nbextensions_configurator?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![GitHub issues](https://img.shields.io/github/issues/jupyter-contrib/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://github.com/jupyter-contrib/jupyter_nbextensions_configurator/issues)
 <br/>
-[![Travis-CI Build Status](https://img.shields.io/travis/Jupyter-contrib/jupyter_nbextensions_configurator.svg?maxAge=3600&label=Travis)](https://travis-ci.org/Jupyter-contrib/jupyter_nbextensions_configurator) [![Appveyor Build status](https://img.shields.io/appveyor/ci/jcb91/jupyter-nbextensions-configurator-ixdb9.svg?maxAge=3600&label=Appveyor)](https://ci.appveyor.com/project/jcb91/jupyter-nbextensions-configurator-ixdb9) [![Coveralls python test coverage](https://img.shields.io/coveralls/Jupyter-contrib/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Coveralls)](https://coveralls.io/github/Jupyter-contrib/jupyter_nbextensions_configurator) [![Codecov python test coverage](https://img.shields.io/codecov/c/github/Jupyter-contrib/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Codecov)](https://codecov.io/gh/Jupyter-contrib/jupyter_nbextensions_configurator)
+[![Travis-CI Build Status](https://img.shields.io/travis/Jupyter-contrib/jupyter_nbextensions_configurator.svg?maxAge=3600&label=Travis)](https://travis-ci.org/Jupyter-contrib/jupyter_nbextensions_configurator)
+[![Appveyor Build status](https://img.shields.io/appveyor/ci/jcb91/jupyter-nbextensions-configurator-ixdb9.svg?maxAge=3600&label=Appveyor)](https://ci.appveyor.com/project/jcb91/jupyter-nbextensions-configurator-ixdb9)
 <br/>
-[![GitHub tag](https://img.shields.io/github/tag/jupyter-contrib/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://github.com/jupyter-contrib/jupyter_nbextensions_configurator) [![Github All Releases](https://img.shields.io/github/downloads/jupyter-contrib/jupyter_nbextensions_configurator/total.svg?maxAge=3600)](https://github.com/jupyter-contrib/jupyter_nbextensions_configurator) [![PyPI](https://img.shields.io/pypi/v/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://pypi.python.org/pypi/jupyter_nbextensions_configurator) [![PyPI](https://img.shields.io/pypi/dm/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://pypi.python.org/pypi/jupyter_nbextensions_configurator)
+[![Coveralls python test coverage](https://img.shields.io/coveralls/Jupyter-contrib/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Coveralls)](https://coveralls.io/github/Jupyter-contrib/jupyter_nbextensions_configurator)
+[![Codecov python test coverage](https://img.shields.io/codecov/c/github/Jupyter-contrib/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Codecov)](https://codecov.io/gh/Jupyter-contrib/jupyter_nbextensions_configurator)
+<br/>
+[![GitHub tag](https://img.shields.io/github/tag/jupyter-contrib/jupyter_nbextensions_configurator.svg?maxAge=3600&label=GitHub)](https://github.com/jupyter-contrib/jupyter_nbextensions_configurator)
+[![PyPI](https://img.shields.io/pypi/v/jupyter_nbextensions_configurator.svg?maxAge=3600)](https://pypi.python.org/pypi/jupyter_nbextensions_configurator)
+[![Conda forge](https://anaconda.org/conda-forge/jupyter_nbextensions_configurator/badges/version.svg)](https://anaconda.org/conda-forge/jupyter_nbextensions_configurator)
+
 
 A server extension for [jupyter notebook](https://github.com/jupyter/notebook)
 which provides configuration interfaces for notebook extensions (nbextensions).
@@ -37,8 +45,8 @@ the UI is at `/nbextensions`).
 
 ### base_url
 
-For most single-user notebook servers, the dashboard (the file-browser view)
-is at
+For most single-user notebook servers, the dashboard (the file-browser or
+'tree' view) is at
 
     http://localhost:8888/tree
 
@@ -57,12 +65,30 @@ then you'll find the configurator UI page at
 ### tree tab
 
 In addition to the main standalone page, the nbextensions configurator
-interface is also available as a tab on the dashboard, once it's been
-configured to appear there.
-To do this, go to the `/nbextensions` url described above, and enable the
-nbextension `Nbextensions dashboard tab`.
+interface is also available as a tab on the dashboard:
 
 <img alt="configurator UI in a dashboard tab" src="tree_tab/icon.png" width="440">
+
+The dashboard tab is provided via an nbextension called
+"Nbextensions dashboard tab", with requirejs uri
+`nbextensions_configurator/tree_tab/main`.
+Since version [0.2.0](#020), this nbextension is enabled by default on enabling
+the `jupyter_nbextensions_configurator` serverextension, but it can be disabled
+as with any other nbextension if you don't want to use it.
+
+
+### edit menu item
+
+`jupyter_nbextensions_configurator` provides a second small nbextension, which
+simply adds an item to the notebook-view edit menu, which links to the
+configurator UI page:
+
+<img alt="configurator edit menu item" src="config_menu/icon.png" width="600">
+
+Similarly to the tree tab nbextension detailed above, since version
+[0.2.0](#020), the edit menu item nbextension is enabled by default when
+enabling the main `jupyter_nbextensions_configurator` serverextension, but can
+be disabled at any time in the same way as other nbextensions.
 
 
 YAML file format
@@ -82,6 +108,7 @@ The case-sensitive keys in the yaml file are as follows:
  * `Type`,            (**required**) a case-sensitive identifier, must be `IPython Notebook Extension` or `Jupyter Notebook Extension`
  * `Main`,            (**required**) the main javascript file that is loaded, typically `main.js`
  * `Name`,            the name of the nbextension
+ * `Section`,         which view the nbextension should be loaded in (defaults to `notebook`, but can alternatively be `tree`, `edit`, or to load in all views, `common`).
  * `Description`,     a short explanation of the nbextension
  * `Link`,            a URL for more documentation. If this is a relative url with a `.md` file extension (recommended!), the markdown readme is rendered in the configurator UI.
  * `Icon`,            a URL for a small icon for the configurator UI (rendered 120px high, should preferably end up 400px wide. Recall HDPI displays may benefit from a 2x resolution icon).
@@ -100,6 +127,7 @@ Example:
 ```yaml
 Type: Jupyter Notebook Extension
 Name: Limit Output
+Section: notebook
 Description: This nbextension limits the number of characters that can be printed below a codecell
 tags:
 - usability
