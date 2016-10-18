@@ -42,3 +42,7 @@ pip-log.txt
 
 # ipython notebook checkpoints
 .ipynb_checkpoints
+
+# jupyterhub test things
+jupyterhub_cookie_secret
+node_modules
