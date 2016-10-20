@@ -2,6 +2,7 @@
 language: python
 sudo: false
 addons:
+  firefox: latest-esr
   sauce_connect: true
 matrix:
   fast_finish: true
@@ -104,6 +105,7 @@ before_install:
 install:
   - pip install tox
   - virtualenv --version
+  - firefox --version
 before_script:
   # from https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
   #  we need to start xvfb for selenium to work correctly
