@@ -12,6 +12,8 @@ import time
 
 import nose.tools as nt
 import yaml
+from jupyter_contrib_core.notebook_compat.nbextensions import _get_config_dir
+from notebook.services.config import ConfigManager
 from notebook.utils import url_path_join
 
 import jupyter_nbextensions_configurator
@@ -29,13 +31,15 @@ from nbextensions_test_base import SeleniumNbextensionTestBase
 class ConfiguratorTest(SeleniumNbextensionTestBase):
     """Tests for the nbextensions_configurator server extension."""
 
+    @property
+    def nbext_configurator_url(self):
+        return url_path_join(self.base_url(), 'nbextensions')
+
     @classmethod
     def pre_server_setup(cls):
         """Setup a temporary environment in which to run a notebook server."""
         super(ConfiguratorTest, cls).pre_server_setup()
         cls.add_dodgy_yaml_files()
-        cls.nbext_configurator_url = url_path_join(
-            cls.base_url(), 'nbextensions')
 
     def test_00_load_nbextensions_page(self):
         """Check that <base_url>/nbextensions url loads correctly."""
@@ -108,7 +112,16 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
     @classmethod
     def check_extension_enabled(cls, section, require, expected_status=True,
                                 timeout=10, check_period=0.5):
-        cm = cls.notebook.config_manager
+        try:
+            # single-user notebook server tests use cls.notebook for app
+            cm = cls.notebook.config_manager
+        except AttributeError:
+            # jupyterhub-based tests don't (can't) have cls.notebook defined,
+            # so we must construct a ConfigManager from scratch
+            cm = ConfigManager(
+                log=cls.log,
+                config_dir=os.path.join(_get_config_dir(user=True), 'nbconfig')
+            )
         for ii in range(0, max(1, int(timeout / check_period))):
             load_exts = cm.get(section).get('load_extensions', {})
             enabled = [req for req, en in load_exts.items() if en]
@@ -119,7 +132,7 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
             nt.assert_in if expected_status else nt.assert_not_in)
         assert_func(require, enabled,
                     'nbxtension should {}be in enabled list'.format(
-                        '' if expected_status else ' not'))
+                        '' if expected_status else 'not '))
 
     @classmethod
     def add_dodgy_yaml_files(cls):

@@ -35,8 +35,11 @@ else:
     no_selenium = False
     from selenium.common.exceptions import TimeoutException
     from selenium.webdriver.common.by import By
+    from selenium.webdriver.remote import remote_connection
     from selenium.webdriver.support import expected_conditions as ec
     from selenium.webdriver.support.ui import WebDriverWait
+    # don't show selenium debug logs
+    remote_connection.LOGGER.setLevel(logging.INFO)
 
 
 class NoseyNotebookApp(NotebookApp):
@@ -62,13 +65,16 @@ class NbextensionTestBase(NotebookTestBase):
     # these are added for notebook < 4.1, where url_prefix wasn't defined.
     # However, due to the fact that the base_url body data attribute in the
     # page template isn't passed through the urlencode jinja2 filter,
-    # so we can't expect base_url which would need encoding to work :(
+    # we can't expect a base_url which would need encoding to work :(
     if not hasattr(NotebookTestBase, 'url_prefix'):
         url_prefix = '/ab/'
 
         @classmethod
         def base_url(cls):
             return 'http://localhost:%i%s' % (cls.port, cls.url_prefix)
+
+    _install_user = False
+    _install_sys_prefix = False
 
     @classmethod
     def pre_server_setup(cls):
@@ -80,7 +86,8 @@ class NbextensionTestBase(NotebookTestBase):
         logger = get_wrapped_logger(
             name=inst_funcname, log_level=logging.DEBUG)
         serverextensions.toggle_serverextension_python(
-            'jupyter_nbextensions_configurator', enabled=True, logger=logger)
+            'jupyter_nbextensions_configurator', enabled=True, logger=logger,
+            user=cls._install_user, sys_prefix=cls._install_sys_prefix)
 
     @classmethod
     def get_server_kwargs(cls, **overrides):
@@ -120,25 +127,33 @@ class NbextensionTestBase(NotebookTestBase):
                 app.session_manager.close()
 
     @classmethod
-    def setup_class(cls):
-        """Install things & setup a notebook server in a separate thread."""
+    def _setup_patches(cls):
         (cls.jupyter_patches, cls.jupyter_dirs,
          remove_jupyter_dirs) = patch_jupyter_dirs()
         # store in a list to avoid confusion over bound/unbound method in pypy
         cls.removal_funcs = [remove_jupyter_dirs]
-        for ptch in cls.jupyter_patches:
-            ptch.start()
-
         try:
+            for ptch in cls.jupyter_patches:
+                ptch.start()
+
             # patches for items called in NotebookTestBase.teardown_class
             # env_patch needs a start method as well because of a typo in
             # notebook 4.0 which calls it in the teardown_class method
             cls.env_patch = cls.path_patch = Mock(['start', 'stop'])
             cls.home_dir = cls.config_dir = cls.data_dir = Mock(['cleanup'])
             cls.runtime_dir = cls.notebook_dir = Mock(['cleanup'])
+        except Exception:
+            for func in cls.removal_funcs:
+                func()
+            raise
 
-            cls.log = get_wrapped_logger(cls.__name__)
-            cls.pre_server_setup()
+    @classmethod
+    def setup_class(cls):
+        """Install things & setup a notebook server in a separate thread."""
+        cls.log = get_wrapped_logger(cls.__name__)
+        cls._setup_patches()
+        cls.pre_server_setup()
+        try:
             started = Event()
             cls.notebook_thread = Thread(
                 target=cls.start_server_thread, args=[started])
@@ -146,7 +161,8 @@ class NbextensionTestBase(NotebookTestBase):
             started.wait()
             cls.wait_until_alive()
         except Exception:
-            remove_jupyter_dirs()
+            for func in cls.removal_funcs:
+                func()
             raise
 
     @classmethod
@@ -163,20 +179,38 @@ class NbextensionTestBase(NotebookTestBase):
                     func()
 
 
+def _skip_if_no_selenium():
+    if no_selenium:
+        raise SkipTest('Selenium not installed. '
+                       'Skipping selenium-based test.')
+    if os.environ.get('TRAVIS_OS_NAME') == 'osx':
+        raise SkipTest("Don't do selenium tests on travis osx")
+
+
 class SeleniumNbextensionTestBase(NbextensionTestBase):
+
+    # browser logs from selenium aren't very useful currently, but if you want
+    # them, you can set the class attribute show_driver_logs to have them
+    # output via the GlobalMemoryHandler on test failure
+    show_driver_logs = False
 
     @classmethod
     def setup_class(cls):
-        if no_selenium:
-            raise SkipTest('Selenium not installed. '
-                           'Skipping selenium-based test.')
-        if os.environ.get('TRAVIS_OS_NAME') == 'osx':
-            raise SkipTest("Don't do selenium tests on travis osx")
+        cls.init_webdriver()
+        cls._failure_occurred = False  # flag for logging
         super(SeleniumNbextensionTestBase, cls).setup_class()
 
+    @classmethod
+    def init_webdriver(cls):
+        cls.log = get_wrapped_logger(cls.__name__)
+        _skip_if_no_selenium()
+
+        if hasattr(cls, 'driver'):
+            return cls.driver
         if (os.environ.get('CI') and os.environ.get('TRAVIS') and
                 os.environ.get('SAUCE_ACCESS_KEY')):
-            cls.log.info('Running in CI environment. Using Sauce.')
+            cls.log.info(
+                'Running in CI environment. Using Sauce remote webdriver.')
             username = os.environ['SAUCE_USERNAME']
             access_key = os.environ['SAUCE_ACCESS_KEY']
             capabilities = {
@@ -199,10 +233,9 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
             cls.driver = webdriver.Remote(
                 desired_capabilities=capabilities, command_executor=hub_url)
         else:
-            # local test
+            cls.log.info('Using local webdriver.')
             cls.driver = webdriver.Firefox()
-
-        cls._failure_occurred = False  # flag for logging
+        return cls.driver
 
     def run(self, results):
         """Run a given test. Overridden in order to access results."""
@@ -216,7 +249,7 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
         return results
 
     @classmethod
-    def teardown_class(cls):
+    def _print_logs_on_failure(cls):
         if cls._failure_occurred:
             cls.log.info('\n'.join([
                 '',
@@ -226,17 +259,19 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
             GlobalMemoryHandler.rotate_buffer(1)
             GlobalMemoryHandler.flush_to_target()
 
-            cls.log.info('\n\t\tjavascript console logs below...\n\n')
             browser_logger = get_wrapped_logger(
                 name=cls.__name__ + '.driver', log_level=logging.DEBUG)
-            for entry in cls.driver.get_log('browser'):
-                level = logging._nameToLevel.get(entry['level'], logging.ERROR)
-                msg = entry['message'].strip()
-                browser_logger.log(level, msg)
-                record, target = GlobalMemoryHandler._buffer[-1]
-                record.ct = entry['timestamp'] / 1000.
-                GlobalMemoryHandler._buffer[-1] = record, target
-            GlobalMemoryHandler.flush_to_target()
+            if cls.show_driver_logs:
+                cls.log.info('\n\t\tjavascript console logs below...\n\n')
+                for entry in cls.driver.get_log('browser'):
+                    level = logging._nameToLevel.get(
+                        entry['level'], logging.ERROR)
+                    msg = entry['message'].strip()
+                    browser_logger.log(level, msg)
+                    record, target = GlobalMemoryHandler._buffer[-1]
+                    record.ct = entry['timestamp'] / 1000.
+                    GlobalMemoryHandler._buffer[-1] = record, target
+                GlobalMemoryHandler.flush_to_target()
 
         if (not cls._failure_occurred) or os.environ.get('CI'):
             cls.log.info('closing webdriver')
@@ -244,36 +279,42 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
         else:
             cls.log.info('keeping webdriver open')
 
+    @classmethod
+    def teardown_class(cls):
+        cls._print_logs_on_failure()
         super(SeleniumNbextensionTestBase, cls).teardown_class()
 
-    def wait_for_element(self, presence_cond, message, timeout=5):
+    @classmethod
+    def wait_for_element(cls, presence_cond, message, timeout=5):
         """WebDriverWait for an element to appear, fail test on timeout."""
         try:
-            WebDriverWait(self.driver, 5).until(
+            return WebDriverWait(cls.driver, timeout).until(
                 ec.presence_of_element_located(presence_cond))
         except TimeoutException:
             if message:
-                self.fail(message)
+                raise cls.failureException(message)
             else:
-                self.fail(
+                raise cls.failureException(
                     '{}No element matching condition {!r} found in {}s'.format(
                         message, presence_cond, timeout))
 
-    def wait_for_selector(self, css_selector, message='', timeout=5):
+    @classmethod
+    def wait_for_selector(cls, css_selector, message='', timeout=5):
         """WebDriverWait for a selector to appear, fail test on timeout."""
         if message:
             message += '\n'
         message = '{}No element matching selector {!r} found in {}s'.format(
             message, css_selector, timeout)
-        self.wait_for_element(
+        return cls.wait_for_element(
             (By.CSS_SELECTOR, css_selector), message=message, timeout=timeout)
 
-    def wait_for_partial_link_text(self, link_text, message='', timeout=5):
+    @classmethod
+    def wait_for_partial_link_text(cls, link_text, message='', timeout=5):
         """WebDriverWait for a link to appear, fail test on timeout."""
         if message:
             message += '\n'
         message = (
             '{}No element matching partial link text '
             '{!r} found in {}s').format(message, link_text, timeout)
-        self.wait_for_element((By.PARTIAL_LINK_TEXT, link_text),
-                              message=message, timeout=timeout)
+        return cls.wait_for_element((By.PARTIAL_LINK_TEXT, link_text),
+                                    message=message, timeout=timeout)
