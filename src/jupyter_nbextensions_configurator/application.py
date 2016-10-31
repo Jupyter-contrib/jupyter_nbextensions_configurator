@@ -50,11 +50,12 @@ class ToggleJupyterNbextensionsConfiguratorApp(
     @property
     def description(self):
         return """
-Enable the jupyter_nbextensions_configurator server extension in configuration.
+{} the jupyter_nbextensions_configurator server extension in config.
 
 Usage
     jupyter_nbextensions_configurator {} [--system|--sys-prefix|--user]
-""".format('enable' if self._toggle_value else 'disable')
+""".format(*(('Enable', 'enable')
+             if self._toggle_value else ('Disable', 'disable')))
 
     def start(self):
         """Perform the App's actions as configured."""
