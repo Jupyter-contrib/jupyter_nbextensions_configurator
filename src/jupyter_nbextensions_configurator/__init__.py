@@ -23,7 +23,7 @@ try:
 except ImportError:
     from yaml import SafeLoader
 
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 absolute_url_re = re.compile(r'^(f|ht)tps?://')
 
