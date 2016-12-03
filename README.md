@@ -6,7 +6,6 @@ Jupyter Nbextensions Configurator
 <br/>
 [![Travis-CI Build Status](https://img.shields.io/travis/Jupyter-contrib/jupyter_nbextensions_configurator.svg?maxAge=3600&label=Travis)](https://travis-ci.org/Jupyter-contrib/jupyter_nbextensions_configurator)
 [![Appveyor Build status](https://img.shields.io/appveyor/ci/jcb91/jupyter-nbextensions-configurator-ixdb9.svg?maxAge=3600&label=Appveyor)](https://ci.appveyor.com/project/jcb91/jupyter-nbextensions-configurator-ixdb9)
-<br/>
 [![Coveralls python test coverage](https://img.shields.io/coveralls/Jupyter-contrib/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Coveralls)](https://coveralls.io/github/Jupyter-contrib/jupyter_nbextensions_configurator)
 [![Codecov python test coverage](https://img.shields.io/codecov/c/github/Jupyter-contrib/jupyter_nbextensions_configurator/master.svg?maxAge=3600&label=Codecov)](https://codecov.io/gh/Jupyter-contrib/jupyter_nbextensions_configurator)
 <br/>
@@ -20,10 +19,10 @@ which provides configuration interfaces for notebook extensions (nbextensions).
 
 The `jupyter_nbextensions_configurator` jupyter server extension provides
 graphical user interfaces for configuring which nbextensions are enabled
-(load automatically for every notebook), and display their readme files.
+(load automatically for every notebook).
 In addition, for nbextensions which include an appropriate yaml descriptor file
-(see below), the interface also provides controls to configure the
-nbextensions' options.
+(see below), the interface also renders their markdown readme files, and
+provides controls to configure the nbextensions' options.
 
 This project was spun out of work from
 [`ipython-contrib/IPython-notebook-extensions`][contrib repo url].
@@ -207,6 +206,21 @@ For debugging, useful information can (sometimes) be found by:
 
 Changes
 =======
+
+0.2.3
+-----
+* On the dashboard, select the configurator tree tab automatically if the
+  appropriate URL hash is present
+* Add filtering of visible nbextensions by names, tags and sections
+* Add jupyterhub-based tests, to hopefully catch some issues relating to the
+  jupyterhub SinglUserServer, like
+  [jupyter_nbextensions_configurator#11](https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator/issues/11)
+  and
+  [jupyter_nbextensions_configurator#14](https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator/issues/14)
+  in future
+* README updates
+* Bugfix for ENable/Disable application help strings, which both started with
+  `Enable` :blush:
 
 0.2.2
 -----
