@@ -34,7 +34,7 @@ else:
             'could not import jupyterhub, so skipping jupyterhub tests')
     from jupyterhub.auth import Authenticator
     from jupyterhub.spawner import LocalProcessSpawner
-    from jupyterhub.tests.mocking import MockHub, public_url, user_url
+    from jupyterhub.tests.mocking import MockHub, public_url
     from jupyterhub.utils import random_port
 
 
@@ -129,7 +129,7 @@ class JupyterHubConfiguratorTest(ConfiguratorTest):
 
     @classmethod
     def base_url(cls):
-        return user_url(cls.user, cls.app)
+        return public_url(cls.app, cls.user)
 
     @classmethod
     def setup_class(cls):
