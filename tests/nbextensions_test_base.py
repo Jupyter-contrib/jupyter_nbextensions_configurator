@@ -100,6 +100,9 @@ class NbextensionTestBase(NotebookTestBase):
             base_url=cls.url_prefix,
             config=cls.config,
         )
+        # disable auth-by-default, introduced in notebook PR #1831
+        if 'token' in NotebookApp.class_trait_names():
+            kwargs['token'] = ''
         kwargs.update(overrides)
         return kwargs
 
