@@ -7,6 +7,7 @@
 from __future__ import unicode_literals
 
 import json
+import logging
 import os.path
 import posixpath
 import re
@@ -34,8 +35,8 @@ def get_configurable_nbextensions(
 
     descriptor files must:
       - be located under one of nbextension_dirs
-      - have the file extension '.yaml'
-      - containing (at minimum) the following keys:
+      - have the file extension '.yaml' or '.yml'
+      - contain (at minimum) the following keys:
         - Type: must be 'IPython Notebook Extension' or
                 'Jupyter Notebook Extension'
         - Main: relative url of the nbextension's main javascript file
@@ -119,12 +120,26 @@ def get_configurable_nbextensions(
     return [val['extension'] for val in extension_dict.values()]
 
 
+class ConfiguratorLogger(logging.LoggerAdapter):
+    """Logging adapter to prepend the serverextension name to log messages."""
+
+    def __init__(self, logger):
+        super(ConfiguratorLogger, self).__init__(logger, {})
+
+    def process(self, msg, kwargs):
+        return '[{}] {}'.format(__name__, msg), kwargs
+
+
 class NBExtensionHandlerJSON(APIHandler):
     """
     Returns a json list describing the configurable nbextensions.
 
     Based on part of notebook.services.config.handlers.ConfigHandler
     """
+
+    @APIHandler.log.getter
+    def log(self):
+        return ConfiguratorLogger(super(NBExtensionHandlerJSON, self).log)
 
     @web.authenticated
     @json_errors
@@ -139,6 +154,10 @@ class NBExtensionHandlerJSON(APIHandler):
 
 class NBExtensionHandlerPage(IPythonHandler):
     """Renders the nbextension configuration interface."""
+
+    @IPythonHandler.log.getter
+    def log(self):
+        return ConfiguratorLogger(super(NBExtensionHandlerPage, self).log)
 
     @web.authenticated
     def get(self):
@@ -158,6 +177,10 @@ class NBExtensionHandlerPage(IPythonHandler):
 class RenderExtensionHandler(IPythonHandler):
     """Renders markdown files as pages."""
 
+    @IPythonHandler.log.getter
+    def log(self):
+        return ConfiguratorLogger(super(RenderExtensionHandler, self).log)
+
     @web.authenticated
     def get(self, path):
         """Render given markdown file."""
@@ -174,12 +197,13 @@ class RenderExtensionHandler(IPythonHandler):
 
 def load_jupyter_server_extension(nbapp):
     """Load and initialise the server extension."""
-    nbapp.log.debug('Loading server extension {}'.format(__name__))
+    logger = ConfiguratorLogger(nbapp.log)
+    logger.debug('Loading {}'.format(__version__))
     webapp = nbapp.web_app
 
     # ensure our template gets into search path
     templates_dir = os.path.join(os.path.dirname(__file__), 'templates')
-    nbapp.log.debug('  Editing template path to add {}'.format(templates_dir))
+    logger.debug('  Editing templates path to add {}'.format(templates_dir))
     rootloader = webapp.settings['jinja2_env'].loader
     for loader in getattr(rootloader, 'loaders', [rootloader]):
         if hasattr(loader, 'searchpath') and \
@@ -191,13 +215,13 @@ def load_jupyter_server_extension(nbapp):
     # make sure our static files are available
     static_files_path = os.path.normpath(os.path.join(
         os.path.dirname(__file__), 'static'))
-    nbapp.log.debug(
+    logger.debug(
         '  Editing nbextensions path to add {}'.format(static_files_path))
     if static_files_path not in webapp.settings['nbextensions_path']:
         webapp.settings['nbextensions_path'].append(static_files_path)
 
     # add our new custom handlers
-    nbapp.log.debug('  Adding new handlers')
+    logger.debug('  Adding new handlers')
     new_handlers = [(ujoin(base_url, '/nbextensions/' + u), h) for u, h in [
         (r"?", NBExtensionHandlerPage),
         (r"nbextensions_configurator/list$", NBExtensionHandlerJSON),
@@ -205,7 +229,7 @@ def load_jupyter_server_extension(nbapp):
     ]]
     webapp.add_handlers(".*$", new_handlers)
 
-    nbapp.log.info('Loaded server extension {}'.format(__name__))
+    logger.info('enabled {}'.format(__version__))
 
 
 def _jupyter_server_extension_paths():
