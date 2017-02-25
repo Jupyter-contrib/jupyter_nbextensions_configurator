@@ -852,8 +852,8 @@ define([
                     'If they are different, only one will be loaded by the',
                     'notebook, and this may prevent configuration from working',
                     'correctly.',
-                    'Check the jupyter server log for the paths of the relevant',
-                    'yaml files.'].join(' '));
+                    'Check the jupyter notebook server log for the paths of',
+                    'the relevant yaml files.'].join(' '));
                 $('<div/>')
                     .addClass('col-xs-12 alert alert-warning')
                     .css('margin-top', '5px')
@@ -926,7 +926,10 @@ define([
                     .addClass('nbext-params-reset')
                     .on('click', reset_params_callback)
                     .addClass('pull-right')
-                    .attr('href', '#')
+                    .attr({
+                        href: '#',
+                        title:'reset parameters to defaults',
+                    })
                     .text(' reset');
                 $('<i/>')
                     .addClass('fa fa-refresh')
@@ -1276,9 +1279,10 @@ define([
         // add any remaining unconfigurable nbextensions as stubs
         for (section in configs) {
             for (var require_url in unconfigurable_enabled_extensions[section]) {
+                var word = unconfigurable_enabled_extensions[section][require_url] ? 'enabled' : 'disabled';
                 extension_list.push({
                     Name: require_url,
-                    Description: 'This nbextension is enabled in the ' + section + ' json config, ' +
+                    Description: 'This nbextension is ' + word + ' in the ' + section + ' json config, ' +
                         "but doesn't provide a yaml file to tell us how to configure it. " +
                         "You can still enable or disable it from here, though.",
                     Section: section,
