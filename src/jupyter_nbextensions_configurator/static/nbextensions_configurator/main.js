@@ -602,7 +602,7 @@ define([
                 selector_link: $(),
             };
             var warning = $('<div/>')
-                .addClass('alert alert-warning')
+                .addClass('col-xs-12 alert alert-warning')
                 .appendTo(extension.ui);
             $('<p/>')
                 .text('No nbextensions match the applied filters!')
@@ -806,7 +806,7 @@ define([
              * to ensure the name takes up a whole row-width on its own,
              * so that the subsequent columns wrap onto a new line.
              */
-            var ext_name_head = $('<h3>')
+            $('<h3>')
                 .addClass('col-xs-12')
                 .html(extension.Name)
                 .appendTo(ext_row);
@@ -855,7 +855,7 @@ define([
                     'Check the jupyter server log for the paths of the relevant',
                     'yaml files.'].join(' '));
                 $('<div/>')
-                    .addClass('alert alert-warning')
+                    .addClass('col-xs-12 alert alert-warning')
                     .css('margin-top', '5px')
                     .append(duplicate_warning_p)
                     .appendTo(ext_row);
@@ -952,7 +952,7 @@ define([
             var msg = log_prefix + ' error loading ' + extension.require;
             console.error(msg + ':\n' + err);
             $('<div/>')
-                .addClass('alert alert-warning')
+                .addClass('col-xs-12 alert alert-warning')
                 .css('margin-top', '5px')
                 .append($('<p/>').text(msg))
                 .appendTo(ext_row);
@@ -997,7 +997,7 @@ define([
         });
         $(to_hide).slideUp(100);
         to_show = $(to_show); // convert to jquery obj
-        to_show.slideDown(100)
+        to_show.slideDown(100);
         // make sure a visible nbextensions is selected
         if (!to_show.is('.active')) {
             var candidate = to_show.filter(':not(.disabled)').first().children('a');
@@ -1033,7 +1033,7 @@ define([
     function filter_register_new_tag (new_tag_object) {
         for (var ii=0; ii < tags.length; ii++) {
             if (tags[ii].value == new_tag_object.value && tags[ii].category == new_tag_object.category) {
-                return //tag already exists, so don't insert
+                return; // tag already exists, so don't insert again
             }
         }
         new_tag_object.label = new_tag_object.category + ': ' + new_tag_object.value;
@@ -1142,7 +1142,7 @@ define([
 
         $('<h3>Configurable nbextensions</h3>').appendTo(selector);
 
-        var showhide = $('<div/>')
+        $('<div/>')
             .addClass('nbext-showhide-incompat')
             .append(
                 build_param_input({
@@ -1159,7 +1159,7 @@ define([
 
         filter_build_ui().appendTo(selector);
 
-        var selector_nav = $('<nav/>')
+        $('<nav/>')
             .addClass('row')
             .append('<ul class="nav nav-pills"/>')
             .appendTo(selector);
@@ -1288,8 +1288,6 @@ define([
             }
         }
 
-        var container = $('#site > .container');
-
         var selector_nav = $('.nbext-selector ul');
 
         // sort nbextensions alphabetically
@@ -1370,8 +1368,8 @@ define([
 
         // en/disable incompatible nbextensions
         var hide_incompat = true;
-        if (configs['common'].data.hasOwnProperty('nbext_hide_incompat')) {
-            hide_incompat = configs['common'].data.nbext_hide_incompat;
+        if (configs.common.data.hasOwnProperty('nbext_hide_incompat')) {
+            hide_incompat = configs.common.data.nbext_hide_incompat;
             console.log(log_prefix,
                 'nbext_hide_incompat loaded from config as: ',
                 hide_incompat

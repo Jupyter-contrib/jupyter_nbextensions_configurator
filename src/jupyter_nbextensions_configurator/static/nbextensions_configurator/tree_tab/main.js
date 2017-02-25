@@ -2,8 +2,6 @@ define(function (require, exports, module) {
     "use strict";
 
     var $ = require('jqueryui');
-    var Jupyter = require('base/js/namespace');
-    var events = require('base/js/events');
     var utils = require('base/js/utils');
     var nbextensions_configurator = require('../main');
     var rendermd = require('../render/render');
@@ -27,7 +25,7 @@ define(function (require, exports, module) {
         var tab_text = 'Nbextensions';
         var tab_id = 'nbextensions_configurator';
 
-        var tab_pane = $('<div/>')
+        $('<div/>')
             .attr('id', tab_id)
             .append(nbextensions_configurator.build_configurator_ui())
             .addClass('tab-pane')
