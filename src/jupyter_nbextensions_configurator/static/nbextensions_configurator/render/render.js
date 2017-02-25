@@ -25,6 +25,9 @@ define([
 ){
     'use strict';
 
+    var mod_name = 'jupyter_nbextensions_configurator/render';
+    var log_prefix = '[' + mod_name + ']';
+
     /**
      * Custom marked options,
      * lifted from notebook/js/notebook
@@ -72,7 +75,7 @@ define([
                 var el = document.createElement("div");
                 var mode = CodeMirror.getMode({}, spec);
                 if (!mode) {
-                    console.log("No CodeMirror mode: " + lang);
+                    console.log(log_prefix, "No CodeMirror", lang, "mode");
                     callback(null, code);
                     return;
                 }
@@ -83,11 +86,11 @@ define([
                     }
                     callback(null, el.innerHTML);
                 } catch (err) {
-                    console.log("Failed to highlight " + lang + " code", err);
+                    console.log(log_prefix, "Failed to highlight", lang, "code:", err);
                     callback(err, code);
                 }
             }, function (err) {
-                console.log("No CodeMirror mode: " + lang);
+                console.log(log_prefix, "Error getting CodeMirror", lang, "mode:", err);
                 callback(err, code);
             });
         }

@@ -26,6 +26,8 @@ define([
 ) {
     'use strict';
 
+    var mod_name = 'jupyter_nbextensions_configurator';
+    var log_prefix = '[' + mod_name + ']';
     var base_url = utils.get_body_data('baseUrl');
     var first_load_done = false; // flag used to not push history on first load
     var extensions_dict = {}; // dictionary storing nbextensions by their 'require' value
@@ -164,7 +166,7 @@ define([
      */
     function set_config_enabled (extension, state) {
         state = state === undefined ? true : Boolean(state);
-        console.log('Notebook extension "' + extension.Name + '"', state ? 'enabled' : 'disabled');
+        console.log(log_prefix, state ? ' enabled' : 'disabled', extension.require);
         // for pre-4.2 versions, the javascript loading nbextensions actually
         // ignores the true/false state, so to disable we have to delete the key
         if ((version_compare(Jupyter.version, '4.2') < 0) && !state) {
@@ -298,7 +300,7 @@ define([
         var configkey = input.attr('id').substring(param_id_prefix.length);
         var configval = get_input_value(input);
         var configsection = input.data('section');
-        console.log(configsection + '.' + configkey, '->', configval);
+        console.log(log_prefix, configsection + '.' + configkey, '->', configval);
         conf_dot_update(configs[configsection], configkey, configval);
         return configval;
     }
@@ -741,7 +743,7 @@ define([
             var param = params[pp];
             var param_name = param.name;
             if (!param_name) {
-                console.error('nbext param: unnamed parameter declared!');
+                console.error(log_prefix, 'Unnamed parameter declared!');
                 continue;
             }
 
@@ -775,21 +777,15 @@ define([
             // set input value from config or default, if poss
             if (conf_dot_key_exists(configs[param.section], param_name)) {
                 var configval = conf_dot_get(configs[param.section], param_name);
-                console.log(
-                    'nbext param:', param_name,
-                    'from config:', configval
-                );
+                console.log(log_prefix, 'param', param_name, 'init from config:', configval);
                 set_input_value(input, configval);
             }
             else if (param.hasOwnProperty('default')) {
                 set_input_value(input, param.default);
-                console.log(
-                    'nbext param:', param_name,
-                    'default:', param.default
-                );
+                console.log(log_prefix, 'param', param_name, 'init from default:', param.default);
             }
             else {
-                console.log('nbext param:', param_name);
+                console.log(log_prefix, 'param', param_name);
             }
         }
         return div_param_list;
@@ -953,15 +949,12 @@ define([
             }
         }
         catch (err) {
-            console.error('[nbext] error loading nbextension', extension.Name);
-            console.error(err);
+            var msg = log_prefix + ' error loading ' + extension.require;
+            console.error(msg + ':\n' + err);
             $('<div/>')
                 .addClass('alert alert-warning')
                 .css('margin-top', '5px')
-                .append(
-                    $('<p/>')
-                        .text('[nbext] error loading nbextension ' + extension.Name)
-                )
+                .append($('<p/>').text(msg))
                 .appendTo(ext_row);
         }
         finally {
@@ -1312,7 +1305,7 @@ define([
         for (i = 0; i < extension_list.length; i++) {
             extension = extension_list[i];
             extensions_dict[extension.require] = extension;
-            console.log('[nbext] found nbextension "' + extension.Name + '"');
+            console.log(log_prefix, 'Found nbextension', extension.require);
 
             extension.is_compatible = (extension.Compatibility || '?.x').toLowerCase().indexOf(
                 Jupyter.version.substring(0, 2) + 'x') >= 0;
@@ -1339,7 +1332,8 @@ define([
             var ext_enabled = false;
             var conf = configs[extension.Section];
             if (conf === undefined) {
-                console.warn("nbextension '" + extension.Name + "' specifies unknown Section of '" + extension.Section + "'. Can't determine enable status.");
+                console.warn(log_prefix, extension.require,
+                    "specifies unknown Section of '" + extension.Section + "'. Can't determine enable status.");
             }
             else if (conf.data.hasOwnProperty('load_extensions')) {
                 ext_enabled = (conf.data.load_extensions[extension.require] === true);
@@ -1378,7 +1372,7 @@ define([
         var hide_incompat = true;
         if (configs['common'].data.hasOwnProperty('nbext_hide_incompat')) {
             hide_incompat = configs['common'].data.nbext_hide_incompat;
-            console.log(
+            console.log(log_prefix,
                 'nbext_hide_incompat loaded from config as: ',
                 hide_incompat
             );
