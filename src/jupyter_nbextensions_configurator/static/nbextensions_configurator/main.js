@@ -6,6 +6,7 @@ define([
     'base/js/utils',
     'services/config',
     'base/js/events',
+    'base/js/dialog',
     'notebook/js/quickhelp',
     'nbextensions/nbextensions_configurator/render/render',
     'nbextensions/nbextensions_configurator/kse_components',
@@ -20,6 +21,7 @@ define([
     utils,
     configmod,
     events,
+    dialog,
     quickhelp,
     rendermd,
     kse_comp
@@ -165,7 +167,7 @@ define([
      * Update server's json config file to reflect changed enable state
      */
     function set_config_enabled (extension, state) {
-        state = state === undefined ? true : Boolean(state);
+        state = state !== undefined ? state : true;
         console.log(log_prefix, state ? ' enabled' : 'disabled', extension.require);
         // for pre-4.2 versions, the javascript loading nbextensions actually
         // ignores the true/false state, so to disable we have to delete the key
@@ -210,6 +212,20 @@ define([
             .prop('disabled', !state)
             .toggleClass('btn-default disabled', !state)
             .toggleClass('btn-primary', state);
+        if (extension.unconfigurable) {
+            var forget_btn = btns.eq(2);
+            if (state) {
+                forget_btn.remove();
+            }
+            else if (forget_btn.length < 1) {
+                $('<button/>')
+                    .text('Forget')
+                    .attr('type', 'button')
+                    .addClass('btn btn-warning ')
+                    .on('click', handle_forget_click)
+                    .insertAfter(btns.eq(1));
+            }
+        }
     }
 
     /**
@@ -221,6 +237,37 @@ define([
         var extension = btn.closest('.nbext-ext-row').data('extension');
         set_buttons_enabled(extension, state);
         set_config_enabled(extension, state);
+    }
+
+    function handle_forget_click (evt) {
+        var btn = $(evt.target);
+        var extension = btn.closest('.nbext-ext-row').data('extension');
+        var msg_body = $('<div>')
+            .append($('<p>').html(
+                'Are you sure you want to remove the key <code>' + extension.require +
+                '</code> from <code>load_extensions</code> in the config section ' +
+                '<code>' + extension.Section + '</code>?'
+            ).css('margin-bottom', '9px'))
+            .append($('<p>').html(
+                'Removing it will mean that it will no longer show up in the ' +
+                'nbextensions configurator, so ' +
+                '<strong>you won\'t be able to re-enable it from here.</strong>'
+            ));
+
+        dialog.modal({
+            title: "Forget '" + extension.require + "'?",
+            body: msg_body,
+            buttons: {
+                Forget : {
+                    class: "btn-danger",
+                    click: function() {
+                        set_config_enabled(extension, null);
+                        refresh_configurable_extensions_list();
+                    }
+                },
+                Cancel : {}
+            }
+        });
     }
 
     /*

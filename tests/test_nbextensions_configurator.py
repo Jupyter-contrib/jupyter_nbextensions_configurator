@@ -15,6 +15,7 @@ import yaml
 from jupyter_contrib_core.notebook_compat.nbextensions import _get_config_dir
 from notebook.services.config import ConfigManager
 from notebook.utils import url_path_join
+from selenium.common.exceptions import NoSuchElementException
 
 import jupyter_nbextensions_configurator
 from nbextensions_test_base import SeleniumNbextensionTestBase
@@ -78,7 +79,8 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
 
     def test_06_enable_tree_tab(self):
         self.driver.get(self.nbext_configurator_url)
-        self.wait_for_selector('.nbext-row', 'an nbextension ui should load')
+        self.wait_for_selector(
+            '.nbext-ext-row', 'an nbextension ui should load')
         # now enable the appropriate nbextension
         partial_txt = 'dashboard'
         self.wait_for_partial_link_text(partial_txt)
@@ -109,19 +111,107 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         with nt.assert_raises(AssertionError):
             self.wait_for_selector(tab_selector)
 
+    def test_09_no_unconfigurable_yet(self):
+        self.driver.get(self.nbext_configurator_url)
+        self.wait_for_selector(
+            '.nbext-ext-row', 'an nbextension ui should load')
+        selector = self.driver.find_element_by_css_selector('.nbext-selector')
+        nt.assert_not_in(
+            'daemon', selector.text,
+            'There should be no daemons in the selector yet')
+
+    def test_10_refresh_list(self):
+        # 'enable' a fake nbextension
+        section, require = 'notebook', 'balrog/daemon'
+        self.set_extension_enabled(section, require, True)
+        # refresh the list to check that it appears
+        refresh_selector = '#refresh_nbextensions_configurator_list'
+        self.wait_for_selector(refresh_selector)
+        refresh = self.driver.find_element_by_css_selector(refresh_selector)
+        refresh.click()
+        self.wait_for_partial_link_text(require)
+        selector = self.driver.find_element_by_css_selector('.nbext-selector')
+        nt.assert_in(
+            'daemon', selector.text,
+            'There should now be a daemon in the selector')
+
+    def test_11_allow_configuring_incompatibles(self):
+        require = 'balrog/daemon'
+        # allow configuring incompatibles
+        showhide_sel = '#input_nbext_hide_incompat'
+        self.wait_for_selector(
+            showhide_sel,
+            'potentially incompatible nbextenions should show checkbox')
+        self.driver.find_element_by_css_selector(showhide_sel).click()
+        # select it, now it's configurable
+        sel_link = self.driver.find_element_by_partial_link_text(require)
+        sel_link.click()
+
+    def test_12_unconfigurable(self):
+        section, require = 'notebook', 'balrog/daemon'
+        sel_disable = '.nbext-enable-btns .btn:nth-child(2)'
+        sel_forget = '.nbext-enable-btns .btn:nth-child(3)'
+        # wait for ui to load
+        self.wait_for_xpath('//h3[contains(text(), "daemon")]')
+        # wait a second for the other nbextension ui to hide
+        time.sleep(1)
+        # there should be no forget button visible yet
+        with nt.assert_raises(NoSuchElementException):
+            self.driver.find_element_by_css_selector(sel_forget)
+        # disable balrog
+        self.wait_for_selector(sel_disable)
+        visible_disablers = [
+            el for el in self.driver.find_elements_by_css_selector(sel_disable)
+            if el.is_displayed()]
+        nt.assert_equal(1, len(visible_disablers),
+                        'Only one disable button should be visible')
+        visible_disablers[0].click()
+        # now forget it
+        self.wait_for_selector(sel_forget, 'A forget button should display')
+        self.driver.find_element_by_css_selector(sel_forget).click()
+        # confirm dialog
+        sel_dialog = '.modal-dialog .modal-footer .btn-danger'
+        self.wait_for_selector(sel_dialog, 'a confirmation dialog should show')
+        self.driver.find_element_by_css_selector(sel_dialog).click()
+        # it should no longer be enabled in config
+        conf = self.get_config_manager().get(section)
+        stat = conf.get('load_extensions', {}).get(require)
+        nt.assert_is_none(
+            stat, '{} should not have a load_extensions entry'.format(require))
+        # and should no longer show in the list
+        self.wait_for_selector(
+            '.nbext-selector nav ul li', 'some nbextensions should show')
+        nbext_sel = self.driver.find_element_by_css_selector('.nbext-selector')
+        nt.assert_not_in(
+            'daemon', nbext_sel.text,
+            'There should no longer be a daemon in the selector')
+
     @classmethod
-    def check_extension_enabled(cls, section, require, expected_status=True,
-                                timeout=10, check_period=0.5):
+    def get_config_manager(cls):
         try:
             # single-user notebook server tests use cls.notebook for app
-            cm = cls.notebook.config_manager
+            return cls.notebook.config_manager
         except AttributeError:
             # jupyterhub-based tests don't (can't) have cls.notebook defined,
             # so we must construct a ConfigManager from scratch
-            cm = ConfigManager(
+            return ConfigManager(
                 log=cls.log,
                 config_dir=os.path.join(_get_config_dir(user=True), 'nbconfig')
             )
+
+    @classmethod
+    def set_extension_enabled(cls, section, require, enabled):
+        cm = cls.get_config_manager()
+        new_conf = {}
+        if enabled is not None:
+            enabled = bool(enabled)
+        new_conf.setdefault('load_extensions', {})[require] = enabled
+        cm.update(section, new_conf)
+
+    @classmethod
+    def check_extension_enabled(cls, section, require, expected_status=True,
+                                timeout=10, check_period=0.5):
+        cm = cls.get_config_manager()
         for ii in range(0, max(1, int(timeout / check_period))):
             load_exts = cm.get(section).get('load_extensions', {})
             enabled = [req for req, en in load_exts.items() if en]

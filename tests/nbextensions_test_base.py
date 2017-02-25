@@ -321,3 +321,13 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
             '{!r} found in {}s').format(message, link_text, timeout)
         return cls.wait_for_element((By.PARTIAL_LINK_TEXT, link_text),
                                     message=message, timeout=timeout)
+
+    @classmethod
+    def wait_for_xpath(cls, xpath, message='', timeout=5):
+        """WebDriverWait for a selector to appear, fail test on timeout."""
+        if message:
+            message += '\n'
+        message = '{}No element matching xpath {!r} found in {}s'.format(
+            message, xpath, timeout)
+        return cls.wait_for_element(
+            (By.XPATH, xpath), message=message, timeout=timeout)
