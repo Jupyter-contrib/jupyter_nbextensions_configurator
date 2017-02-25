@@ -21,11 +21,19 @@
     display: none;
 }
 
+.nbextensions-configurator-container {
+    margin-top: 4px;
+}
+
 /* styles for the nbextension-selector nav links */
 
 .nbext-selector {
     border-bottom: 1px solid #888;
     padding-bottom: 1em;
+}
+
+.nbext-selector-loading {
+    text-align: center;
 }
 
 .nbext-selector > nav > .nav > li {
