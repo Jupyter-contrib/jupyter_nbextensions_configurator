@@ -87,11 +87,11 @@ define([
                     callback(null, el.innerHTML);
                 } catch (err) {
                     console.log(log_prefix, "Failed to highlight", lang, "code:", err);
-                    callback(err, code);
+                    callback(null, code);
                 }
             }, function (err) {
                 console.log(log_prefix, "Error getting CodeMirror", lang, "mode:", err);
-                callback(err, code);
+                callback(null, code);
             });
         }
     };
