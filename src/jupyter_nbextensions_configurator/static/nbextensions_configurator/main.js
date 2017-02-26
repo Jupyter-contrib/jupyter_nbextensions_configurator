@@ -271,9 +271,7 @@ define([
      */
     function get_input_value (input) {
         input = $(input);
-        var input_type = input.data('param_type');
-
-        switch (input_type) {
+        switch (input.data('nbext_input').type) {
             case 'hotkey':
                 return input.find('.hotkey').data('pre-humanized');
             case 'list':
@@ -297,8 +295,8 @@ define([
      */
     function set_input_value (input, new_value) {
         input = $(input);
-        var input_type = input.data('param_type');
-        switch (input_type) {
+        var input_data = input.data('nbext_input');
+        switch (input_data.type) {
             case 'hotkey':
                 input.find('.hotkey')
                     .html(quickhelp.humanize_sequence(new_value))
@@ -307,10 +305,9 @@ define([
             case 'list':
                 var ul = input.children('ul');
                 ul.empty();
-                var list_element_param = input.data('list_element_param');
+                var list_element_param = input_data.list_element_param;
                 for (var ii = 0; ii < new_value.length; ii++) {
                     var list_element_input = build_param_input(list_element_param);
-                    list_element_input.on('change', handle_input);
                     set_input_value(list_element_input, new_value[ii]);
                     ul.append(wrap_list_input(list_element_input));
                 }
@@ -340,11 +337,10 @@ define([
         }
 
         // get param name by cutting off prefix
-        var configkey = input.attr('id').substring(param_id_prefix.length);
+        var input_data = input.data('nbext_input');
         var configval = get_input_value(input);
-        var configsection = input.data('section');
-        console.log(log_prefix, configsection + '.' + configkey, '->', configval);
-        conf_dot_update(configs[configsection], configkey, configval);
+        console.log(log_prefix, input_data.configsection + '.' + input_data.configkey, '->', configval);
+        conf_dot_update(configs[input_data.configsection], input_data.configkey, configval);
         return configval;
     }
 
@@ -372,10 +368,15 @@ define([
      * Build and return an element used to edit a parameter
      */
     function build_param_input (param) {
-        var input_type = (param.input_type || 'text').toLowerCase();
+        var input_data = {
+            configkey: param.name,
+            configsection: param.section,
+            list_element_param: param.list_element || {},
+            type: (param.input_type || 'text').toLowerCase(),
+        };
         var input;
 
-        switch (input_type) {
+        switch (input_data.type) {
             case 'hotkey':
                 input = $('<div class="input-group"/>');
                 input.append(
@@ -428,10 +429,6 @@ define([
                             }
                         })
                 );
-                var list_element_param = param.list_element || {};
-                // add the requested list param type to the list element using
-                // jquery data api
-                input.data('list_element_param', list_element_param);
 
                 // add a button to add list elements
                 var add_button = $('<a/>')
@@ -441,8 +438,7 @@ define([
                     .on('click', function () {
                         $(this).parent().siblings('ul').append(
                             wrap_list_input(
-                                build_param_input(list_element_param)
-                                    .on('change', handle_input)
+                                build_param_input(input_data.list_element_param)
                             )
                         ).closest('.nbext-list-wrap').change();
                     });
@@ -452,7 +448,7 @@ define([
                 input = $('<textarea/>');
                 break;
             case 'number':
-                input = $('<input/>', {'type': input_type});
+                input = $('<input/>', {'type': input_data.type});
                 if (param.step !== undefined) input.attr('step', param.step);
                 if (param.min !== undefined) input.attr('min', param.min);
                 if (param.max !== undefined) input.attr('max', param.max);
@@ -466,17 +462,19 @@ define([
                 // it will ignore the value you set
                 // and the type property will still be "text".
                 input = document.createElement('input');
-                input.setAttribute('type', input_type);
+                input.setAttribute('type', input_data.type);
                 // wrap in jquery
                 input = $(input);
         }
-        // add the param type to the element using jquery data api
-        input.data('param_type', input_type);
-        input.data('section', param.section);
         var non_form_control_input_types = ['checkbox', 'list', 'hotkey'];
-        if (non_form_control_input_types.indexOf(input_type) < 0) {
+        if (non_form_control_input_types.indexOf(input_data.type) < 0) {
             input.addClass('form-control');
         }
+
+        // add input settings to the element using jquery data api
+        input.data('nbext_input', input_data);
+        // bind handler
+        input.on('change', handle_input);
         return input;
     }
 
@@ -513,8 +511,7 @@ define([
         $('.nbext-selector .nbext-incompatible')
             .toggleClass('disabled', hide_incompat)
             .attr('title', hide_incompat ? 'possibly incompatible' : '');
-        set_input_value(
-            $('#' + param_id_prefix + 'nbext_hide_incompat'), hide_incompat);
+        set_input_value($('#nbext_hide_incompat'), hide_incompat);
 
         var selector = $('.nbext-selector');
         if (selector.find('li.active').first().hasClass('disabled')) {
@@ -806,7 +803,6 @@ define([
 
             // input to configure the param
             var input = build_param_input(param);
-            input.on('change', handle_input);
             input.attr('id', param_id);
             var prepend_input_types = ['checkbox'];
             if (prepend_input_types.indexOf(param.input_type) < 0) {
@@ -1211,10 +1207,12 @@ define([
             .addClass('nbext-showhide-incompat')
             .append(
                 build_param_input({
+                    name: 'nbext_hide_incompat',
                     input_type: 'checkbox',
                     section: 'common'
                 })
-                    .attr('id', param_id_prefix + 'nbext_hide_incompat')
+                    .attr('id', 'nbext_hide_incompat')
+                    .off('change', handle_input)
                     .on('change', function (evt) {
                         set_hide_incompat(handle_input(evt));
                     })

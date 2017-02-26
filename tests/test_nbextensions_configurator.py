@@ -138,7 +138,7 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
     def test_11_allow_configuring_incompatibles(self):
         require = 'balrog/daemon'
         # allow configuring incompatibles
-        showhide_sel = '#input_nbext_hide_incompat'
+        showhide_sel = '#nbext_hide_incompat'
         self.wait_for_selector(
             showhide_sel,
             'potentially incompatible nbextenions should show checkbox')
