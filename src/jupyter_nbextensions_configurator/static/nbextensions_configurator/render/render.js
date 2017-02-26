@@ -5,11 +5,13 @@ define([
     'base/js/page',
     'base/js/security',
     'notebook/js/mathjaxutils',
-    'notebook/js/codemirror-ipythongfm',
+    'components/marked/lib/marked',
     'codemirror/lib/codemirror',
-    'codemirror/mode/gfm/gfm',
+    // CodeMirror modules below don't export anything, just loading them does everything necessary
     'codemirror/addon/runmode/runmode',
-    'components/marked/lib/marked'
+    'codemirror/mode/gfm/gfm',
+    'notebook/js/codemirror-ipython',
+    'notebook/js/codemirror-ipythongfm'
 ], function(
     require,
     $,
@@ -17,11 +19,14 @@ define([
     page,
     security,
     mathjaxutils,
-    ipgfm,
+    marked,    
     CodeMirror,
-    gfm,
-    runMode,
-    marked
+    // CodeMirror modules below don't export anything, so will be undefined,
+    // but are included as params for completeness
+    CodeMirror_runMode,
+    CodeMirror_mode_gfm,
+    CodeMirror_mode_ipython,
+    CodeMirror_mode_ipythongfm
 ){
     'use strict';
 
