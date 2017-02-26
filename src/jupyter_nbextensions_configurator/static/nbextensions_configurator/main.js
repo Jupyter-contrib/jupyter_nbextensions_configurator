@@ -2,10 +2,8 @@ define([
     'jquery',
     'require',
     'base/js/namespace',
-    'base/js/page',
     'base/js/utils',
     'services/config',
-    'base/js/events',
     'base/js/dialog',
     'notebook/js/quickhelp',
     'nbextensions/nbextensions_configurator/render/render',
@@ -17,10 +15,8 @@ define([
     $,
     require,
     Jupyter,
-    page,
     utils,
     configmod,
-    events,
     dialog,
     quickhelp,
     rendermd,
@@ -1261,6 +1257,14 @@ define([
      * build html body listing all nbextensions.
      */
     function build_page () {
+        return require([
+            'base/js/page',
+            'base/js/events',
+        ], function (
+            page,
+            events
+        ) {
+
         add_css('./main.css');
         $('body').addClass(page_class);
 
@@ -1284,6 +1288,7 @@ define([
         setTimeout(popstateCallback, 0);
 
         return nbext_config_page;
+        });
     }
 
     /**
