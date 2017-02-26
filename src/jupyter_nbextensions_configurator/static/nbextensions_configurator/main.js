@@ -6,8 +6,8 @@ define([
     'services/config',
     'base/js/dialog',
     'notebook/js/quickhelp',
-    'nbextensions/nbextensions_configurator/render/render',
-    'nbextensions/nbextensions_configurator/kse_components',
+    './render/render',
+    './kse_components',
     // only loaded, not used:
     'jqueryui',
     'bootstrap'
