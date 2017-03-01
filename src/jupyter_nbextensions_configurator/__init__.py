@@ -162,13 +162,8 @@ class NBExtensionHandlerPage(IPythonHandler):
     @web.authenticated
     def get(self):
         """Render the nbextension configuration interface."""
-        nbapp_webapp = self.application
-        nbextension_dirs = nbapp_webapp.settings['nbextensions_path']
-        extension_list = get_configurable_nbextensions(
-            nbextension_dirs=nbextension_dirs, log=self.log)
         self.finish(self.render_template(
             'nbextensions_configurator.html',
-            extension_list_json=json.dumps(extension_list),
             page_title='Nbextensions Configuration',
             **self.application.settings
         ))

@@ -7,9 +7,8 @@
 {% endblock %}
 
 {% block params %}
-
+{{super()}}
 data-base-url="{{base_url | urlencode}}"
-
 {% endblock %}
 
 {% block headercontainer %}
@@ -26,19 +25,12 @@ data-base-url="{{base_url | urlencode}}"
 {% block header %}
 {% endblock %}
 
-{% block site %}
-{% endblock %}
-
 {% block script %}
 
 	{{super()}}
 
 	<script type="text/javascript">
-    	sys_info = {{sys_info|safe}};
-	</script>
-
-	<script type="text/javascript">
-		extension_list = {{extension_list_json|safe}};
+		sys_info = {{sys_info|safe}};
 	</script>
 
 	<script type="text/javascript" charset="utf-8">

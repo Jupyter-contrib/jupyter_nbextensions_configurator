@@ -1270,20 +1270,16 @@ define([
 
         // prepare for rendermd usage
         rendermd.add_markdown_css();
-
-        build_configurator_ui().appendTo('#site');
-
         nbext_config_page.show_header();
+        build_configurator_ui().appendTo('#site');
         events.trigger('resize-header.Page');
 
-        load_all_configs().then(function () {
-            // get list of nbextensions from value set by script embedded in page by the python backend
-            build_extension_list(window.extension_list);
             nbext_config_page.show();
-        });
-
+        
+        refresh_configurable_extensions_list().then(function () {
         window.addEventListener('popstate', popstateCallback);
         setTimeout(popstateCallback, 0);
+        });
 
         return nbext_config_page;
         });

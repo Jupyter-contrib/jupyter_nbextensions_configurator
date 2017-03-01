@@ -52,9 +52,8 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
 
     def test_02_body_data_attribute(self):
         nbext_list = self.driver.execute_script('return window.extension_list')
-        nt.assert_is_instance(nbext_list, list)
-        nt.assert_greater(
-            len(nbext_list), 0, 'some nbextensions should be found')
+        # we no longer embed the list into the page
+        nt.assert_is_none(nbext_list)
 
     def test_03_extension_ui_presence(self):
         self.wait_for_selector('.nbext-row', 'an nbextension ui should load')
