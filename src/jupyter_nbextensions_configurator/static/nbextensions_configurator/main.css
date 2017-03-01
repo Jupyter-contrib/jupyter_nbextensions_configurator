@@ -109,10 +109,13 @@
 
 .nbext-icon,
 .nbext-desc,
-.nbext-compat-div,
 .nbext-enable-btns,
 .nbext-params {
     margin-bottom: 8px;
+}
+
+.nbext-enable-btns {
+    margin-top: 8px;
 }
 
 /* styles for list inputs */
