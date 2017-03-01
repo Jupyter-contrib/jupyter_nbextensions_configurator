@@ -56,7 +56,8 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         nt.assert_is_none(nbext_list)
 
     def test_03_extension_ui_presence(self):
-        self.wait_for_selector('.nbext-row', 'an nbextension ui should load')
+        self.wait_for_selector(
+            '.nbext-ext-row', 'an nbextension ui should load')
         enable_links = self.driver.find_elements_by_css_selector(
             '.nbext-selector')
         nt.assert_greater(
@@ -68,7 +69,7 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         self.wait_for_partial_link_text(partial_txt)
         sel_link = self.driver.find_element_by_partial_link_text(partial_txt)
         sel_link.click()
-        self.wait_for_selector('.nbext-readme-contents img',
+        self.wait_for_selector('.nbext-readme > .panel-body img',
                                'there should be an image in the readme')
 
     def test_05_click_page_readme_link(self):
@@ -94,7 +95,8 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         tab_selector = '#tabs a[href$=nbextensions_configurator]'
         self.wait_for_selector(tab_selector)
         self.driver.find_element_by_css_selector(tab_selector).click()
-        self.wait_for_selector('.nbext-row', 'an nbextension ui should load')
+        self.wait_for_selector(
+            '.nbext-ext-row', 'an nbextension ui should load')
 
     def test_08_disable_tree_tab(self):
         # now disable the appropriate nbextension & wait for update to config
@@ -124,7 +126,7 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         section, require = 'notebook', 'balrog/daemon'
         self.set_extension_enabled(section, require, True)
         # refresh the list to check that it appears
-        refresh_selector = '#refresh_nbextensions_configurator_list'
+        refresh_selector = '.nbext-button-refreshlist'
         self.wait_for_selector(refresh_selector)
         refresh = self.driver.find_element_by_css_selector(refresh_selector)
         refresh.click()

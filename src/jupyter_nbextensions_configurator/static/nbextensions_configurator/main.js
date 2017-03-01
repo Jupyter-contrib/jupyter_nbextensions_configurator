@@ -348,7 +348,7 @@ define([
      * wrap a single list-element input with the <li>, and move/remove buttons
      */
     function wrap_list_input (list_input) {
-        var btn_remove = $('<a/>', {'class': 'btn btn-default input-group-addon nbext-list-el-btn-remove'});
+        var btn_remove = $('<a/>', {'class': 'btn btn-default input-group-addon'});
         btn_remove.append($('<i/>', {'class': 'fa fa-fw fa-trash'}));
         btn_remove.on('click', function () {
             var list_el = $(this).closest('li');
@@ -432,7 +432,7 @@ define([
 
                 // add a button to add list elements
                 var add_button = $('<a/>')
-                    .addClass('btn btn-default input-group-btn nbext-list-btn-add')
+                    .addClass('btn btn-default input-group-btn')
                     .text(' new item')
                     .prepend('<i class="fa fa-plus"/>')
                     .on('click', function () {
@@ -527,8 +527,8 @@ define([
      */
     function load_readme (extension) {
         var readme = $('.nbext-readme');
-        var readme_contents = readme.children('.nbext-readme-contents').empty();
-        var readme_title = readme.find('.nbext-readme-title').empty();
+        var readme_contents = readme.children('.panel-body').empty();
+        var readme_title = readme.children('.panel-heading').children('span').empty();
 
         if (extension.readme === undefined) {
             readme.slideUp(100);
@@ -913,13 +913,11 @@ define([
             // Section
             $('<div/>')
                 .text('section: ' + extension.Section)
-                .addClass('nbext-sect')
                 .appendTo(col_left);
 
             // Require
             $('<div/>')
                 .text('require path: ')
-                .addClass('nbext-req')
                 .append(
                     $('<span/>').addClass('rendered_html').append(
                         $('<code/>').text(extension.require)))
@@ -962,7 +960,6 @@ define([
                     extension.Parameters[ii].section = extension.Section;
                 }
                 var reset_control = $('<a/>')
-                    .addClass('nbext-params-reset')
                     .on('click', reset_params_callback)
                     .addClass('pull-right')
                     .attr({
@@ -1184,7 +1181,7 @@ define([
             .prependTo(config_ui);
 
         var ext_buttons = $('<span/>')
-            .attr('id', 'nbextensions_configurator_buttons')
+            .addClass('btn-group')
             .appendTo(button_sets);
 
         var refresh_button = $('<button/>')
@@ -1233,10 +1230,10 @@ define([
             .appendTo(config_ui);
         $('<div class="panel-heading"/>')
             .append('<i class="fa fa-fw fa-caret-down"/>')
-            .append('<span class="nbext-readme-title">')
+            .append('<span>')
             .on('click', panel_showhide_callback)
             .appendTo(readme);
-        $('<div class="nbext-readme-contents panel-body"/>')
+        $('<div class="panel-body"/>')
             .appendTo(readme);
 
         return config_ui;

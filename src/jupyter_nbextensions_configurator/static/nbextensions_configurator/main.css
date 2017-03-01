@@ -139,7 +139,7 @@
     border-bottom-left-radius: 2px;
 }
 
-.input-group .nbext-list-btn-add {
+.nbext-list-wrap > .input-group > .btn {
     font-size: inherit;
 }
 
