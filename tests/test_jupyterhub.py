@@ -89,6 +89,7 @@ class TestSpawner(LocalProcessSpawner):
         for line in iter(self.proc.stdout.readline, b''):
             logr.info(line.decode('utf-8').strip('\n'))
 
+
 TestSpawner.debug.default_value = True
 
 
