@@ -175,6 +175,7 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         self.wait_for_selector(sel_dialog, 'a confirmation dialog should show')
         self.driver.find_element_by_css_selector(sel_dialog).click()
         # it should no longer be enabled in config
+        time.sleep(1)
         conf = self.get_config_manager().get(section)
         stat = conf.get('load_extensions', {}).get(require)
         nt.assert_is_none(
