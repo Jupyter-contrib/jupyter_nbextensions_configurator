@@ -46,3 +46,6 @@ pip-log.txt
 # jupyterhub test things
 jupyterhub_cookie_secret
 node_modules
+
+# geckodriver log file
+geckodriver.log

@@ -2,7 +2,7 @@
 language: python
 sudo: false
 addons:
-  firefox: latest-esr
+  firefox: latest
   sauce_connect: true
 matrix:
   fast_finish: true
@@ -93,18 +93,12 @@ before_install:
   # install 3.4 as it's the default for tox environments like clean, check
   - 'if [[ ${OSX_PYTHON} ]] && [[ ${OSX_PYTHON} != "3.4" ]]; then install_macpython 3.4; fi'
   # check which python installs are present/active
-  - 'if [[ ${OSX_PYTHON} ]]; then echo "$PYTHON_EXE"; fi;'
+  - 'if [[ ${OSX_PYTHON} ]]; then echo "\$PYTHON_EXE=$PYTHON_EXE"; fi;'
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python   ) ]]; then ls -l $(which python   ); else echo "missing"; fi; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python2.7) ]]; then ls -l $(which python2.7); else echo "missing"; fi; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.3) ]]; then ls -l $(which python3.3); else echo "missing"; fi; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.4) ]]; then ls -l $(which python3.4); else echo "missing"; fi; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.5) ]]; then ls -l $(which python3.5); else echo "missing"; fi; fi'
-  # don't need SAUCE if we're not testing js (which we don't on osx), so disable by clearing env vars
-  - 'if [[ ${TRAVIS_OS_NAME} != "linux" ]]; then unset SAUCE_USERNAME && unset SAUCE_ACCESS_KEY && echo unset; fi'
-  # don't need sauce for builds which don't start with 'py' or 'jupyterhub'
-  - 'if [[ ${TOXENV} != py* && ${TOXENV} != jupyterhub ]]; then unset SAUCE_USERNAME && unset SAUCE_ACCESS_KEY && echo unset; fi'
-  # also install npm configurable proxy for jupyterhub!
-  - 'if [[ ${TOXENV} == "jupyterhub" ]]; then npm install configurable-http-proxy; fi'
   # stuff for conda recipe
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then bash miniconda.sh -b -p $HOME/miniconda; fi'
@@ -115,16 +109,29 @@ before_install:
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda info -a; fi  # Useful for debugging any issues with conda'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda install conda-build; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then git fetch --unshallow; fi'
+  # also install npm configurable proxy for jupyterhub!
+  - 'if [[ ${TOXENV} == "jupyterhub" ]]; then npm install configurable-http-proxy; fi;'
+  # decide ehwether js tests will run
+  - 'if [[ ${TRAVIS_OS_NAME} == "linux" ]] && [[ ${TOXENV} == py* || ${TOXENV} == jupyterhub ]]; then JS_TESTS="true"; else JS_TESTS="false"; fi;'
+  - 'echo "\${JS_TESTS}=$JS_TESTS";'
+  # don't need SAUCE if we're not testing js, so disable by clearing env vars
+  - 'if [[ ! ${JS_TESTS} ]]; then unset SAUCE_USERNAME && unset SAUCE_ACCESS_KEY && echo unset; fi;'
+  # for js tests (which we do on linux only), selenium 3 requires geckodriver
+  - 'if [[ ${JS_TESTS} ]]; GECKODRIVER_VERSION="0.14.0"; fi;'
+  - 'if [[ ${JS_TESTS} ]]; wget "https://github.com/mozilla/geckodriver/releases/download/v$GECKODRIVER_VERSION/geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz"; fi;'
+  - 'if [[ ${JS_TESTS} ]]; mkdir geckodriver; fi;'
+  - 'if [[ ${JS_TESTS} ]]; tar -xzf "geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz" -C geckodriver; fi;'
+  - 'if [[ ${JS_TESTS} ]]; export PATH="$PATH:$PWD/geckodriver"; fi;'
+  # remove the downloaded archive, don't care if this fails
+  - 'if [[ ${JS_TESTS} ]]; rm "geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz" || true; fi;'
+  # from https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
+  # we need to start xvfb for selenium to work correctly
+  - 'if [[ ${JS_TESTS} ]]; export DISPLAY=":99.0"; fi;'
+  - 'if [[ ${JS_TESTS} ]]; sh -e /etc/init.d/xvfb start && sleep 3; fi;'
 install:
   - pip install tox
   - virtualenv --version
   - firefox --version
-before_script:
-  # from https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
-  #  we need to start xvfb for selenium to work correctly
-  - 'if [[ ${TRAVIS_OS_NAME} == "linux" && ( ${TOXENV} == py* || ${TOXENV} == jupyterhub ) ]]; then export DISPLAY=:99.0; fi'
-  - 'if [[ ${TRAVIS_OS_NAME} == "linux" && ( ${TOXENV} == py* || ${TOXENV} == jupyterhub ) ]]; then sh -e /etc/init.d/xvfb start; fi'
-  - 'if [[ ${TRAVIS_OS_NAME} == "linux" && ( ${TOXENV} == py* || ${TOXENV} == jupyterhub ) ]]; then sleep 3; fi # give xvfb some time to start'
 script:
   - tox -v -e ${TOXENV}
 after_script:
