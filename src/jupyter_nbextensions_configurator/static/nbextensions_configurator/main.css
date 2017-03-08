@@ -21,11 +21,19 @@
     display: none;
 }
 
+.nbextensions-configurator-container {
+    margin-top: 4px;
+}
+
 /* styles for the nbextension-selector nav links */
 
 .nbext-selector {
     border-bottom: 1px solid #888;
     padding-bottom: 1em;
+}
+
+.nbext-selector-loading {
+    text-align: center;
 }
 
 .nbext-selector > nav > .nav > li {
@@ -101,10 +109,13 @@
 
 .nbext-icon,
 .nbext-desc,
-.nbext-compat-div,
 .nbext-enable-btns,
 .nbext-params {
     margin-bottom: 8px;
+}
+
+.nbext-enable-btns {
+    margin-top: 8px;
 }
 
 /* styles for list inputs */
@@ -131,7 +142,7 @@
     border-bottom-left-radius: 2px;
 }
 
-.input-group .nbext-list-btn-add {
+.nbext-list-wrap > .input-group > .btn {
     font-size: inherit;
 }
 

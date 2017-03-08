@@ -5,11 +5,13 @@ define([
     'base/js/page',
     'base/js/security',
     'notebook/js/mathjaxutils',
-    'notebook/js/codemirror-ipythongfm',
+    'components/marked/lib/marked',
     'codemirror/lib/codemirror',
-    'codemirror/mode/gfm/gfm',
+    // CodeMirror modules below don't export anything, just loading them does everything necessary
     'codemirror/addon/runmode/runmode',
-    'components/marked/lib/marked'
+    'codemirror/mode/gfm/gfm',
+    'notebook/js/codemirror-ipython',
+    'notebook/js/codemirror-ipythongfm'
 ], function(
     require,
     $,
@@ -17,13 +19,19 @@ define([
     page,
     security,
     mathjaxutils,
-    ipgfm,
+    marked,    
     CodeMirror,
-    gfm,
-    runMode,
-    marked
+    // CodeMirror modules below don't export anything, so will be undefined,
+    // but are included as params for completeness
+    CodeMirror_runMode,
+    CodeMirror_mode_gfm,
+    CodeMirror_mode_ipython,
+    CodeMirror_mode_ipythongfm
 ){
     'use strict';
+
+    var mod_name = 'jupyter_nbextensions_configurator/render';
+    var log_prefix = '[' + mod_name + ']';
 
     /**
      * Custom marked options,
@@ -72,7 +80,7 @@ define([
                 var el = document.createElement("div");
                 var mode = CodeMirror.getMode({}, spec);
                 if (!mode) {
-                    console.log("No CodeMirror mode: " + lang);
+                    console.log(log_prefix, "No CodeMirror", lang, "mode");
                     callback(null, code);
                     return;
                 }
@@ -83,12 +91,12 @@ define([
                     }
                     callback(null, el.innerHTML);
                 } catch (err) {
-                    console.log("Failed to highlight " + lang + " code", err);
-                    callback(err, code);
+                    console.log(log_prefix, "Failed to highlight", lang, "code:", err);
+                    callback(null, code);
                 }
             }, function (err) {
-                console.log("No CodeMirror mode: " + lang);
-                callback(err, code);
+                console.log(log_prefix, "Error getting CodeMirror", lang, "mode:", err);
+                callback(null, code);
             });
         }
     };

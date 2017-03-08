@@ -2,13 +2,12 @@ define([
     'jquery',
     'require',
     'base/js/namespace',
-    'base/js/page',
     'base/js/utils',
     'services/config',
-    'base/js/events',
+    'base/js/dialog',
     'notebook/js/quickhelp',
-    'nbextensions/nbextensions_configurator/render/render',
-    'nbextensions/nbextensions_configurator/kse_components',
+    './render/render',
+    './kse_components',
     // only loaded, not used:
     'jqueryui',
     'bootstrap'
@@ -16,16 +15,17 @@ define([
     $,
     require,
     Jupyter,
-    page,
     utils,
     configmod,
-    events,
+    dialog,
     quickhelp,
     rendermd,
     kse_comp
 ) {
     'use strict';
 
+    var mod_name = 'jupyter_nbextensions_configurator';
+    var log_prefix = '[' + mod_name + ']';
     var base_url = utils.get_body_data('baseUrl');
     var first_load_done = false; // flag used to not push history on first load
     var extensions_dict = {}; // dictionary storing nbextensions by their 'require' value
@@ -163,8 +163,8 @@ define([
      * Update server's json config file to reflect changed enable state
      */
     function set_config_enabled (extension, state) {
-        state = state === undefined ? true : Boolean(state);
-        console.log('Notebook extension "' + extension.Name + '"', state ? 'enabled' : 'disabled');
+        state = state !== undefined ? state : true;
+        console.log(log_prefix, state ? ' enabled' : 'disabled', extension.require);
         // for pre-4.2 versions, the javascript loading nbextensions actually
         // ignores the true/false state, so to disable we have to delete the key
         if ((version_compare(Jupyter.version, '4.2') < 0) && !state) {
@@ -208,6 +208,20 @@ define([
             .prop('disabled', !state)
             .toggleClass('btn-default disabled', !state)
             .toggleClass('btn-primary', state);
+        if (extension.unconfigurable) {
+            var forget_btn = btns.eq(2);
+            if (state) {
+                forget_btn.remove();
+            }
+            else if (forget_btn.length < 1) {
+                $('<button/>')
+                    .text('Forget')
+                    .attr('type', 'button')
+                    .addClass('btn btn-warning ')
+                    .on('click', handle_forget_click)
+                    .insertAfter(btns.eq(1));
+            }
+        }
     }
 
     /**
@@ -221,14 +235,43 @@ define([
         set_config_enabled(extension, state);
     }
 
+    function handle_forget_click (evt) {
+        var btn = $(evt.target);
+        var extension = btn.closest('.nbext-ext-row').data('extension');
+        var msg_body = $('<div>')
+            .append($('<p>').html(
+                'Are you sure you want to remove the key <code>' + extension.require +
+                '</code> from <code>load_extensions</code> in the config section ' +
+                '<code>' + extension.Section + '</code>?'
+            ).css('margin-bottom', '9px'))
+            .append($('<p>').html(
+                'Removing it will mean that it will no longer show up in the ' +
+                'nbextensions configurator, so ' +
+                '<strong>you won\'t be able to re-enable it from here.</strong>'
+            ));
+
+        dialog.modal({
+            title: "Forget '" + extension.require + "'?",
+            body: msg_body,
+            buttons: {
+                Forget : {
+                    class: "btn-danger",
+                    click: function() {
+                        set_config_enabled(extension, null);
+                        refresh_configurable_extensions_list();
+                    }
+                },
+                Cancel : {}
+            }
+        });
+    }
+
     /*
      * Get the useful value (dependent on element type) from an input element
      */
     function get_input_value (input) {
         input = $(input);
-        var input_type = input.data('param_type');
-
-        switch (input_type) {
+        switch (input.data('nbext_input').type) {
             case 'hotkey':
                 return input.find('.hotkey').data('pre-humanized');
             case 'list':
@@ -252,8 +295,8 @@ define([
      */
     function set_input_value (input, new_value) {
         input = $(input);
-        var input_type = input.data('param_type');
-        switch (input_type) {
+        var input_data = input.data('nbext_input');
+        switch (input_data.type) {
             case 'hotkey':
                 input.find('.hotkey')
                     .html(quickhelp.humanize_sequence(new_value))
@@ -262,10 +305,9 @@ define([
             case 'list':
                 var ul = input.children('ul');
                 ul.empty();
-                var list_element_param = input.data('list_element_param');
+                var list_element_param = input_data.list_element_param;
                 for (var ii = 0; ii < new_value.length; ii++) {
                     var list_element_input = build_param_input(list_element_param);
-                    list_element_input.on('change', handle_input);
                     set_input_value(list_element_input, new_value[ii]);
                     ul.append(wrap_list_input(list_element_input));
                 }
@@ -295,11 +337,10 @@ define([
         }
 
         // get param name by cutting off prefix
-        var configkey = input.attr('id').substring(param_id_prefix.length);
+        var input_data = input.data('nbext_input');
         var configval = get_input_value(input);
-        var configsection = input.data('section');
-        console.log(configsection + '.' + configkey, '->', configval);
-        conf_dot_update(configs[configsection], configkey, configval);
+        console.log(log_prefix, input_data.configsection + '.' + input_data.configkey, '->', configval);
+        conf_dot_update(configs[input_data.configsection], input_data.configkey, configval);
         return configval;
     }
 
@@ -307,7 +348,7 @@ define([
      * wrap a single list-element input with the <li>, and move/remove buttons
      */
     function wrap_list_input (list_input) {
-        var btn_remove = $('<a/>', {'class': 'btn btn-default input-group-addon nbext-list-el-btn-remove'});
+        var btn_remove = $('<a/>', {'class': 'btn btn-default input-group-addon'});
         btn_remove.append($('<i/>', {'class': 'fa fa-fw fa-trash'}));
         btn_remove.on('click', function () {
             var list_el = $(this).closest('li');
@@ -327,10 +368,15 @@ define([
      * Build and return an element used to edit a parameter
      */
     function build_param_input (param) {
-        var input_type = (param.input_type || 'text').toLowerCase();
+        var input_data = {
+            configkey: param.name,
+            configsection: param.section,
+            list_element_param: param.list_element || {},
+            type: (param.input_type || 'text').toLowerCase(),
+        };
         var input;
 
-        switch (input_type) {
+        switch (input_data.type) {
             case 'hotkey':
                 input = $('<div class="input-group"/>');
                 input.append(
@@ -383,21 +429,16 @@ define([
                             }
                         })
                 );
-                var list_element_param = param.list_element || {};
-                // add the requested list param type to the list element using
-                // jquery data api
-                input.data('list_element_param', list_element_param);
 
                 // add a button to add list elements
                 var add_button = $('<a/>')
-                    .addClass('btn btn-default input-group-btn nbext-list-btn-add')
+                    .addClass('btn btn-default input-group-btn')
                     .text(' new item')
                     .prepend('<i class="fa fa-plus"/>')
                     .on('click', function () {
                         $(this).parent().siblings('ul').append(
                             wrap_list_input(
-                                build_param_input(list_element_param)
-                                    .on('change', handle_input)
+                                build_param_input(input_data.list_element_param)
                             )
                         ).closest('.nbext-list-wrap').change();
                     });
@@ -407,7 +448,7 @@ define([
                 input = $('<textarea/>');
                 break;
             case 'number':
-                input = $('<input/>', {'type': input_type});
+                input = $('<input/>', {'type': input_data.type});
                 if (param.step !== undefined) input.attr('step', param.step);
                 if (param.min !== undefined) input.attr('min', param.min);
                 if (param.max !== undefined) input.attr('max', param.max);
@@ -421,17 +462,19 @@ define([
                 // it will ignore the value you set
                 // and the type property will still be "text".
                 input = document.createElement('input');
-                input.setAttribute('type', input_type);
+                input.setAttribute('type', input_data.type);
                 // wrap in jquery
                 input = $(input);
         }
-        // add the param type to the element using jquery data api
-        input.data('param_type', input_type);
-        input.data('section', param.section);
         var non_form_control_input_types = ['checkbox', 'list', 'hotkey'];
-        if (non_form_control_input_types.indexOf(input_type) < 0) {
+        if (non_form_control_input_types.indexOf(input_data.type) < 0) {
             input.addClass('form-control');
         }
+
+        // add input settings to the element using jquery data api
+        input.data('nbext_input', input_data);
+        // bind handler
+        input.on('change', handle_input);
         return input;
     }
 
@@ -468,8 +511,7 @@ define([
         $('.nbext-selector .nbext-incompatible')
             .toggleClass('disabled', hide_incompat)
             .attr('title', hide_incompat ? 'possibly incompatible' : '');
-        set_input_value(
-            $('#' + param_id_prefix + 'nbext_hide_incompat'), hide_incompat);
+        set_input_value($('#nbext_hide_incompat'), hide_incompat);
 
         var selector = $('.nbext-selector');
         if (selector.find('li.active').first().hasClass('disabled')) {
@@ -485,8 +527,8 @@ define([
      */
     function load_readme (extension) {
         var readme = $('.nbext-readme');
-        var readme_contents = readme.children('.nbext-readme-contents').empty();
-        var readme_title = readme.find('.nbext-readme-title').empty();
+        var readme_contents = readme.children('.panel-body').empty();
+        var readme_title = readme.children('.panel-heading').children('span').empty();
 
         if (extension.readme === undefined) {
             readme.slideUp(100);
@@ -600,7 +642,7 @@ define([
                 selector_link: $(),
             };
             var warning = $('<div/>')
-                .addClass('alert alert-warning')
+                .addClass('col-xs-12 alert alert-warning')
                 .appendTo(extension.ui);
             $('<p/>')
                 .text('No nbextensions match the applied filters!')
@@ -741,7 +783,7 @@ define([
             var param = params[pp];
             var param_name = param.name;
             if (!param_name) {
-                console.error('nbext param: unnamed parameter declared!');
+                console.error(log_prefix, 'Unnamed parameter declared!');
                 continue;
             }
 
@@ -761,7 +803,6 @@ define([
 
             // input to configure the param
             var input = build_param_input(param);
-            input.on('change', handle_input);
             input.attr('id', param_id);
             var prepend_input_types = ['checkbox'];
             if (prepend_input_types.indexOf(param.input_type) < 0) {
@@ -775,21 +816,15 @@ define([
             // set input value from config or default, if poss
             if (conf_dot_key_exists(configs[param.section], param_name)) {
                 var configval = conf_dot_get(configs[param.section], param_name);
-                console.log(
-                    'nbext param:', param_name,
-                    'from config:', configval
-                );
+                console.log(log_prefix, 'param', param_name, 'init from config:', configval);
                 set_input_value(input, configval);
             }
             else if (param.hasOwnProperty('default')) {
                 set_input_value(input, param.default);
-                console.log(
-                    'nbext param:', param_name,
-                    'default:', param.default
-                );
+                console.log(log_prefix, 'param', param_name, 'init from default:', param.default);
             }
             else {
-                console.log('nbext param:', param_name);
+                console.log(log_prefix, 'param', param_name);
             }
         }
         return div_param_list;
@@ -810,7 +845,7 @@ define([
              * to ensure the name takes up a whole row-width on its own,
              * so that the subsequent columns wrap onto a new line.
              */
-            var ext_name_head = $('<h3>')
+            $('<h3>')
                 .addClass('col-xs-12')
                 .html(extension.Name)
                 .appendTo(ext_row);
@@ -856,10 +891,10 @@ define([
                     'If they are different, only one will be loaded by the',
                     'notebook, and this may prevent configuration from working',
                     'correctly.',
-                    'Check the jupyter server log for the paths of the relevant',
-                    'yaml files.'].join(' '));
+                    'Check the jupyter notebook server log for the paths of',
+                    'the relevant yaml files.'].join(' '));
                 $('<div/>')
-                    .addClass('alert alert-warning')
+                    .addClass('col-xs-12 alert alert-warning')
                     .css('margin-top', '5px')
                     .append(duplicate_warning_p)
                     .appendTo(ext_row);
@@ -878,13 +913,11 @@ define([
             // Section
             $('<div/>')
                 .text('section: ' + extension.Section)
-                .addClass('nbext-sect')
                 .appendTo(col_left);
 
             // Require
             $('<div/>')
                 .text('require path: ')
-                .addClass('nbext-req')
                 .append(
                     $('<span/>').addClass('rendered_html').append(
                         $('<code/>').text(extension.require)))
@@ -927,10 +960,12 @@ define([
                     extension.Parameters[ii].section = extension.Section;
                 }
                 var reset_control = $('<a/>')
-                    .addClass('nbext-params-reset')
                     .on('click', reset_params_callback)
                     .addClass('pull-right')
-                    .attr('href', '#')
+                    .attr({
+                        href: '#',
+                        title:'reset parameters to defaults',
+                    })
                     .text(' reset');
                 $('<i/>')
                     .addClass('fa fa-refresh')
@@ -953,15 +988,12 @@ define([
             }
         }
         catch (err) {
-            console.error('[nbext] error loading nbextension', extension.Name);
-            console.error(err);
+            var msg = log_prefix + ' error loading ' + extension.require;
+            console.error(msg + ':\n' + err);
             $('<div/>')
-                .addClass('alert alert-warning')
+                .addClass('col-xs-12 alert alert-warning')
                 .css('margin-top', '5px')
-                .append(
-                    $('<p/>')
-                        .text('[nbext] error loading nbextension ' + extension.Name)
-                )
+                .append($('<p/>').text(msg))
                 .appendTo(ext_row);
         }
         finally {
@@ -1004,7 +1036,7 @@ define([
         });
         $(to_hide).slideUp(100);
         to_show = $(to_show); // convert to jquery obj
-        to_show.slideDown(100)
+        to_show.slideDown(100);
         // make sure a visible nbextensions is selected
         if (!to_show.is('.active')) {
             var candidate = to_show.filter(':not(.disabled)').first().children('a');
@@ -1040,7 +1072,7 @@ define([
     function filter_register_new_tag (new_tag_object) {
         for (var ii=0; ii < tags.length; ii++) {
             if (tags[ii].value == new_tag_object.value && tags[ii].category == new_tag_object.category) {
-                return //tag already exists, so don't insert
+                return; // tag already exists, so don't insert again
             }
         }
         new_tag_object.label = new_tag_object.category + ': ' + new_tag_object.value;
@@ -1141,22 +1173,43 @@ define([
     function build_configurator_ui () {
         var config_ui = $('<div/>')
             .attr('id', 'nbextensions-configurator-container')
+            .addClass('nbextensions-configurator-container')
             .addClass('container');
 
+        var button_sets = $('<div/>')
+            .addClass('nbext-buttons tree-buttons no-padding pull-right')
+            .prependTo(config_ui);
+
+        var ext_buttons = $('<span/>')
+            .addClass('btn-group')
+            .appendTo(button_sets);
+
+        var refresh_button = $('<button/>')
+            .on('click', refresh_configurable_extensions_list)
+            .attr('title', 'Refresh list of nbextensions')
+            .addClass('nbext-button-refreshlist btn btn-default btn-xs')
+            .appendTo(ext_buttons);
+
         var selector = $('<div/>')
-            .addClass('row nbext-row container-fluid nbext-selector')
+            .addClass('row container-fluid nbext-selector')
             .appendTo(config_ui);
+
+        $('<i/>')
+            .addClass('fa fa-refresh')
+            .appendTo(refresh_button);
 
         $('<h3>Configurable nbextensions</h3>').appendTo(selector);
 
-        var showhide = $('<div/>')
+        $('<div/>')
             .addClass('nbext-showhide-incompat')
             .append(
                 build_param_input({
+                    name: 'nbext_hide_incompat',
                     input_type: 'checkbox',
                     section: 'common'
                 })
-                    .attr('id', param_id_prefix + 'nbext_hide_incompat')
+                    .attr('id', 'nbext_hide_incompat')
+                    .off('change', handle_input)
                     .on('change', function (evt) {
                         set_hide_incompat(handle_input(evt));
                     })
@@ -1166,7 +1219,7 @@ define([
 
         filter_build_ui().appendTo(selector);
 
-        var selector_nav = $('<nav/>')
+        $('<nav/>')
             .addClass('row')
             .append('<ul class="nav nav-pills"/>')
             .appendTo(selector);
@@ -1177,10 +1230,10 @@ define([
             .appendTo(config_ui);
         $('<div class="panel-heading"/>')
             .append('<i class="fa fa-fw fa-caret-down"/>')
-            .append('<span class="nbext-readme-title">')
+            .append('<span>')
             .on('click', panel_showhide_callback)
             .appendTo(readme);
-        $('<div class="nbext-readme-contents panel-body"/>')
+        $('<div class="panel-body"/>')
             .appendTo(readme);
 
         return config_ui;
@@ -1199,6 +1252,14 @@ define([
      * build html body listing all nbextensions.
      */
     function build_page () {
+        return require([
+            'base/js/page',
+            'base/js/events',
+        ], function (
+            page,
+            events
+        ) {
+
         add_css('./main.css');
         $('body').addClass(page_class);
 
@@ -1206,22 +1267,19 @@ define([
 
         // prepare for rendermd usage
         rendermd.add_markdown_css();
-
-        build_configurator_ui().appendTo('#site');
-
         nbext_config_page.show_header();
+        build_configurator_ui().appendTo('#site');
         events.trigger('resize-header.Page');
 
-        load_all_configs().then(function () {
-            // get list of nbextensions from value set by script embedded in page by the python backend
-            build_extension_list(window.extension_list);
             nbext_config_page.show();
-        });
-
+        
+        refresh_configurable_extensions_list().then(function () {
         window.addEventListener('popstate', popstateCallback);
         setTimeout(popstateCallback, 0);
+        });
 
         return nbext_config_page;
+        });
     }
 
     /**
@@ -1283,9 +1341,10 @@ define([
         // add any remaining unconfigurable nbextensions as stubs
         for (section in configs) {
             for (var require_url in unconfigurable_enabled_extensions[section]) {
+                var word = unconfigurable_enabled_extensions[section][require_url] ? 'enabled' : 'disabled';
                 extension_list.push({
                     Name: require_url,
-                    Description: 'This nbextension is enabled in the ' + section + ' json config, ' +
+                    Description: 'This nbextension is ' + word + ' in the ' + section + ' json config, ' +
                         "but doesn't provide a yaml file to tell us how to configure it. " +
                         "You can still enable or disable it from here, though.",
                     Section: section,
@@ -1294,8 +1353,6 @@ define([
                 });
             }
         }
-
-        var container = $('#site > .container');
 
         var selector_nav = $('.nbext-selector ul');
 
@@ -1312,7 +1369,7 @@ define([
         for (i = 0; i < extension_list.length; i++) {
             extension = extension_list[i];
             extensions_dict[extension.require] = extension;
-            console.log('[nbext] found nbextension "' + extension.Name + '"');
+            console.log(log_prefix, 'Found nbextension', extension.require);
 
             extension.is_compatible = (extension.Compatibility || '?.x').toLowerCase().indexOf(
                 Jupyter.version.substring(0, 2) + 'x') >= 0;
@@ -1339,7 +1396,8 @@ define([
             var ext_enabled = false;
             var conf = configs[extension.Section];
             if (conf === undefined) {
-                console.warn("nbextension '" + extension.Name + "' specifies unknown Section of '" + extension.Section + "'. Can't determine enable status.");
+                console.warn(log_prefix, extension.require,
+                    "specifies unknown Section of '" + extension.Section + "'. Can't determine enable status.");
             }
             else if (conf.data.hasOwnProperty('load_extensions')) {
                 ext_enabled = (conf.data.load_extensions[extension.require] === true);
@@ -1376,9 +1434,9 @@ define([
 
         // en/disable incompatible nbextensions
         var hide_incompat = true;
-        if (configs['common'].data.hasOwnProperty('nbext_hide_incompat')) {
-            hide_incompat = configs['common'].data.nbext_hide_incompat;
-            console.log(
+        if (configs.common.data.hasOwnProperty('nbext_hide_incompat')) {
+            hide_incompat = configs.common.data.nbext_hide_incompat;
+            console.log(log_prefix,
                 'nbext_hide_incompat loaded from config as: ',
                 hide_incompat
             );
@@ -1387,6 +1445,37 @@ define([
 
         // select a link
         selector_nav.children('li:not(.disabled)').last().children('a').click();
+    }
+
+    /**
+     * Refresh the list of configurable nbextensions
+     */
+    function refresh_configurable_extensions_list () {
+        // remove/unload any existing nbextensions, readme etc
+        var selector_nav = $('.nbext-selector ul').empty();
+        $('.nbext-ext-row').remove();
+        load_readme({readme: undefined});
+        // add a loading indicator
+        $('<div>')
+            .addClass('col-xs-12 nbext-selector-loading')
+            .append('<i class="fa fa-refresh fa-spin fa-3x fa-fw"></i>')
+            .append('<span class="sr-only">Loading...</span>')
+            .appendTo(selector_nav);
+        // do the actual work
+        return load_all_configs().then(function () {
+            var api_url = utils.url_path_join(
+                base_url, 'nbextensions/nbextensions_configurator/list');
+            return utils.promising_ajax(api_url, {
+                cache: false,
+                type: "GET",
+                dataType: "json",
+            });
+        }).then(function (extension_list) {
+            build_extension_list(extension_list);
+        }).then(function () {
+            // remove loading indicator
+            $('.nbext-selector ul .nbext-selector-loading').remove();
+        });
     }
 
     /**
@@ -1406,6 +1495,7 @@ define([
         build_page : build_page,
         build_configurator_ui : build_configurator_ui,
         build_extension_list : build_extension_list,
-        load_all_configs : load_all_configs
+        load_all_configs : load_all_configs,
+        refresh_configurable_extensions_list : refresh_configurable_extensions_list
     };
 });
