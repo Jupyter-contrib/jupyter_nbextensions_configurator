@@ -9,10 +9,12 @@ import os
 import pipes
 import sys
 import threading
+import time
 from subprocess import PIPE, STDOUT, Popen
 
 from jupyter_contrib_core.testing_utils import get_logger
 from nose.plugins.skip import SkipTest
+from selenium.webdriver.support.ui import WebDriverWait
 from tornado import gen
 from tornado.ioloop import IOLoop
 from traitlets import default
@@ -164,6 +166,7 @@ class JupyterHubConfiguratorTest(ConfiguratorTest):
         except Exception:
             cls._server_cleanup(
                 error_msg='failed to start jupyterhub app')
+            raise
 
         try:
             cls.log.info(
@@ -173,8 +176,18 @@ class JupyterHubConfiguratorTest(ConfiguratorTest):
             cls.uname = name = next(iter(MockAuthenticator._default_whitelist))
             cls.wait_for_selector('#username_input').send_keys(name)
             cls.wait_for_selector('#password_input').send_keys(name)
+            # This short wait seems necessary to avoid http 503 error
+            time.sleep(1)
             cls.wait_for_selector('#login_submit').click()
-            cls.wait_for_selector('#header')  # single-user page loaded
+            # wait for redirect to single-user server
+            WebDriverWait(cls.driver, 30).until(
+                lambda driver:
+                    cls.app.users[name] is not None and
+                    cls.app.users[name].server is not None and
+                    cls.driver.current_url.startswith(
+                        public_url(cls.app, cls.app.users[name])))
+            # wait till single-user page loaded
+            cls.wait_for_selector('#tab_content', timeout=10)
 
             user = cls.user = cls.app.users[name]
             if not user.running:
@@ -184,6 +197,7 @@ class JupyterHubConfiguratorTest(ConfiguratorTest):
         except Exception:
             cls._server_cleanup(
                 error_msg='failed to start/login to single-user server')
+            raise
 
     @classmethod
     def _server_cleanup(cls, error_msg=None):
