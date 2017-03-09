@@ -62,9 +62,8 @@ class TestSpawner(LocalProcessSpawner):
     @gen.coroutine
     def start(self):
         """Start the process. Overridden in order to capture output."""
-        if self.ip:
-            self.user.server.ip = self.ip
-        self.user.server.port = random_port()
+        self.port = random_port()
+
         env = self.get_env()
         cmd = []
         cmd.extend(self.cmd)
@@ -81,6 +80,7 @@ class TestSpawner(LocalProcessSpawner):
             target=self._read_proc_stderr, name='_read_proc_stderr')
         thrd.daemon = True
         thrd.start()
+        return (self.ip or '127.0.0.1', self.port)
 
     def _read_proc_stderr(self):
         logr = get_logger(self.user.name)
