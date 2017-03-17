@@ -157,15 +157,40 @@
 }
 
 /* make actual input transparent, and its parent look like it's the input */
-.nbext-filter-input-wrap {
+.nbext-filter-grp > .nbext-filter-input-wrap {
+    display: flex;
+    flex-direction: row;
     cursor: text;
 }
-.nbext-filter-input-wrap input {
+
+/* the subwrap should fill remaining horizontal space contains the input itself plus an icon to clear it. */
+.nbext-filter-input-wrap > .nbext-filter-input-subwrap {
+    flex-grow: 1
+}
+
+.nbext-filter-input-wrap > .nbext-filter-input-subwrap,
+.nbext-filter-input-wrap > .nbext-filter-input-subwrap > input {
     border: none;
     outline: none;
     background-color: transparent;
     padding: 0;
     margin: 0;
+}
+
+.nbext-filter-input-wrap > .nbext-filter-input-subwrap > input {
+    width: 100%;
+}
+
+/* clear-search icon */
+.nbext-filter-input-wrap > .nbext-filter-input-subwrap > .fa {
+    position: absolute;
+    right: 12px;
+    top: calc(50% - 6px);
+    cursor: pointer;
+}
+
+.nbext-filter-input-wrap > .nbext-filter-input-subwrap:first-child > input + .fa {
+    display: none;
 }
 
 /* limit max height of tag menu */

@@ -1127,8 +1127,13 @@ define([
                 }
             }).appendTo(filter_input_group);
 
+        var input_sub_wrap = $('<div>')
+            .addClass('nbext-filter-input-subwrap')
+            .appendTo(filter_input_wrap);
+
         // add the actual input
         $('<input />')
+            .attr('placeholder', 'by description, section, or tags')
             .on('focus', function (evt) {
                 $(this).data('custom-nbextfilterer').search(this.value);
             })
@@ -1144,9 +1149,17 @@ define([
                     }
                 }
                 else if (evt.keyCode === $.ui.keyCode.BACKSPACE && !this.value) {
-                    $this.siblings('.nbext-filter-tag').last().remove();
+                    filter_input_wrap.children('.nbext-filter-tag').last().remove();
                 }
                 filter_callback_queue_refresh();
+
+                // update visibilty of clear control
+                if (this.value || filter_input_wrap.children('.nbext-filter-tag:first-child').length > 0) {
+                    input_sub_wrap.children('.fa').show();
+                }
+                else {
+                    input_sub_wrap.children('.fa').hide();
+                }
             })
             .nbextfilterer({
                 delay: 20,
@@ -1158,7 +1171,7 @@ define([
                 },
                 select: function(event, ui) {
                     // add the selected item (tag)
-                    filter_build_tag_element(ui.item).insertBefore(this);
+                    filter_build_tag_element(ui.item).insertBefore($(this).parent());
                     // clear input
                     this.value = '';
                     // queue updating filter
@@ -1166,7 +1179,17 @@ define([
                     return false;
                 }
             })
-            .appendTo(filter_input_wrap);
+            .appendTo(input_sub_wrap);
+
+        $('<span>')
+            .addClass('fa fa-remove')
+            .attr('title', 'clear filter')
+            .on('click', function (evt) {
+                filter_input_wrap.children('.nbext-filter-tag').remove();
+                filter_input_wrap.find('input')[0].value = '';
+                filter_callback_queue_refresh();
+            })
+            .appendTo(input_sub_wrap);
 
         return filter_input_group;
     }
