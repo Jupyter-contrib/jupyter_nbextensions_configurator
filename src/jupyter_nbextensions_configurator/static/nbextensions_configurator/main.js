@@ -1032,10 +1032,7 @@ define([
                 }
             }
             if (remaining_text) {
-                show = show && (
-                    (ext.Description.toLowerCase().indexOf(remaining_text) >= 0) ||
-                    (ext.Name.toLowerCase().indexOf(remaining_text) >= 0)
-                );
+                show = show && ext.filter_txt.indexOf(remaining_text) >= 0;
             }
             (show ? to_show: to_hide).push(ext.selector_link.parent()[0]);
         });
@@ -1413,6 +1410,7 @@ define([
             for (var tt=0; tt < extension.tags.length; tt++) {
                 filter_register_new_tag({category: 'tag', value: extension.tags[tt]});
             }
+            extension.filter_txt = (extension.Description + ' ' + extension.Name).toLowerCase();
         }
         // sort tags
         tags.sort(function (a, b) {
