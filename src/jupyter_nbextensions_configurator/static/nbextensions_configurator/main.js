@@ -1027,7 +1027,7 @@ define([
                         show = show && (tag.value === ext.Section);
                         break;
                     case 'tag':
-                        show = show && (ext.tags.indexOf(tag.value) > 0);
+                        show = show && (ext.tags.indexOf(tag.value) >= 0);
                         break;
                 }
             }
