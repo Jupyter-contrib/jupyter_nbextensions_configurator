@@ -65,10 +65,7 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
 
     def test_04_readme_rendering(self):
         # load an nbextension UI whose readme contains an image to render
-        partial_txt = 'dashboard'
-        self.wait_for_partial_link_text(partial_txt)
-        sel_link = self.driver.find_element_by_partial_link_text(partial_txt)
-        sel_link.click()
+        self.wait_for_partial_link_text('dashboard').click()
         self.wait_for_selector('.nbext-readme > .panel-body img',
                                'there should be an image in the readme')
 
@@ -82,35 +79,31 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         self.wait_for_selector(
             '.nbext-ext-row', 'an nbextension ui should load')
         # now enable the appropriate nbextension
-        partial_txt = 'dashboard'
-        self.wait_for_partial_link_text(partial_txt)
-        sel_link = self.driver.find_element_by_partial_link_text(partial_txt)
-        sel_link.find_element_by_css_selector('.nbext-enable-toggle').click()
+        self.wait_for_partial_link_text(
+            'dashboard'
+        ).find_element_by_css_selector('.nbext-enable-toggle').click()
         self.check_extension_enabled(
             'tree', 'nbextensions_configurator/tree_tab/main',
             expected_status=True)
 
     def test_07_open_tree_tab(self):
         self.driver.get(self.base_url())
-        tab_selector = '#tabs a[href$=nbextensions_configurator]'
-        self.wait_for_selector(tab_selector)
-        self.driver.find_element_by_css_selector(tab_selector).click()
+        self.wait_for_selector(
+            '#tabs a[href$=nbextensions_configurator]').click()
         self.wait_for_selector(
             '.nbext-ext-row', 'an nbextension ui should load')
 
     def test_08_disable_tree_tab(self):
         # now disable the appropriate nbextension & wait for update to config
-        partial_txt = 'dashboard'
-        self.wait_for_partial_link_text(partial_txt)
-        sel_link = self.driver.find_element_by_partial_link_text(partial_txt)
-        sel_link.find_element_by_css_selector('.nbext-enable-toggle').click()
+        self.wait_for_partial_link_text(
+            'dashboard'
+        ).find_element_by_css_selector('.nbext-enable-toggle').click()
         self.check_extension_enabled(
             'tree', 'nbextensions_configurator/tree_tab/main',
             expected_status=False)
         self.driver.get(self.base_url())
-        tab_selector = '#tabs a[href$=nbextensions_configurator]'
         with nt.assert_raises(AssertionError):
-            self.wait_for_selector(tab_selector)
+            self.wait_for_selector('#tabs a[href$=nbextensions_configurator]')
 
     def test_09_no_unconfigurable_yet(self):
         self.driver.get(self.nbext_configurator_url)
@@ -126,10 +119,7 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         section, require = 'notebook', 'balrog/daemon'
         self.set_extension_enabled(section, require, True)
         # refresh the list to check that it appears
-        refresh_selector = '.nbext-button-refreshlist'
-        self.wait_for_selector(refresh_selector)
-        refresh = self.driver.find_element_by_css_selector(refresh_selector)
-        refresh.click()
+        self.wait_for_selector('.nbext-button-refreshlist').click()
         self.wait_for_partial_link_text(require)
         selector = self.driver.find_element_by_css_selector('.nbext-selector')
         nt.assert_in(
@@ -139,14 +129,12 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
     def test_11_allow_configuring_incompatibles(self):
         require = 'balrog/daemon'
         # allow configuring incompatibles
-        showhide_sel = '#nbext_hide_incompat'
         self.wait_for_selector(
-            showhide_sel,
-            'potentially incompatible nbextenions should show checkbox')
-        self.driver.find_element_by_css_selector(showhide_sel).click()
+            '#nbext_hide_incompat',
+            'potentially incompatible nbextensions should show checkbox'
+        ).click()
         # select it, now it's configurable
-        sel_link = self.driver.find_element_by_partial_link_text(require)
-        sel_link.click()
+        self.driver.find_element_by_partial_link_text(require).click()
 
     def test_12_unconfigurable(self):
         section, require = 'notebook', 'balrog/daemon'
@@ -171,9 +159,10 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         self.wait_for_selector(sel_forget, 'A forget button should display')
         self.driver.find_element_by_css_selector(sel_forget).click()
         # confirm dialog
-        sel_dialog = '.modal-dialog .modal-footer .btn-danger'
-        self.wait_for_selector(sel_dialog, 'a confirmation dialog should show')
-        self.driver.find_element_by_css_selector(sel_dialog).click()
+        self.wait_for_selector(
+            '.modal-dialog .modal-footer .btn-danger',
+            'a confirmation dialog should show'
+        ).click()
         # it should no longer be enabled in config
         time.sleep(1)
         conf = self.get_config_manager().get(section)

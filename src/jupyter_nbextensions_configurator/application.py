@@ -121,7 +121,9 @@ class JupyterNbextensionsConfiguratorApp(nbextensions.BaseNBExtensionApp):
         subcmds = ", ".join(sorted(self.subcommands))
         sys.exit("Please supply at least one subcommand: %s" % subcmds)
 
+
 main = JupyterNbextensionsConfiguratorApp.launch_instance
+
 
 if __name__ == '__main__':  # pragma: no cover
     main()
