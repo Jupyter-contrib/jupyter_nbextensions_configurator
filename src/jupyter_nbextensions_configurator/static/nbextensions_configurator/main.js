@@ -1023,9 +1023,6 @@ define([
             for (var ii = 0; ii < active_tags.length && show; ii++) {
                 var tag = active_tags[ii];
                 switch (tag.category) {
-                    case 'name':
-                        show = show && (tag.value === ext.Name);
-                        break;
                     case 'section':
                         show = show && (tag.value === ext.Section);
                         break;
@@ -1036,7 +1033,8 @@ define([
             }
             if (remaining_text) {
                 show = show && (
-                    (ext.Description.toLowerCase().indexOf(remaining_text) >= 0)
+                    (ext.Description.toLowerCase().indexOf(remaining_text) >= 0) ||
+                    (ext.Name.toLowerCase().indexOf(remaining_text) >= 0)
                 );
             }
             (show ? to_show: to_hide).push(ext.selector_link.parent()[0]);
@@ -1411,7 +1409,6 @@ define([
             set_buttons_enabled(extension, ext_enabled);
 
             filter_register_new_tag({category: 'section', value: extension.Section});
-            filter_register_new_tag({category: 'name', value: extension.Name});
             extension.tags = (extension.tags || []);
             for (var tt=0; tt < extension.tags.length; tt++) {
                 filter_register_new_tag({category: 'tag', value: extension.tags[tt]});
@@ -1419,7 +1416,7 @@ define([
         }
         // sort tags
         tags.sort(function (a, b) {
-            var cat_order = ['section', 'tag', 'name'];
+            var cat_order = ['section', 'tag'];
             var an = cat_order.indexOf(a.category);
             var bn = cat_order.indexOf(b.category);
             if (an != bn) {
