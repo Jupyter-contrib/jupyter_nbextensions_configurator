@@ -1013,12 +1013,14 @@ define([
 
     function filter_refresh_visible_nbexts () {
         var to_show = [], to_hide = [];
+        var active_tags = $('.nbext-filter-tag').map(function (idx, tag_elem) {
+            return $(tag_elem).data('nbext_tag_object');
+        });
         $('.nbext-selector ul li a').each(function (idx, el) {
             var ext = $(el).data('extension');
-            var active_tag_elems = $('.nbext-filter-tag');
             var show = true;
-            for (var ii=0; ii < active_tag_elems.length && show; ii++) {
-                var tag = active_tag_elems.eq(ii).data('nbext_tag_object');
+            for (var ii = 0; ii < active_tags.length && show; ii++) {
+                var tag = active_tags[ii];
                 switch (tag.category) {
                     case 'name':
                         show = show && (tag.value === ext.Name);
