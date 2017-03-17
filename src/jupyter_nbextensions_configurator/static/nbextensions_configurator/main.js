@@ -1016,6 +1016,7 @@ define([
         var active_tags = $('.nbext-filter-tag').map(function (idx, tag_elem) {
             return $(tag_elem).data('nbext_tag_object');
         });
+        var remaining_text = $('.nbext-filter-input-wrap input')[0].value;
         $('.nbext-selector ul li a').each(function (idx, el) {
             var ext = $(el).data('extension');
             var show = true;
@@ -1033,8 +1034,12 @@ define([
                         break;
                 }
             }
+            if (remaining_text) {
+                show = show && (
+                    (ext.Description.toLowerCase().indexOf(remaining_text) >= 0)
+                );
+            }
             (show ? to_show: to_hide).push(ext.selector_link.parent()[0]);
-
         });
         $(to_hide).slideUp(100);
         to_show = $(to_show); // convert to jquery obj
@@ -1142,12 +1147,11 @@ define([
                     if (menu_active) {
                         evt.preventDefault();
                     }
-                    filter_callback_queue_refresh();
                 }
                 else if (evt.keyCode === $.ui.keyCode.BACKSPACE && !this.value) {
                     $this.siblings('.nbext-filter-tag').last().remove();
-                    filter_callback_queue_refresh();
                 }
+                filter_callback_queue_refresh();
             })
             .nbextfilterer({
                 delay: 20,
