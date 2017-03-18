@@ -42,7 +42,7 @@ define([
         var len = Math.min(a.length, b.length);
         for (var ii = 0; ii < len; ii++) {
             cmp = parseInt(a[ii], 10) - parseInt(b[ii], 10);
-            if( cmp !== 0 ) {
+            if ( cmp !== 0 ) {
                 return cmp;
             }
         }
@@ -132,7 +132,7 @@ define([
      */
     function conf_dot_delete_keys(conf, dotted_keys) {
         return conf.load().then(function (data) {
-            for (var ii=0; ii < dotted_keys.length; ii++) {
+            for (var ii = 0; ii < dotted_keys.length; ii++) {
                 var obj = data;
                 var key_parts = dotted_keys[ii].split('.');
                 while (key_parts.length > 0) {
@@ -1062,11 +1062,9 @@ define([
             .data('nbext_tag_object', tag_object)
             .addClass('nbext-filter-tag btn-group');
         $('<span/>')
-            // .addClass('btn btn-primary')
             .text(tag_object.label)
             .appendTo(tag_elem);
         $('<span/>')
-            // .addClass('btn btn-primary')
             .on('click', function (evt) {
                 evt.preventDefault();
                 tag_elem.remove();
@@ -1306,8 +1304,8 @@ define([
         build_configurator_ui().appendTo('#site');
         events.trigger('resize-header.Page');
 
-            nbext_config_page.show();
-        
+        nbext_config_page.show();
+
         refresh_configurable_extensions_list().then(function () {
         window.addEventListener('popstate', popstateCallback);
         setTimeout(popstateCallback, 0);
