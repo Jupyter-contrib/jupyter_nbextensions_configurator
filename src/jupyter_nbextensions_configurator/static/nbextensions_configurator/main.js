@@ -42,7 +42,7 @@ define([
         var len = Math.min(a.length, b.length);
         for (var ii = 0; ii < len; ii++) {
             cmp = parseInt(a[ii], 10) - parseInt(b[ii], 10);
-            if( cmp !== 0 ) {
+            if ( cmp !== 0 ) {
                 return cmp;
             }
         }
@@ -132,7 +132,7 @@ define([
      */
     function conf_dot_delete_keys(conf, dotted_keys) {
         return conf.load().then(function (data) {
-            for (var ii=0; ii < dotted_keys.length; ii++) {
+            for (var ii = 0; ii < dotted_keys.length; ii++) {
                 var obj = data;
                 var key_parts = dotted_keys[ii].split('.');
                 while (key_parts.length > 0) {
@@ -1007,32 +1007,39 @@ define([
      * huge numbers of filter change callbacks don't make the UI laggy.
      */
     function filter_callback_queue_refresh (evt) {
+        if (!filter_timeout_id) {
+            return filter_refresh_visible_nbexts();
+        }
         clearTimeout(filter_timeout_id);
         filter_timeout_id = setTimeout(filter_refresh_visible_nbexts, 100);
     }
 
     function filter_refresh_visible_nbexts () {
         var to_show = [], to_hide = [];
+        var active_tags = $('.nbext-filter-tag').map(function (idx, tag_elem) {
+            return $(tag_elem).data('nbext_tag_object');
+        });
+        var remaining_text = $('.nbext-filter-input-wrap input')[0].value;
         $('.nbext-selector ul li a').each(function (idx, el) {
             var ext = $(el).data('extension');
-            var active_tag_elems = $('.nbext-filter-tag');
             var show = true;
-            for (var ii=0; ii < active_tag_elems.length && show; ii++) {
-                var tag = active_tag_elems.eq(ii).data('nbext_tag_object');
+            var ii;
+            for (ii = 0; ii < active_tags.length && show; ii++) {
+                var tag = active_tags[ii];
                 switch (tag.category) {
-                    case 'name':
-                        show = show && (tag.value === ext.Name);
-                        break;
                     case 'section':
                         show = show && (tag.value === ext.Section);
                         break;
                     case 'tag':
-                        show = show && (ext.tags.indexOf(tag.value) > 0);
+                        show = show && (ext.tags.indexOf(tag.value) >= 0);
                         break;
                 }
             }
+            var words = remaining_text.split(/\s+/);
+            for (ii = 0; show && ii < words.length; ii++) {
+                show = show && ext.filter_txt.indexOf(words[ii]) >= 0;
+            }
             (show ? to_show: to_hide).push(ext.selector_link.parent()[0]);
-
         });
         $(to_hide).slideUp(100);
         to_show = $(to_show); // convert to jquery obj
@@ -1047,6 +1054,7 @@ define([
                 open_ext_ui(undefined);
             }
         }
+        filter_timeout_id = null;
     }
 
     function filter_build_tag_element (tag_object) {
@@ -1054,11 +1062,9 @@ define([
             .data('nbext_tag_object', tag_object)
             .addClass('nbext-filter-tag btn-group');
         $('<span/>')
-            // .addClass('btn btn-primary')
             .text(tag_object.label)
             .appendTo(tag_elem);
         $('<span/>')
-            // .addClass('btn btn-primary')
             .on('click', function (evt) {
                 evt.preventDefault();
                 tag_elem.remove();
@@ -1125,14 +1131,20 @@ define([
                 }
             }).appendTo(filter_input_group);
 
+        var input_sub_wrap = $('<div>')
+            .addClass('nbext-filter-input-subwrap')
+            .appendTo(filter_input_wrap);
+
         // add the actual input
         $('<input />')
+            .attr('placeholder', 'by description, section, or tags')
             .on('focus', function (evt) {
                 $(this).data('custom-nbextfilterer').search(this.value);
             })
             // register an extra keydown handler for stuff where we want to
             // override default autocomplete behaviour
-            .on('keydown', function (evt) {
+            .on('change keyup paste mouseup', function (evt) {
+                var lastvalue;
                 var $this = $(this);
                 if (evt.keyCode === $.ui.keyCode.TAB) {
                     // don't navigate away from the field on tab when selecting an item
@@ -1143,8 +1155,19 @@ define([
                     filter_callback_queue_refresh();
                 }
                 else if (evt.keyCode === $.ui.keyCode.BACKSPACE && !this.value) {
-                    $this.siblings('.nbext-filter-tag').last().remove();
+                    filter_input_wrap.children('.nbext-filter-tag').last().remove();
                     filter_callback_queue_refresh();
+                }
+                else if (this.value !== lastvalue) {
+                    filter_callback_queue_refresh();
+                }
+
+                // update visibilty of clear control
+                if (this.value || filter_input_wrap.children('.nbext-filter-tag:first-child').length > 0) {
+                    input_sub_wrap.children('.fa').show();
+                }
+                else {
+                    input_sub_wrap.children('.fa').hide();
                 }
             })
             .nbextfilterer({
@@ -1157,7 +1180,7 @@ define([
                 },
                 select: function(event, ui) {
                     // add the selected item (tag)
-                    filter_build_tag_element(ui.item).insertBefore(this);
+                    filter_build_tag_element(ui.item).insertBefore($(this).parent());
                     // clear input
                     this.value = '';
                     // queue updating filter
@@ -1165,7 +1188,17 @@ define([
                     return false;
                 }
             })
-            .appendTo(filter_input_wrap);
+            .appendTo(input_sub_wrap);
+
+        $('<span>')
+            .addClass('fa fa-remove')
+            .attr('title', 'clear filter')
+            .on('click', function (evt) {
+                filter_input_wrap.children('.nbext-filter-tag').remove();
+                filter_input_wrap.find('input')[0].value = '';
+                filter_callback_queue_refresh();
+            })
+            .appendTo(input_sub_wrap);
 
         return filter_input_group;
     }
@@ -1271,8 +1304,8 @@ define([
         build_configurator_ui().appendTo('#site');
         events.trigger('resize-header.Page');
 
-            nbext_config_page.show();
-        
+        nbext_config_page.show();
+
         refresh_configurable_extensions_list().then(function () {
         window.addEventListener('popstate', popstateCallback);
         setTimeout(popstateCallback, 0);
@@ -1405,15 +1438,15 @@ define([
             set_buttons_enabled(extension, ext_enabled);
 
             filter_register_new_tag({category: 'section', value: extension.Section});
-            filter_register_new_tag({category: 'name', value: extension.Name});
             extension.tags = (extension.tags || []);
             for (var tt=0; tt < extension.tags.length; tt++) {
                 filter_register_new_tag({category: 'tag', value: extension.tags[tt]});
             }
+            extension.filter_txt = (extension.Description + ' ' + extension.Name).toLowerCase();
         }
         // sort tags
         tags.sort(function (a, b) {
-            var cat_order = ['section', 'tag', 'name'];
+            var cat_order = ['section', 'tag'];
             var an = cat_order.indexOf(a.category);
             var bn = cat_order.indexOf(b.category);
             if (an != bn) {
