@@ -1007,6 +1007,9 @@ define([
      * huge numbers of filter change callbacks don't make the UI laggy.
      */
     function filter_callback_queue_refresh (evt) {
+        if (!filter_timeout_id) {
+            return filter_refresh_visible_nbexts();
+        }
         clearTimeout(filter_timeout_id);
         filter_timeout_id = setTimeout(filter_refresh_visible_nbexts, 100);
     }
@@ -1049,6 +1052,7 @@ define([
                 open_ext_ui(undefined);
             }
         }
+        filter_timeout_id = null;
     }
 
     function filter_build_tag_element (tag_object) {
@@ -1139,7 +1143,8 @@ define([
             })
             // register an extra keydown handler for stuff where we want to
             // override default autocomplete behaviour
-            .on('keydown', function (evt) {
+            .on('change keyup paste mouseup', function (evt) {
+                var lastvalue;
                 var $this = $(this);
                 if (evt.keyCode === $.ui.keyCode.TAB) {
                     // don't navigate away from the field on tab when selecting an item
@@ -1147,11 +1152,15 @@ define([
                     if (menu_active) {
                         evt.preventDefault();
                     }
+                    filter_callback_queue_refresh();
                 }
                 else if (evt.keyCode === $.ui.keyCode.BACKSPACE && !this.value) {
                     filter_input_wrap.children('.nbext-filter-tag').last().remove();
+                    filter_callback_queue_refresh();
                 }
-                filter_callback_queue_refresh();
+                else if (this.value !== lastvalue) {
+                    filter_callback_queue_refresh();
+                }
 
                 // update visibilty of clear control
                 if (this.value || filter_input_wrap.children('.nbext-filter-tag:first-child').length > 0) {
