@@ -207,16 +207,39 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
+repo master
+-----------
+ * Allow filtering based on name and description text as well as section & tags
+ * Add a clear-filter control
+ * Allow unconfigurable nbextensions to be 'forgotten'
+   (enabled/disabled status erased completely)
+ * Allow refreshing the nbextensions list, see for details
+   [#29](https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator/issues/29)
+ * Add tooltip for parameter reset, as requested in
+   [#29](https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator/issues/29)
+ * Add IPython CodeMirror mode to markdown renderer
+ * Don't embed nbextensions data into the standalone `/nbextensions` page. This
+   allows us to serve the page quicker, then get nbextensions data (slow
+   request) from the json api.
+ * Improved log messages, with prefixes, both on client & server side
+ * Fix bug preventing matching first tag
+ * Fix bug preventing render of markdown containing unknown CodeMirror mode(s)
+ * Fix minor css margin issue with visible/not visible compatibility
+ * Make tests more robust against misleading timing-based failures
+ * Update jupyterhub test spawner to match hub version 0.7 api
+ * Update CI to use selenium 3, allowing us to test on recent firefox versions
+ * Add yet another new coverage argument for CI
+
 0.2.3
 -----
 * On the dashboard, select the configurator tree tab automatically if the
   appropriate URL hash is present
 * Add filtering of visible nbextensions by names, tags and sections
 * Add jupyterhub-based tests, to hopefully catch some issues relating to the
-  jupyterhub SinglUserServer, like
-  [jupyter_nbextensions_configurator#11](https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator/issues/11)
+  jupyterhub `SingleUserServer`, like
+  [#11](https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator/issues/11)
   and
-  [jupyter_nbextensions_configurator#14](https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator/issues/14)
+  [#14](https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator/issues/14)
   in future
 * README updates
 * Bugfix for ENable/Disable application help strings, which both started with
