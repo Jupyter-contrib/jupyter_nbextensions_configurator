@@ -1023,7 +1023,8 @@ define([
         $('.nbext-selector ul li a').each(function (idx, el) {
             var ext = $(el).data('extension');
             var show = true;
-            for (var ii = 0; ii < active_tags.length && show; ii++) {
+            var ii;
+            for (ii = 0; ii < active_tags.length && show; ii++) {
                 var tag = active_tags[ii];
                 switch (tag.category) {
                     case 'section':
@@ -1034,8 +1035,9 @@ define([
                         break;
                 }
             }
-            if (remaining_text) {
-                show = show && ext.filter_txt.indexOf(remaining_text) >= 0;
+            var words = remaining_text.split(/\s+/);
+            for (ii = 0; show && ii < words.length; ii++) {
+                show = show && ext.filter_txt.indexOf(words[ii]) >= 0;
             }
             (show ? to_show: to_hide).push(ext.selector_link.parent()[0]);
         });
