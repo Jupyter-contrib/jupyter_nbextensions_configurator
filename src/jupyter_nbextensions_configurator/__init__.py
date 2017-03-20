@@ -41,6 +41,12 @@ def get_configurable_nbextensions(
                 'Jupyter Notebook Extension'
         - Main: relative url of the nbextension's main javascript file
     """
+    # deduplicate nbextensions path, see
+    #   github.com/Jupyter-contrib/jupyter_nbextensions_configurator/issues/25
+    seen = set()
+    nbextension_dirs = [
+        d for d in nbextension_dirs if not (d in seen or seen.add(d))]
+
     extension_dict = {}
     required_keys = {'Type', 'Main'}
     valid_types = {'IPython Notebook Extension', 'Jupyter Notebook Extension'}
