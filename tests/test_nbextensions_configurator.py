@@ -261,15 +261,22 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
 
         # various test yaml files
         test_yamls = {
-            'not_an_nbext': ['valid yaml', "doesn't always",
-                             'make for a valid nbext yaml, right?', 3423509],
-            'missing_key': {'Main': True},
-            'invalid_type': {'Main': 'main.js', 'Type': 'blahblahblah'},
+            # we use str() because otherwise python2 will write
+            # !!python/unicode in the yaml, and pyyaml SafeLoader will refuse
+            # to reconstruct the objects :( boo!
+            'not_an_nbext': [
+                str('valid yaml'), str("doesn't always"),
+                str('make for a valid nbext yaml, right?'), 3423509],
+            'missing_key': {str('Main'): True},
+            'invalid_type': {
+                str('Main'): str('main.js'),
+                str('Type'): str('blahblahblah')
+            },
             'dummy': {
-                'Main': 'dummy.js',
-                'Type': 'Jupyter Notebook Extension',
-                'Description': 'This is a dumb dummy description',
-                'Compatibility': '4.x 5.x',
+                str('Main'): str('dummy.js'),
+                str('Type'): str('Jupyter Notebook Extension'),
+                str('Description'): str('This is a dumb dummy description'),
+                str('Compatibility'): str('4.x 5.x'),
             },
         }
         for fname, yaml_obj in test_yamls.items():
