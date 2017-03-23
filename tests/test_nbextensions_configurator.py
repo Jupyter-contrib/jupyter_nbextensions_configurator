@@ -13,6 +13,7 @@ import time
 import nose.tools as nt
 import yaml
 from jupyter_contrib_core.notebook_compat.nbextensions import _get_config_dir
+from nose.plugins.skip import SkipTest
 from notebook.services.config import ConfigManager
 from notebook.utils import url_path_join
 from selenium.common.exceptions import NoSuchElementException
@@ -40,7 +41,7 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
     def pre_server_setup(cls):
         """Setup a temporary environment in which to run a notebook server."""
         super(ConfiguratorTest, cls).pre_server_setup()
-        cls.add_dodgy_yaml_files()
+        cls.add_test_yaml_files()
 
     def test_00_load_nbextensions_page(self):
         """Check that <base_url>/nbextensions url loads correctly."""
@@ -177,6 +178,32 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
             'daemon', nbext_sel.text,
             'There should no longer be a daemon in the selector')
 
+    def test_13_duplicate_paths(self):
+        if getattr(self, 'notebook', None) is None:
+            raise SkipTest('cannot edit notebook server nbextensions path')
+
+        # duplicate the dodgy/test entry on path
+        saved = list(self.notebook.web_app.settings['nbextensions_path'])
+        nt.assert_in(self.jupyter_dirs['dodgy']['nbexts'], saved)
+        self.notebook.web_app.settings['nbextensions_path'].append(
+            self.jupyter_dirs['dodgy']['nbexts'])
+        try:
+            self.driver.get(self.nbext_configurator_url)
+            self.wait_for_selector('.nbext-selector')
+            self.wait_for_partial_link_text('dummy').click()
+            dummy = self.wait_for_xpath('''
+//h3[contains(text(), "dummy")]
+//ancestor::div[
+    contains(concat(" ", normalize-space(@class), " "), " nbext-ext-row ")
+]''')
+            with nt.assert_raises(NoSuchElementException):
+                dummy.find_element_by_css_selector('.alert-warning')
+            with nt.assert_raises(NoSuchElementException):
+                dummy.find_element_by_xpath(
+                    './*[contains(text(),"different yaml files")]')
+        finally:
+            self.notebook.web_app.settings['nbextensions_path'] = saved
+
     @classmethod
     def get_config_manager(cls):
         try:
@@ -216,12 +243,13 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
                         '' if expected_status else 'not '))
 
     @classmethod
-    def add_dodgy_yaml_files(cls):
+    def add_test_yaml_files(cls):
         """Add in dodgy yaml files in an extra nbextensions dir."""
         cls.jupyter_dirs['dodgy'] = {
             'nbexts': os.path.join(cls.jupyter_dirs['root'], 'dodgy', 'nbext')}
         dodgy_nbext_dir_path = cls.jupyter_dirs['dodgy']['nbexts']
-        os.makedirs(dodgy_nbext_dir_path)
+        if not os.path.exists(dodgy_nbext_dir_path):
+            os.makedirs(dodgy_nbext_dir_path)
         cls.config.NotebookApp.setdefault(
             'extra_nbextensions_path', []).append(dodgy_nbext_dir_path)
 
@@ -231,17 +259,30 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
         with io.open(yaml_path_invalid, 'w') as f:
             f.write('not valid yaml!: [')
 
-        # a yaml file which isn't a dict
-        dodgy_yamls = {
-            'not_an_nbext': ['valid yaml', "doesn't always",
-                             'make for a valid nbext yaml, right?', 3423509],
-            'missing_key': {'Main': True},
-            'invalid_type': {'Main': 'main.js', 'Type': 'blahblahblah'}
+        # various test yaml files
+        test_yamls = {
+            # we use str() because otherwise python2 will write
+            # !!python/unicode in the yaml, and pyyaml SafeLoader will refuse
+            # to reconstruct the objects :( boo!
+            'not_an_nbext': [
+                str('valid yaml'), str("doesn't always"),
+                str('make for a valid nbext yaml, right?'), 3423509],
+            'missing_key': {str('Main'): True},
+            'invalid_type': {
+                str('Main'): str('main.js'),
+                str('Type'): str('blahblahblah')
+            },
+            'dummy': {
+                str('Main'): str('dummy.js'),
+                str('Type'): str('Jupyter Notebook Extension'),
+                str('Description'): str('This is a dumb dummy description'),
+                str('Compatibility'): str('4.x 5.x'),
+            },
         }
-        for fname, yaml_obj in dodgy_yamls.items():
+        for fname, yaml_obj in test_yamls.items():
             yaml_path = os.path.join(dodgy_nbext_dir_path, fname + '.yaml')
             with io.open(yaml_path, 'w') as f:
-                yaml.dump(yaml_obj, f)
+                yaml.dump(yaml_obj, f, default_flow_style=False)
 
         # a yaml file which shadows an existing nbextension.
         nbdir = os.path.join(

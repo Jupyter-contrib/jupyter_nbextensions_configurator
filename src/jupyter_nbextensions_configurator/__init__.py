@@ -46,7 +46,14 @@ def get_configurable_nbextensions(
     valid_types = {'IPython Notebook Extension', 'Jupyter Notebook Extension'}
 
     # Traverse through nbextension subdirectories to find all yaml files
+    # However, don't check directories twice. See
+    #   github.com/Jupyter-contrib/jupyter_nbextensions_configurator/issues/25
+    already_checked = set()
     for root_nbext_dir in nbextension_dirs:
+        if root_nbext_dir in already_checked:
+            continue
+        else:
+            already_checked.add(root_nbext_dir)
         if log:
             log.debug(
                 'Looking for nbextension yaml descriptor files in {}'.format(
