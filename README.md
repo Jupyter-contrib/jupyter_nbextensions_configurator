@@ -242,7 +242,7 @@ repo master
   [#14](https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator/issues/14)
   in future
 * README updates
-* Bugfix for ENable/Disable application help strings, which both started with
+* Bugfix for Enable/Disable application help strings, which both started with
   `Enable` :blush:
 
 0.2.2
