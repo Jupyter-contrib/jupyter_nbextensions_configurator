@@ -3,7 +3,6 @@ language: python
 sudo: false
 addons:
   firefox: latest
-  sauce_connect: true
 matrix:
   fast_finish: true
   # Use the built-in venv for linux builds
@@ -79,9 +78,6 @@ env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
-    - SAUCE_USERNAME=nbext_configurator
-    # sauce access key
-    - secure: "QZb4I+/3mFnc826CdstgYTFrmcvIkXiGmp3tkL9FLLPOEN2MHxPauKZ5J0qnzhIkug9mhCz68GBTlxMU4CpfLXWnKNDV85x1H+TI5K2qLaAPFjL9o7DOvAZW5EmMYac3Vgb022iXy/IbmZOjv9jyNzkqCrLqAaWriyo3c0+J6Onj+Q5JG5HjiJqlLhF9/yzsbqhlFmV42MqpZP3PTXEgrJZlwjNYK9DoBrmNg0Oq2rWoa6qMsaVrC0wiDAclx7PQOQRHr/ocbzAmqqSrBhjZdeRnFNiKiuVLfOr4fq5VLKYkFlSNKp91WzVDWKySXf+gp/zzTM5BCIgawuAD5i3z4cM9JqNGEYyod63QNlR6h04jYuUd6Y6y+5fqkx0uW8CiZtLwU8B4aifcNMMpdSg4eGMVnKsOMB/TcNQ9/4ZN2JijjCPk4x0bSYSJmSNcdPtQS39dXVUuVNRAN9fPrmIRAfmS4/MU2BlHz0OlMfxucby2FyYVI1ng8suc8/xRJMws3qrUlO6HYDGzdOko913/m11HCxinunLVCEfo+kLz2RGWz5aZfVUWuSf/D5jKP5GiIKb1wIV6syfOeNzGzEwu2VPuQ2NVlNshVXAi0+mkEqPHIO9yIDoyF2ktTl1KEKGQjPiz57MBRj2Zr8bNx2GigFpeEHkaxEmqyHgNaF7bJ+E="
 before_install:
   - uname -a
   - id -un
@@ -118,11 +114,9 @@ before_install:
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then git fetch --unshallow; fi'
   # also install npm configurable proxy for jupyterhub!
   - 'if [[ ${TOXENV} == "jupyterhub" ]]; then npm install configurable-http-proxy; fi;'
-  # decide ehwether js tests will run
+  # decide whether js tests will run
   - 'if [[ ${TRAVIS_OS_NAME} == "linux" ]] && [[ ${TOXENV} == py* || ${TOXENV} == jupyterhub ]]; then JS_TESTS="true"; else JS_TESTS="false"; fi;'
   - 'echo "\${JS_TESTS}=$JS_TESTS";'
-  # don't need SAUCE if we're not testing js, so disable by clearing env vars
-  - 'if [[ ${JS_TESTS} != "true" ]]; then unset SAUCE_USERNAME && unset SAUCE_ACCESS_KEY && echo unset; fi;'
   # for js tests (which we do on linux only), selenium 3 requires geckodriver
   - 'if [[ ${JS_TESTS} == "true" ]]; then GECKODRIVER_VERSION="0.14.0"; fi;'
   - 'if [[ ${JS_TESTS} == "true" ]]; then wget "https://github.com/mozilla/geckodriver/releases/download/v$GECKODRIVER_VERSION/geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz"; fi;'
