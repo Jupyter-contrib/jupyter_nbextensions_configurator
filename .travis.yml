@@ -8,14 +8,15 @@ matrix:
   # Use the built-in venv for linux builds
   # 3.5 as it isn't installed by default. Let tox handle other versions.
   include:
-    #   env: TOXENV=docs
+    # packaging sanity check
     - os: linux
       python: '3.4'
       env: TOXENV=check
+    # python linting
     - os: linux
       python: '3.4'
       env: TOXENV=lint
-    # conda build/install works
+    # check that conda build/install works
     - os: linux
       python: '3.4'
       env: TOXENV=condarecipe
@@ -24,7 +25,7 @@ matrix:
       python: '3.4'
       env: TOXENV=py27-notebook
     - os: linux
-      python: '3.4'
+      python: '3.3'
       env: TOXENV=py33-notebook
     - os: linux
       python: '3.4'
@@ -96,20 +97,23 @@ before_install:
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.4) ]]; then ls -l $(which python3.4); else echo "missing"; fi; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.5) ]]; then ls -l $(which python3.5); else echo "missing"; fi; fi'
   # stuff for conda recipe
-  - 'if [[ ${TOXENV} == "condarecipe" ]]; then wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh; fi'
+  # Note we're currently installing 4.3.11 specifically, since conda 4.3.14-16
+  # have a bug which stop them intalling anything on travis (see
+  #     https://github.com/conda/conda/issues/5033
+  # for details).
+  # This has been fixed in mewer conda versions
+  # (>=4.3.17), but the current 'latest' installer is still 4.3.14, so we need to specify the
+  # previous version. This should change in future once an installer for
+  # >=4.3.17 is released!
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then wget https://repo.continuum.io/miniconda/Miniconda3-4.3.11-Linux-x86_64.sh -O miniconda.sh; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then bash miniconda.sh -b -p $HOME/miniconda; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then export PATH="$HOME/miniconda/bin:$PATH"; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then hash -r; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda config --set always_yes yes --set changeps1 no; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda info -a; fi  # Useful for debugging any issues with conda'
-  # conda 4.3.14 & conda-build 2.1.6 seem to fail with signals TypError on travis.
-  # conda's auto-update strategy also means that installing or updating anything else will cause
-  # conda to attempt to update itself.
-  # Thus instead of running
-  #    conda update conda
-  # we install conda & conda-build together, specifying the versions that we
-  # wish to avoid
-  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda install "conda!=4.3.14" "conda-build!=2.1.6"; fi'
+  # update conda, this should skip over the problematic 4.3.14-4.3.16 anyway
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda update conda; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda install conda-build; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda info -a; fi  # Useful for debugging any issues with conda'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then git fetch --unshallow; fi'
   # also install npm configurable proxy for jupyterhub!
@@ -134,7 +138,12 @@ install:
   - virtualenv --version
   - firefox --version
 script:
-  - tox -v -e ${TOXENV}
+  - 'if [[ ${TOXENV} != "condarecipe" ]]; then tox -v -e ${TOXENV}; fi'
+  # don't actually use tox for condarecipe :S
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda config --append channels conda-forge; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda config --get channels; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda build conda.recipe/; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda install --use-local jupyter_nbextensions_configurator; fi'
 after_script:
   # test if TOXENV not in set
   # see http://unix.stackexchange.com/a/111518
