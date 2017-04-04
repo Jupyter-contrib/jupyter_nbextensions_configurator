@@ -207,8 +207,18 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
-repo master
------------
+0.2.5
+-----
+ * Deduplicate entries in `nbextensions_path` before checking them, to prevent
+   displaying duplictae entries for nbextesions in the same place. Also add
+   tests for deduplication.
+ * Open yaml files using utf-8 encoding, allowing non-ascii characters,
+   courtesy of [@haobibo](https://github.com/haobibo).
+ * List configurator's own nbextensions as compatible with notebook 5.x
+ * CI updates for 5.x testing, and working around a conda bug.
+
+0.2.4
+-----
  * Allow filtering based on name and description text as well as section & tags
  * Add a clear-filter control
  * Allow unconfigurable nbextensions to be 'forgotten'
