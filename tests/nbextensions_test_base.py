@@ -145,6 +145,7 @@ class NbextensionTestBase(NotebookTestBase):
             cls.env_patch = cls.path_patch = Mock(['start', 'stop'])
             cls.home_dir = cls.config_dir = cls.data_dir = Mock(['cleanup'])
             cls.runtime_dir = cls.notebook_dir = Mock(['cleanup'])
+            cls.tmp_dir = Mock(['cleanup'])
         except Exception:
             for func in cls.removal_funcs:
                 func()
