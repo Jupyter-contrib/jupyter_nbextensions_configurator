@@ -122,7 +122,7 @@ before_install:
   - 'if [[ ${TRAVIS_OS_NAME} == "linux" ]] && [[ ${TOXENV} == py* || ${TOXENV} == jupyterhub ]]; then JS_TESTS="true"; else JS_TESTS="false"; fi;'
   - 'echo "\${JS_TESTS}=$JS_TESTS";'
   # for js tests (which we do on linux only), selenium 3 requires geckodriver
-  - 'if [[ ${JS_TESTS} == "true" ]]; then GECKODRIVER_VERSION="0.14.0"; fi;'
+  - 'if [[ ${JS_TESTS} == "true" ]]; then GECKODRIVER_VERSION="0.16.1"; fi;'
   - 'if [[ ${JS_TESTS} == "true" ]]; then wget "https://github.com/mozilla/geckodriver/releases/download/v$GECKODRIVER_VERSION/geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz"; fi;'
   - 'if [[ ${JS_TESTS} == "true" ]]; then mkdir geckodriver; fi;'
   - 'if [[ ${JS_TESTS} == "true" ]]; then tar -xzf "geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz" -C geckodriver; fi;'
