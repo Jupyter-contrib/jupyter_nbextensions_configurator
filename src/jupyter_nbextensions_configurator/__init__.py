@@ -6,7 +6,7 @@
 
 from __future__ import unicode_literals
 
-import codecs
+import io
 import json
 import logging
 import os.path
@@ -67,7 +67,7 @@ def get_configurable_nbextensions(
                     continue
                 yaml_path = os.path.join(direct, filename)
                 yaml_relpath = os.path.relpath(yaml_path, root_nbext_dir)
-                with codecs.open(yaml_path, 'r', encoding='utf-8') as stream:
+                with io.open(yaml_path, 'r', encoding='utf-8') as stream:
                     try:
                         extension = yaml.load(stream, Loader=SafeLoader)
                     except yaml.YAMLError:
