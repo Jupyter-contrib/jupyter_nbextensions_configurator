@@ -4,7 +4,7 @@ Description: An nbextension that renders the nbextensions configurator interface
 Link: readme.md
 Main: main.js
 Section: tree
-Compatibility: 4.x, 5.x
+Compatibility: 4.x
 tags:
 - configurator
 - dashboard

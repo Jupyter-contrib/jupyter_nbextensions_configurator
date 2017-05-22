@@ -3,20 +3,20 @@ language: python
 sudo: false
 addons:
   firefox: latest
+  sauce_connect: true
 matrix:
   fast_finish: true
   # Use the built-in venv for linux builds
   # 3.5 as it isn't installed by default. Let tox handle other versions.
   include:
-    # packaging sanity check
+    #   env: TOXENV=docs
     - os: linux
       python: '3.4'
       env: TOXENV=check
-    # python linting
     - os: linux
       python: '3.4'
       env: TOXENV=lint
-    # check that conda build/install works
+    # conda build/install works
     - os: linux
       python: '3.4'
       env: TOXENV=condarecipe
@@ -25,7 +25,7 @@ matrix:
       python: '3.4'
       env: TOXENV=py27-notebook
     - os: linux
-      python: '3.3'
+      python: '3.4'
       env: TOXENV=py33-notebook
     - os: linux
       python: '3.4'
@@ -42,6 +42,9 @@ matrix:
     - os: linux
       python: '3.4'
       env: TOXENV=py34-notebook44
+    - os: linux
+      python: '3.5'
+      env: TOXENV=py35-notebook50
     - os: linux
       python: '3.5'
       env: TOXENV=py35-notebook
@@ -71,10 +74,14 @@ matrix:
     - env: TOXENV=appveyorartifacts
     - env: TOXENV=lint
     - env: TOXENV=pypy-notebook
+    - env: TOXENV=py35-notebook50
 env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
+    - SAUCE_USERNAME=nbext_configurator
+    # sauce access key
+    - secure: "QZb4I+/3mFnc826CdstgYTFrmcvIkXiGmp3tkL9FLLPOEN2MHxPauKZ5J0qnzhIkug9mhCz68GBTlxMU4CpfLXWnKNDV85x1H+TI5K2qLaAPFjL9o7DOvAZW5EmMYac3Vgb022iXy/IbmZOjv9jyNzkqCrLqAaWriyo3c0+J6Onj+Q5JG5HjiJqlLhF9/yzsbqhlFmV42MqpZP3PTXEgrJZlwjNYK9DoBrmNg0Oq2rWoa6qMsaVrC0wiDAclx7PQOQRHr/ocbzAmqqSrBhjZdeRnFNiKiuVLfOr4fq5VLKYkFlSNKp91WzVDWKySXf+gp/zzTM5BCIgawuAD5i3z4cM9JqNGEYyod63QNlR6h04jYuUd6Y6y+5fqkx0uW8CiZtLwU8B4aifcNMMpdSg4eGMVnKsOMB/TcNQ9/4ZN2JijjCPk4x0bSYSJmSNcdPtQS39dXVUuVNRAN9fPrmIRAfmS4/MU2BlHz0OlMfxucby2FyYVI1ng8suc8/xRJMws3qrUlO6HYDGzdOko913/m11HCxinunLVCEfo+kLz2RGWz5aZfVUWuSf/D5jKP5GiIKb1wIV6syfOeNzGzEwu2VPuQ2NVlNshVXAi0+mkEqPHIO9yIDoyF2ktTl1KEKGQjPiz57MBRj2Zr8bNx2GigFpeEHkaxEmqyHgNaF7bJ+E="
 before_install:
   - uname -a
   - id -un
@@ -93,32 +100,31 @@ before_install:
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.4) ]]; then ls -l $(which python3.4); else echo "missing"; fi; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.5) ]]; then ls -l $(which python3.5); else echo "missing"; fi; fi'
   # stuff for conda recipe
-  # Note we're currently installing 4.3.11 specifically, since conda 4.3.14-16
-  # have a bug which stop them intalling anything on travis (see
-  #     https://github.com/conda/conda/issues/5033
-  # for details).
-  # This has been fixed in mewer conda versions
-  # (>=4.3.17), but the current 'latest' installer is still 4.3.14, so we need to specify the
-  # previous version. This should change in future once an installer for
-  # >=4.3.17 is released!
-  - 'if [[ ${TOXENV} == "condarecipe" ]]; then wget https://repo.continuum.io/miniconda/Miniconda3-4.3.11-Linux-x86_64.sh -O miniconda.sh; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then bash miniconda.sh -b -p $HOME/miniconda; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then export PATH="$HOME/miniconda/bin:$PATH"; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then hash -r; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda config --set always_yes yes --set changeps1 no; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda info -a; fi  # Useful for debugging any issues with conda'
-  # update conda, this should skip over the problematic 4.3.14-4.3.16 anyway
-  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda update conda; fi'
-  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda install conda-build; fi'
+  # conda 4.3.14 & conda-build 2.1.6 seem to fail with signals TypError on travis.
+  # conda's auto-update strategy also means that installing or updating anything else will cause
+  # conda to attempt to update itself.
+  # Thus instead of running
+  #    conda update conda
+  # we install conda & conda-build together, specifying the versions that we
+  # wish to avoid
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda install "conda!=4.3.14" "conda-build!=2.1.6"; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda info -a; fi  # Useful for debugging any issues with conda'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then git fetch --unshallow; fi'
   # also install npm configurable proxy for jupyterhub!
   - 'if [[ ${TOXENV} == "jupyterhub" ]]; then npm install configurable-http-proxy; fi;'
-  # decide whether js tests will run
+  # decide ehwether js tests will run
   - 'if [[ ${TRAVIS_OS_NAME} == "linux" ]] && [[ ${TOXENV} == py* || ${TOXENV} == jupyterhub ]]; then JS_TESTS="true"; else JS_TESTS="false"; fi;'
   - 'echo "\${JS_TESTS}=$JS_TESTS";'
+  # don't need SAUCE if we're not testing js, so disable by clearing env vars
+  - 'if [[ ${JS_TESTS} != "true" ]]; then unset SAUCE_USERNAME && unset SAUCE_ACCESS_KEY && echo unset; fi;'
   # for js tests (which we do on linux only), selenium 3 requires geckodriver
-  - 'if [[ ${JS_TESTS} == "true" ]]; then GECKODRIVER_VERSION="0.16.1"; fi;'
+  - 'if [[ ${JS_TESTS} == "true" ]]; then GECKODRIVER_VERSION="0.14.0"; fi;'
   - 'if [[ ${JS_TESTS} == "true" ]]; then wget "https://github.com/mozilla/geckodriver/releases/download/v$GECKODRIVER_VERSION/geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz"; fi;'
   - 'if [[ ${JS_TESTS} == "true" ]]; then mkdir geckodriver; fi;'
   - 'if [[ ${JS_TESTS} == "true" ]]; then tar -xzf "geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz" -C geckodriver; fi;'
@@ -134,12 +140,7 @@ install:
   - virtualenv --version
   - firefox --version
 script:
-  - 'if [[ ${TOXENV} != "condarecipe" ]]; then tox -v -e ${TOXENV}; fi'
-  # don't actually use tox for condarecipe :S
-  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda config --append channels conda-forge; fi'
-  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda config --get channels; fi'
-  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda build conda.recipe/; fi'
-  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda install --use-local jupyter_nbextensions_configurator; fi'
+  - tox -v -e ${TOXENV}
 after_script:
   # test if TOXENV not in set
   # see http://unix.stackexchange.com/a/111518

@@ -101,12 +101,11 @@ class AppTest(TestCase):
             with open(path, 'r') as f:
                 conf = Config(json.load(f))
             nbapp = conf.get('NotebookApp', {})
-            if 'server_extensions' in nbapp:
-                nt.assert_not_in(
-                    'jupyter_nbextensions_configurator',
-                    nbapp.server_extensions,
-                    'conf after disable should empty'
-                    'server_extensions list in file {}'.format(path))
+            nt.assert_not_in(
+                'jupyter_nbextensions_configurator',
+                nbapp.get('server_extensions', []),
+                'conf after disable should empty'
+                'server_extensions list'.format(path))
             nbservext = nbapp.get('nbserver_extensions', {})
             nt.assert_false(
                 {k: v for k, v in nbservext.items() if v},
