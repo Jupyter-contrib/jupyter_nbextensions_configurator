@@ -20,7 +20,7 @@ requirements:
   run:
     - python
     - setuptools
-    - jupyter_contrib_core >=0.2
+    - jupyter_contrib_core >=0.3.2
     - jupyter_core
     - nbconvert
     - notebook >=4.0
