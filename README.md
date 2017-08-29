@@ -207,6 +207,12 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
+0.2.6
+-----
+ * Require newer version of
+   [`jupyter_contrib_core`](https://github.com/jupyter-contrib/jupyter_contrib_core)
+   in order to ensure setting the correct config key when enabling.
+
 0.2.5
 -----
  * Deduplicate entries in `nbextensions_path` before checking them, to prevent
