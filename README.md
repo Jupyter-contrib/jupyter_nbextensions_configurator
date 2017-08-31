@@ -207,6 +207,12 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
+0.2.7
+-----
+ * Require newer version of
+   [`jupyter_contrib_core`](https://github.com/jupyter-contrib/jupyter_contrib_core)
+   for notebook 5 compatibility.
+
 0.2.6
 -----
  * Require newer version of
