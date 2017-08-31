@@ -43,7 +43,7 @@ options.
             for path in glob('src/*.py')
         ],
         install_requires=[
-            'jupyter_contrib_core >=0.3.2',
+            'jupyter_contrib_core >=0.3.3',
             'jupyter_core',
             'notebook >=4.0',
             'pyyaml',
