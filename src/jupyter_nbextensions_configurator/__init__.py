@@ -30,6 +30,49 @@ __version__ = '0.2.7'
 absolute_url_re = re.compile(r'^(f|ht)tps?://')
 
 
+def _process_nbextension_spec(spec, relative_url_base=''):
+    """
+    Sanity-check and preprocess a spec loaded from a yaml descriptor file.
+
+    Returns *either* a processed dict *or* a string error message describing
+    why the spec was not suitable.
+    """
+    if not isinstance(spec, dict):
+        return 'spec is not a dict, but an instance of {}'.format(type(spec))
+    if 'Type' not in spec:
+        return 'spec has no Type key'
+    valid_types = {'IPython Notebook Extension', 'Jupyter Notebook Extension'}
+    if str(spec['Type']).strip() not in valid_types:
+        return 'spec has invalid value for Type key: {!r}'.format(spec['Type'])
+    if 'Main' not in spec and 'require' not in spec:
+        return 'spec has neither "Main" nor "require" key'
+    # strip .js file extension from Main to give require path
+    if 'require' not in spec:
+        spec['require'] = os.path.splitext(spec['Main'])[0]
+
+    spec.setdefault('Name', spec['require'])
+    spec.setdefault('Compatibility', '?.x')
+    spec.setdefault('Section', 'notebook')
+
+    # generate relative URLs within the nbextensions namespace,
+    # from urls relative to the yaml file
+    for from_key, to_key in {
+            'Link': 'readme', 'Icon': 'icon', 'Main': 'require'}.items():
+        # check for the to_key first, use from_key as backup
+        # str needed in python 3, otherwise it ends up bytes
+        from_val = str(spec.get(to_key, ''))
+        if not from_val:
+            from_val = str(spec.get(from_key, ''))
+        if not from_val:
+            continue
+        if absolute_url_re.match(from_val):
+            spec[to_key] = from_val
+        else:
+            spec[to_key] = posixpath.normpath(
+                ujoin(relative_url_base, from_val))
+    return spec
+
+
 def get_configurable_nbextensions(
         nbextension_dirs, exclude_dirs=('mathjax',), as_dict=False, log=None):
     """Build a list of configurable nbextensions based on YAML descriptor files.
@@ -43,8 +86,6 @@ def get_configurable_nbextensions(
         - Main: relative url of the nbextension's main javascript file
     """
     extension_dict = {}
-    required_keys = {'Type', 'Main'}
-    valid_types = {'IPython Notebook Extension', 'Jupyter Notebook Extension'}
 
     # Traverse through nbextension subdirectories to find all yaml files
     # However, don't check directories twice. See
@@ -76,38 +117,12 @@ def get_configurable_nbextensions(
                                 'Failed to load yaml file {}'.format(
                                     yaml_relpath))
                         continue
+                extension = _process_nbextension_spec(
+                    extension,
+                    relative_url_base=path2url(os.path.dirname(yaml_relpath)))
                 if not isinstance(extension, dict):
                     continue
-                if any(key not in extension for key in required_keys):
-                    continue
-                if extension['Type'].strip() not in valid_types:
-                    continue
-                extension.setdefault('Compatibility', '?.x')
-                extension.setdefault('Section', 'notebook')
-
-                # generate relative URLs within the nbextensions namespace,
-                # from urls relative to the yaml file
-                yaml_dir_url = path2url(os.path.dirname(yaml_relpath))
-                key_map = [
-                    ('Link', 'readme'),
-                    ('Icon', 'icon'),
-                    ('Main', 'require'),
-                ]
-                for from_key, to_key in key_map:
-                    # str needed in python 3, otherwise it ends up bytes
-                    from_val = str(extension.get(from_key, ''))
-                    if not from_val:
-                        continue
-                    if absolute_url_re.match(from_val):
-                        extension[to_key] = from_val
-                    else:
-                        extension[to_key] = posixpath.normpath(
-                            ujoin(yaml_dir_url, from_val))
-                # strip .js file extension in require path
-                require = extension['require'] = os.path.splitext(
-                    extension['require'])[0]
-
-                extension.setdefault('Name', extension['require'])
+                require = extension['require']
 
                 if log:
                     if require in extension_dict:
