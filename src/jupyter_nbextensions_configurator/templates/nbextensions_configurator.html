@@ -28,12 +28,34 @@ data-base-url="{{base_url | urlencode}}"
 {% block script %}
 
 	{{super()}}
-
 	<script type="text/javascript">
 		sys_info = {{sys_info|safe}};
 	</script>
 
 	<script type="text/javascript" charset="utf-8">
+		// some ugly hacks to fix notebook 5.1.0's broken require config, as
+		// introduced by https://github.com/jupyter/notebook/pull/2140
+		(function () {
+			var nb_v_arr = sys_info.notebook_version.split('.');
+			if (Number(nb_v_arr[0]) == 5 && Number(nb_v_arr[1]) > 0) {
+				console.log(
+					'[nbextensions_configurator] patching requirejs config for notebook',
+					sys_info.notebook_version);
+				require.config({paths: {
+					jed: 'components/jed/jed',
+					json: 'components/requirejs-plugins/src/json',
+					text: 'components/requirejs-text/text',
+					moment: 'components/moment/min/moment-with-locales'
+				}});
+				if (!require.defined('json!base/../../i18n/nbjs.json')) {
+					define('json!base/../../i18n/nbjs.json', function() { return {
+						"domain": "nbjs",
+						"supported_languages": [],
+						"locale_data": {"nbjs": {"": {"domain": "nbjs"}}}
+					}; });
+				}
+			}
+		})(); // end ugly nb 5.1 hacks IIFE
 		require(['jquery'], function (jq) {
 			// hack to fix notebook 4.2.1
 			// see https://github.com/jupyter/notebook/pull/1399
