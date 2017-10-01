@@ -190,7 +190,7 @@ define([
         // add css first so hopefully it'll be loaded in time
         add_markdown_css();
 
-        page = new page.Page();
+        page = new page.Page('div#header', 'div#site');
         page.show_header();
 
         var base_url = utils.get_body_data('baseUrl');
