@@ -1296,7 +1296,7 @@ define([
         add_css('./main.css');
         $('body').addClass(page_class);
 
-        var nbext_config_page = Jupyter.page = new page.Page();
+        var nbext_config_page = Jupyter.page = new page.Page('div#header', 'div#site');
 
         // prepare for rendermd usage
         rendermd.add_markdown_css();
