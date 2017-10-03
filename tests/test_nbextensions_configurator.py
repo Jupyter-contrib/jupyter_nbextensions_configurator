@@ -280,6 +280,10 @@ class ConfiguratorTest(SeleniumNbextensionTestBase):
             },
         }
         for fname, yaml_obj in test_yamls.items():
+            if fname != 'dummy':
+                nt.assert_not_is_instance(
+                    jupyter_nbextensions_configurator._process_nbextension_spec(yaml_obj),  # noqa: E501
+                    dict)
             yaml_path = os.path.join(dodgy_nbext_dir_path, fname + '.yaml')
             with io.open(yaml_path, 'w') as f:
                 yaml.dump(yaml_obj, f, default_flow_style=False)
