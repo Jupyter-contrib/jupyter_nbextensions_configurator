@@ -113,7 +113,7 @@ before_install:
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda info -a; fi  # Useful for debugging any issues with conda'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then git fetch --unshallow; fi'
   # also install npm configurable proxy for jupyterhub!
-  - 'if [[ ${TOXENV} == "jupyterhub" ]]; then npm install configurable-http-proxy; fi;'
+  - 'if [[ ${TOXENV} == "jupyterhub" ]]; then npm install -g configurable-http-proxy; fi;'
   # decide whether js tests will run
   - 'if [[ ${TRAVIS_OS_NAME} == "linux" ]] && [[ ${TOXENV} == py* || ${TOXENV} == jupyterhub ]]; then JS_TESTS="true"; else JS_TESTS="false"; fi;'
   - 'echo "\${JS_TESTS}=$JS_TESTS";'
