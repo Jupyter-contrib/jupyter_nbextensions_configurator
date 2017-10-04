@@ -207,6 +207,11 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
+0.2.8
+-----
+ * Split specification checking into a separate function
+ * Fixes for bugs in notebook 5.1.0
+
 0.2.7
 -----
  * Require newer version of
