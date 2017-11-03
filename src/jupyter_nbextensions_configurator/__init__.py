@@ -14,6 +14,7 @@ import posixpath
 import re
 
 import yaml
+from jupyter_core.paths import jupyter_path
 from notebook.base.handlers import APIHandler, IPythonHandler, json_errors
 from notebook.utils import url_path_join as ujoin
 from notebook.utils import path2url
@@ -74,7 +75,8 @@ def _process_nbextension_spec(spec, relative_url_base=''):
 
 
 def get_configurable_nbextensions(
-        nbextension_dirs, exclude_dirs=('mathjax',), as_dict=False, log=None):
+        nbextension_dirs=None, exclude_dirs=('mathjax',), as_dict=False,
+        log=None):
     """Build a list of configurable nbextensions based on YAML descriptor files.
 
     descriptor files must:
@@ -85,6 +87,9 @@ def get_configurable_nbextensions(
                 'Jupyter Notebook Extension'
         - Main: relative url of the nbextension's main javascript file
     """
+    if nbextension_dirs is None:
+        nbextension_dirs = jupyter_path('nbextensions')
+
     extension_dict = {}
 
     # Traverse through nbextension subdirectories to find all yaml files
