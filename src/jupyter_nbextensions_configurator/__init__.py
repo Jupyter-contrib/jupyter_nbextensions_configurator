@@ -14,7 +14,8 @@ import posixpath
 import re
 
 import yaml
-from notebook.base.handlers import APIHandler, IPythonHandler, json_errors
+from notebook import version_info as nb_version_info
+from notebook.base.handlers import APIHandler, IPythonHandler
 from notebook.utils import url_path_join as ujoin
 from notebook.utils import path2url
 from tornado import web
@@ -24,6 +25,14 @@ try:
     from yaml import CSafeLoader as SafeLoader
 except ImportError:
     from yaml import SafeLoader
+
+if nb_version_info < (5, 2, 0):
+    from notebook.base.handlers import json_errors
+else:
+    # for notebook >= 5.2.0, instead of using json_errors, we must subclass
+    # APIHandler. Since we already do this, just do nothing extra
+    def json_errors(method):
+        return method
 
 __version__ = '0.2.8'
 

@@ -207,6 +207,11 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
+repo master
+-----
+ * don't use `notebook.base.handlers.json_errors`
+   for notebook >= 5.2.0, as it's deprecated.
+
 0.2.8
 -----
  * Split specification checking into a separate function
