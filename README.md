@@ -207,10 +207,12 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
-repo master
+0.3.0
 -----
  * don't use `notebook.base.handlers.json_errors`
    for notebook >= 5.2.0, as it's deprecated.
+ * auto-pad 3-char colour codes (e.g. `#BEC`) to 6-char, as otherwise the
+   HTML5 controls don't initialize correctly.
 
 0.2.8
 -----
