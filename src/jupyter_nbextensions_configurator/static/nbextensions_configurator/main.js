@@ -315,6 +315,13 @@ define([
             case 'checkbox':
                 input.prop('checked', new_value ? true : false);
                 break;
+            case 'color':
+                // for some reason, setting with 3-char color codes doesn't
+                // work correctly, so expand them to 6-char
+                input.val(new_value.replace(
+                    /^\s*#([\da-f])([\da-f])([\da-f])\s*$/i,
+                    '#$1$1$2$2$3$3'));
+                break;
             default:
                 input.val(new_value);
         }
