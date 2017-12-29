@@ -11,12 +11,15 @@ source:
 
 build:
   number: {{ GIT_DESCRIBE_NUMBER }}
-  script: python setup.py install --single-version-externally-managed --record=record.txt
+  script: pip install --no-deps .
+  entry_points:
+    - jupyter-nbextensions_configurator = jupyter_nbextensions_configurator.application:main
 
 requirements:
   build:
     - python
     - setuptools
+    - pip
   run:
     - python
     - setuptools
