@@ -7,6 +7,7 @@ from __future__ import (
 
 import logging
 import os
+import sys
 from threading import Event, Thread
 
 from jupyter_contrib_core.notebook_compat import serverextensions
@@ -117,6 +118,11 @@ class NbextensionTestBase(NotebookTestBase):
         app = cls.notebook = NoseyNotebookApp(**cls.get_server_kwargs())
         # don't register signal handler during tests
         app.init_signal = lambda: None
+        # start asyncio loop explicitly in notebook thread
+        # (tornado 4 starts per-thread loops automatically, asyncio doesn’t)
+        if 'asyncio' in sys.modules:
+            import asyncio
+            asyncio.set_event_loop(asyncio.new_event_loop())
         app.initialize(argv=[])
         loop = IOLoop.current()
         loop.add_callback(started_event.set)
