@@ -8,10 +8,6 @@ matrix:
   # Use the built-in venv for linux builds
   # 3.5 as it isn't installed by default. Let tox handle other versions.
   include:
-    # packaging sanity check
-    - os: linux
-      python: '3.6'
-      env: TOXENV=check
     # python linting
     - os: linux
       python: '3.6'
@@ -30,11 +26,7 @@ matrix:
     - os: linux
       python: 'pypy'
       env: TOXENV=pypy-notebook
-    - os: linux
-      python: '3.6'
-      env: TOXENV=appveyorartifacts
   allow_failures:
-    - env: TOXENV=appveyorartifacts
     - env: TOXENV=lint
     - env: TOXENV=pypy-notebook
     - env: TOXENV=py36-notebook
