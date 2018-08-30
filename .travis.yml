@@ -26,32 +26,10 @@ matrix:
       env: TOXENV=py27-notebook
     - os: linux
       python: '3.6'
-      env: TOXENV=py36-notebook44
-    - os: linux
-      python: '3.6'
-      env: TOXENV=py36-notebook54
-    - os: linux
-      python: '3.6'
-      env: TOXENV=py36-notebook55
-    - os: linux
-      python: '3.6'
       env: TOXENV=py36-notebook
     - os: linux
       python: 'pypy'
       env: TOXENV=pypy-notebook
-    # jupyterhub tests
-    - os: linux
-      python: '3.6'
-      env: TOXENV=jupyterhub
-    # OSX tests, python 2 & 3
-    # Use generic language on osx, get python via terryfy during before_install
-    - os: osx
-      language: generic
-      env: OSX_PYTHON=2.7 TOXENV=py27-notebook
-    - os: osx
-      language: generic
-      env: OSX_PYTHON=3.6 TOXENV=py36-notebook
-    # finally, appveyor downloads from windows platform
     - os: linux
       python: '3.6'
       env: TOXENV=appveyorartifacts
@@ -68,7 +46,7 @@ before_install:
   - id -un
   - id -Gn
   # install python on osx
-  - 'if [[ ${OSX_PYTHON} ]]; then curl https://raw.githubusercontent.com/MacPython/terryfy/12a4641c4e922eb4a63c82732df8d0c5045430af/travis_tools.sh > travis_tools.sh; fi'
+  - 'if [[ ${OSX_PYTHON} ]]; then curl https://raw.githubusercontent.com/MacPython/terryfy/master/travis_tools.sh > travis_tools.sh; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then source travis_tools.sh; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then get_python_environment macpython $OSX_PYTHON venv; fi'
   # install 3.4 as it's the default for tox environments like clean, check
@@ -80,7 +58,8 @@ before_install:
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.3) ]]; then ls -l $(which python3.3); else echo "missing"; fi; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.4) ]]; then ls -l $(which python3.4); else echo "missing"; fi; fi'
   - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.5) ]]; then ls -l $(which python3.5); else echo "missing"; fi; fi'
-  # stuff for conda recipe
+  - 'if [[ ${OSX_PYTHON} ]]; then if [[ $(which python3.6) ]]; then ls -l $(which python3.6); else echo "missing"; fi; fi'
+# stuff for conda recipe
   # Note we're currently installing 4.3.11 specifically, since conda 4.3.14-16
   # have a bug which stop them intalling anything on travis (see
   #     https://github.com/conda/conda/issues/5033
