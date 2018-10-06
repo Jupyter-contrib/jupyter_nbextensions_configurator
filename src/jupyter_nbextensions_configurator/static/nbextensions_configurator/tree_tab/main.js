@@ -1,7 +1,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var $ = require('jqueryui');
+    var $ = require('jquery');
     var nbextensions_configurator = require('../main');
     var rendermd = require('../render/render');
 
