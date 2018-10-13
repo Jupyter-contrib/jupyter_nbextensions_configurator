@@ -1,11 +1,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var $ = require('jquery-ui');
-    if ($ === undefined) {
-        $ = require('jquery');
-    }
-
+    var $ = require('jquery');
     var nbextensions_configurator = require('../main');
     var rendermd = require('../render/render');
 
