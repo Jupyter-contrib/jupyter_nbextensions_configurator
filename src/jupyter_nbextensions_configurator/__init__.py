@@ -258,6 +258,21 @@ def load_jupyter_server_extension(nbapp):
 
     logger.info('enabled {}'.format(__version__))
 
+def _jupyter_nbextension_paths():
+    return [
+        dict(
+            section="notebook",
+            src="static/nbextensions_configurator",
+            dest="nbextensions_configurator",
+            require='nbextensions_configurator/config_menu/main',
+        ),
+        dict(
+            section="tree",
+            src="static/nbextensions_configurator",
+            dest="nbextensions_configurator",
+            require='nbextensions_configurator/tree_tab/main',
+        ),
+    ]
 
 def _jupyter_server_extension_paths():
     return [{
