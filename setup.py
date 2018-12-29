@@ -24,14 +24,14 @@ In addition, for nbextensions which include an appropriate yaml descriptor
 file, the interface also provides controls to configure the nbextensions'
 options.
 """,
-        version='0.4.0',
+        version='0.4.1',
         author='jcb91, jupyter-contrib developers',
         author_email='joshuacookebarnes@gmail.com',
         url=('https://github.com/'
              'jupyter-contrib/jupyter_nbextensions_configurator'),
         download_url=('https://github.com/'
                       'jupyter-contrib/jupyter_nbextensions_configurator/'
-                      'tarball/0.4.0'),
+                      'tarball/0.4.1'),
         keywords=['Jupyter', 'notebook'],
         license='BSD 3-clause',
         platforms=['any'],
