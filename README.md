@@ -210,7 +210,7 @@ Changes
 -----
  * Show error messages when failing to load a config file, allowing remaining
    files to load ok.
- * use pip for conda recipe installation, instead of `python steup.py`
+ * use pip for conda recipe installation, instead of `python setup.py`
 
 0.3.0
 -----
