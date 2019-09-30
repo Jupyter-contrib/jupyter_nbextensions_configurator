@@ -48,7 +48,7 @@ For those not using conda, the installation has two steps:
     subcommand is provided for this. You can enable the serverextension and the
     configurator nbextensions listed below for the current user with
 
-        jupyter nbextensions_configurator enable --user
+        jupyter nbextensions_configurator enable --user  # can be skipped for notebook >=5.3
 
     The command accepts the same flags as the `jupyter serverextension` command
     provided by notebook versions >= 4.2, including `--system` to enable in
