@@ -404,12 +404,14 @@ define([
                                 ' to:';
                             var modal = kse_comp.KSE_modal({
                                 'description': description,
+                                'input': input,
                                 'buttons': {
                                     'OK': {
                                         'class': 'btn-primary',
                                         'click': function () {
                                             var editor = $(this).find('#kse-editor');
                                             var new_value = (editor.data('kse_sequence') || []).join(',');
+                                            var input = editor.data('kse_input');
                                             set_input_value(input, new_value);
                                             // trigger write to config
                                             input.find('.hotkey').change();

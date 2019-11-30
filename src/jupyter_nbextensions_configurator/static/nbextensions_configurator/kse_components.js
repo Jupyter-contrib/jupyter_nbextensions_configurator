@@ -339,6 +339,7 @@ define([
     function KSE_modal (modal_options) {
         var editor = editor_build();
         editor.data({'kse_sequence': [], 'kse_undefined_key': false});
+        editor.data('kse_input', modal_options['input']);
         editor_update_input_group(editor);
         var modal = modal_build(editor, modal_options);
 
