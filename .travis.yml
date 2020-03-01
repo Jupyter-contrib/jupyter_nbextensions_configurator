@@ -3,6 +3,7 @@ language: python
 sudo: false
 addons:
   firefox: latest
+dist: trusty
 matrix:
   fast_finish: true
   # Use the built-in venv for linux builds
