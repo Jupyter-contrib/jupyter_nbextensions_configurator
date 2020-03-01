@@ -38,6 +38,17 @@ options.
         packages=find_packages('src'),
         package_dir={'': 'src'},
         include_package_data=True,
+        data_files=[
+	    ("etc/jupyter/nbconfig/notebook.d", [
+		"jupyter-config/nbconfig/notebook.d/jupyter_nbextensions_configurator.json"
+	    ]),
+	    ("etc/jupyter/nbconfig/tree.d", [
+		"jupyter-config/nbconfig/tree.d/jupyter_nbextensions_configurator.json"
+	    ]),
+	    ("etc/jupyter/jupyter_notebook_config.d", [
+		"jupyter-config/jupyter_notebook_config.d/jupyter_nbextensions_configurator.json"
+	    ])
+        ],
         py_modules=[
             os.path.splitext(os.path.basename(path))[0]
             for path in glob('src/*.py')
