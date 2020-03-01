@@ -46,7 +46,7 @@ before_install:
   - id -Gn
   # stuff for conda recipe
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then wget https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Linux-x86_64.sh -O miniconda.sh; fi'
-  - 'if [[ ${TOXENV} == "condarecipe" ]]; then ( echo "bfe34e1fa28d6d75a7ad05fd02fa5472275673d5f5621b77380898dee1be15d2 miniconda.sh" | sha1sum -c - ); fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then ( echo "bfe34e1fa28d6d75a7ad05fd02fa5472275673d5f5621b77380898dee1be15d2  miniconda.sh" | sha256sum -c - ); fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then bash miniconda.sh -b -p $HOME/miniconda; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then export PATH="$HOME/miniconda/bin:$PATH"; fi'
   - 'if [[ ${TOXENV} == "condarecipe" ]]; then hash -r; fi'
