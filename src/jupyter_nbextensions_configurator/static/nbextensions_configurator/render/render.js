@@ -4,7 +4,7 @@ define([
     'base/js/utils',
     'base/js/page',
     'base/js/security',
-    'notebook/js/mathjaxutils',
+    'base/js/mathjaxutils.js',
     'components/marked/lib/marked',
     'codemirror/lib/codemirror',
     // CodeMirror modules below don't export anything, just loading them does everything necessary
