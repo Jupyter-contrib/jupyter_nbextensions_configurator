@@ -914,8 +914,8 @@ define([
                 .addClass('nbext-desc')
                 .appendTo(col_left);
             if (extension.hasOwnProperty('Description')) {
-                $('<p/>')
-                    .html(extension.Description)
+                rendermd.render_markdown(extension.Description)
+                    .addClass('rendered_html')
                     .appendTo(div_desc);
             }
 
