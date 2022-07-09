@@ -1,0 +1,103 @@
+# http://travis-ci.org/#!/jupyter-contrib/jupyter_nbextensions_configurator
+language: python
+sudo: false
+addons:
+  firefox: latest
+dist: trusty
+matrix:
+  fast_finish: true
+  # Use the built-in venv for linux builds
+  # 3.5 as it isn't installed by default. Let tox handle other versions.
+  include:
+    # python linting
+    - os: linux
+      python: '3.6'
+      env: TOXENV=lint
+    # check that conda build/install works
+    - os: linux
+      python: '3.7'
+      env: TOXENV=condarecipe
+    # linux, various python and notebook versions
+    - os: linux
+      python: '2.7'
+      env: TOXENV=py27-notebook
+    - os: linux
+      python: '3.6'
+      env: TOXENV=py36-notebook
+    - os: linux
+      python: '3.7'
+      env: TOXENV=py37-notebook
+    - os: linux
+      python: '3.8'
+      env: TOXENV=py37-notebook
+    - os: linux
+      python: 'pypy'
+      env: TOXENV=pypy-notebook
+  allow_failures:
+    - env: TOXENV=lint
+    - env: TOXENV=pypy-notebook
+    - env: TOXENV=py36-notebook
+env:
+  global:
+    - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - SEGFAULT_SIGNALS=all
+before_install:
+  - uname -a
+  - id -un
+  - id -Gn
+  # stuff for conda recipe
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then wget https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Linux-x86_64.sh -O miniconda.sh; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then ( echo "bfe34e1fa28d6d75a7ad05fd02fa5472275673d5f5621b77380898dee1be15d2  miniconda.sh" | sha256sum -c - ); fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then bash miniconda.sh -b -p $HOME/miniconda; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then export PATH="$HOME/miniconda/bin:$PATH"; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then hash -r; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda config --set always_yes yes --set changeps1 no; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda info -a; fi  # Useful for debugging any issues with conda'
+  # update conda
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda update --all; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda install conda-build; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda info -a; fi  # Useful for debugging any issues with conda'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then git fetch --unshallow; fi'
+  # also install npm configurable proxy for jupyterhub!
+  - 'if [[ ${TOXENV} == "jupyterhub" ]]; then npm install -g configurable-http-proxy; fi;'
+  # decide whether js tests will run
+  - 'if [[ ${TRAVIS_OS_NAME} == "linux" ]] && [[ ${TOXENV} == py* || ${TOXENV} == jupyterhub ]]; then JS_TESTS="true"; else JS_TESTS="false"; fi;'
+  - 'echo "\${JS_TESTS}=$JS_TESTS";'
+  # for js tests (which we do on linux only), selenium 3 requires geckodriver
+  - 'if [[ ${JS_TESTS} == "true" ]]; then GECKODRIVER_VERSION="0.16.1"; fi;'
+  - 'if [[ ${JS_TESTS} == "true" ]]; then wget "https://github.com/mozilla/geckodriver/releases/download/v$GECKODRIVER_VERSION/geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz"; fi;'
+  - 'if [[ ${JS_TESTS} == "true" ]]; then mkdir geckodriver; fi;'
+  - 'if [[ ${JS_TESTS} == "true" ]]; then tar -xzf "geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz" -C geckodriver; fi;'
+  - 'if [[ ${JS_TESTS} == "true" ]]; then export PATH="$PATH:$PWD/geckodriver"; fi;'
+  # remove the downloaded archive, don't care if this fails
+  - 'if [[ ${JS_TESTS} == "true" ]]; then rm "geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz" || true; fi;'
+  # from https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
+  # we need to start xvfb for selenium to work correctly
+  - 'if [[ ${JS_TESTS} == "true" ]]; then export DISPLAY=":99.0"; fi;'
+  - 'if [[ ${JS_TESTS} == "true" ]]; then sh -e /etc/init.d/xvfb start && sleep 3; fi;'
+install:
+  - python -m pip install tox
+  - virtualenv --version
+  - firefox --version
+script:
+  - 'if [[ ${TOXENV} != "condarecipe" ]]; then tox -v -e ${TOXENV}; fi'
+  # don't actually use tox for condarecipe :S
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda config --append channels conda-forge; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda config --get channels; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda build conda.recipe/; fi'
+  - 'if [[ ${TOXENV} == "condarecipe" ]]; then conda install --use-local jupyter_nbextensions_configurator; fi'
+after_script:
+  # test if TOXENV not in set
+  # see http://unix.stackexchange.com/a/111518
+  - 'if ! [[ ${TOXENV} =~ ^(appveyorartifacts|check|lint|condarecipe)$ ]]; then tox -e coveralls,codecov; fi'
+after_failure:
+  - more .tox/log/* | cat
+  - more .tox/*/log/* | cat
+after_success:
+before_cache:
+  - rm -rf $HOME/.cache/pip/log
+cache:
+  directories:
+    - $HOME/.cache/pip
+notifications:
+  email: false
