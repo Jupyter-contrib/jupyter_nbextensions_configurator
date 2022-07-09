@@ -24,14 +24,14 @@ In addition, for nbextensions which include an appropriate yaml descriptor
 file, the interface also provides controls to configure the nbextensions'
 options.
 """,
-        version='0.4.1',
+        version='0.5.0',
         author='jcb91, jupyter-contrib developers',
         author_email='joshuacookebarnes@gmail.com',
         url=('https://github.com/'
              'jupyter-contrib/jupyter_nbextensions_configurator'),
         download_url=('https://github.com/'
                       'jupyter-contrib/jupyter_nbextensions_configurator/'
-                      'tarball/0.4.1'),
+                      'tarball/0.5.0'),
         keywords=['Jupyter', 'notebook'],
         license='BSD 3-clause',
         platforms=['any'],
@@ -56,7 +56,7 @@ options.
         install_requires=[
             'jupyter_contrib_core >=0.3.3',
             'jupyter_core',
-            'notebook >=4.0',
+            'notebook >=6.0',
             'pyyaml',
             'tornado',
             'traitlets',
@@ -68,7 +68,7 @@ options.
                 'requests',
                 'selenium',
             ],
-            'test:python_version == "2.7"': [
+            'test:python_version == "3.9"': [
                 'mock',
             ],
         },
