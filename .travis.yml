@@ -1,4 +1,4 @@
-# http://travis-ci.org/#!/jupyter-contrib/jupyter_nbextensions_configurator
+# http://travis-ci.com/#!/jupyter-contrib/jupyter_nbextensions_configurator
 language: python
 sudo: false
 addons:
