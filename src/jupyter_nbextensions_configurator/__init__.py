@@ -244,8 +244,10 @@ def load_jupyter_server_extension(nbapp):
         os.path.dirname(__file__), 'static'))
     logger.debug(
         '  Editing nbextensions path to add {}'.format(static_files_path))
-    if static_files_path not in webapp.settings['nbextensions_path']:
+    if webapp.settings.get('nbextensions_path', None) and static_files_path not in webapp.settings.get('nbextensions_path', []):
         webapp.settings['nbextensions_path'].append(static_files_path)
+    if webapp.settings.get('static_path', None) and static_files_path not in webapp.settings.get('static_path', []):
+        webapp.settings['static_path'].append(static_files_path)
 
     # add our new custom handlers
     logger.debug('  Adding new handlers')
