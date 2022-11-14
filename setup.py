@@ -11,7 +11,6 @@ from setuptools import find_packages, setup
 
 
 def main():
-
     setup(
         name='jupyter_nbextensions_configurator',
         description=("jupyter serverextension providing configuration "
@@ -24,14 +23,14 @@ In addition, for nbextensions which include an appropriate yaml descriptor
 file, the interface also provides controls to configure the nbextensions'
 options.
 """,
-        version='0.6.0',
+        version='0.6.1',
         author='jcb91, jupyter-contrib developers',
         author_email='joshuacookebarnes@gmail.com',
         url=('https://github.com/'
              'jupyter-contrib/jupyter_nbextensions_configurator'),
         download_url=('https://github.com/'
                       'jupyter-contrib/jupyter_nbextensions_configurator/'
-                      'tarball/0.6.0'),
+                      'tarball/0.6.1'),
         keywords=['Jupyter', 'notebook'],
         license='BSD 3-clause',
         platforms=['any'],
@@ -39,15 +38,15 @@ options.
         package_dir={'': 'src'},
         include_package_data=True,
         data_files=[
-	    ("etc/jupyter/nbconfig/notebook.d", [
-		"jupyter-config/nbconfig/notebook.d/jupyter_nbextensions_configurator.json"
-	    ]),
-	    ("etc/jupyter/nbconfig/tree.d", [
-		"jupyter-config/nbconfig/tree.d/jupyter_nbextensions_configurator.json"
-	    ]),
-	    ("etc/jupyter/jupyter_notebook_config.d", [
-		"jupyter-config/jupyter_notebook_config.d/jupyter_nbextensions_configurator.json"
-	    ])
+            ("etc/jupyter/nbconfig/notebook.d", [
+                "jupyter-config/nbconfig/notebook.d/jupyter_nbextensions_configurator.json"
+            ]),
+            ("etc/jupyter/nbconfig/tree.d", [
+                "jupyter-config/nbconfig/tree.d/jupyter_nbextensions_configurator.json"
+            ]),
+            ("etc/jupyter/jupyter_notebook_config.d", [
+                "jupyter-config/jupyter_notebook_config.d/jupyter_nbextensions_configurator.json"
+            ])
         ],
         py_modules=[
             os.path.splitext(os.path.basename(path))[0]
