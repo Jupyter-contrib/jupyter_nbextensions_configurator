@@ -41,7 +41,7 @@ the excellent [conda-forge](https://conda-forge.github.io/)
 For those not using conda, the installation has two steps:
 
  1. Installing the pip package. This should be as simple as
-
+    
         pip install jupyter_nbextensions_configurator
 
  2. Configuring the notebook server to load the server extension. A `jupyter`
@@ -205,6 +205,10 @@ For debugging, useful information can (sometimes) be found by:
 
 Changes
 =======
+
+0.6.1
+-----
+ * Remove scripts from setup.py
 
 0.6.0
 -----
