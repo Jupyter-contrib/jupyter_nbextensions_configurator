@@ -206,6 +206,13 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
+0.6.0
+-----
+ * Support nbclassic.
+
+0.5.0
+-----
+
 0.4.0
 -----
  * Show error messages when failing to load a config file, allowing remaining
