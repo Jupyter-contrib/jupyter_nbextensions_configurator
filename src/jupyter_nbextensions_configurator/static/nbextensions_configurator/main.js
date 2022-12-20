@@ -167,7 +167,8 @@ define([
         console.log(log_prefix, state ? ' enabled' : 'disabled', extension.require);
         // for pre-4.2 versions, the javascript loading nbextensions actually
         // ignores the true/false state, so to disable we have to delete the key
-        if ((version_compare(sys_info.notebook_version, '4.2') < 0) && !state) {
+        if ((version_compare(((typeof sys_info === 'undefined') ? Jupyter.version : sys_info.notebook_version),
+            '4.2') < 0) && !state) {
             state = null;
         }
         var to_load = {};
@@ -935,7 +936,7 @@ define([
             // Compatibility
             var compat_txt = extension.Compatibility || '?.x';
             var compat_idx = compat_txt.toLowerCase().indexOf(
-                sys_info.notebook_version.substring(0, 2) + 'x');
+                ((typeof sys_info === 'undefined') ? Jupyter.version : sys_info.notebook_version).substring(0, 2) + 'x');
             if (!extension.is_compatible) {
                 ext_row.addClass('nbext-incompatible');
                 compat_txt = $('<span/>')
@@ -1436,7 +1437,7 @@ define([
             console.log(log_prefix, 'Found nbextension', extension.require);
 
             extension.is_compatible = (extension.Compatibility || '?.x').toLowerCase().indexOf(
-                sys_info.notebook_version.substring(0, 2) + 'x') >= 0;
+                ((typeof sys_info === 'undefined') ? Jupyter.version : sys_info.notebook_version).substring(0, 2) + 'x') >= 0;
             extension.Parameters = extension.Parameters || [];
             if (!extension.is_compatible) {
                 // reveal the checkbox since we've found an incompatible nbext
