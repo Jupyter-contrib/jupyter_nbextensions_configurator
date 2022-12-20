@@ -8,7 +8,9 @@ define([
     'notebook/js/quickhelp',
     './render/render',
     './kse_components',
-    'base/js/events'
+    // only loaded, not used:
+    'jqueryui',
+    'bootstrap'
 ], function(
     $,
     require,
