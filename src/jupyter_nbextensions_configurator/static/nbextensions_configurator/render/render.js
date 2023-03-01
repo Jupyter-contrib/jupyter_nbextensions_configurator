@@ -5,7 +5,7 @@ define([
     'base/js/page',
     'base/js/security',
     'notebook/js/mathjaxutils',
-    'components/marked/lib/marked',
+    'components/marked/lib/marked.umd',
     'codemirror/lib/codemirror',
     // CodeMirror modules below don't export anything, just loading them does everything necessary
     'codemirror/addon/runmode/runmode',
@@ -152,7 +152,7 @@ define([
             var text = text_and_math[0];
             var math = text_and_math[1];
             var options = custom_marked_options;
-            marked(text, options, function (err, html) {
+            marked.marked(text, options, function (err, html) {
                 html = mathjaxutils.replace_math(html, math);
                 html = security.sanitize_html(html);
                 html = $($.parseHTML(html));
