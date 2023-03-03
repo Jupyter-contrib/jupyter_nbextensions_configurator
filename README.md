@@ -32,6 +32,11 @@ This project was spun out of work from
 Installation
 ------------
 
+> **Note:** `jupyter_nbextensions_configurator` versions > 0.6.1 requires 
+  [notebook](https://github.com/jupyter/notebook) >= 6.5 (and 
+  [nbclasic](https://github.com/jupyter/nbclassic) >= 0.5). To avoid any implicit 
+  update of these two package intall `jupyter_nbextensions_configurator` <= 0.6.1.
+
 For those using conda, you can now get `jupyter_nbextensions_configurator` from
 the excellent [conda-forge](https://conda-forge.github.io/)
 [channel](https://anaconda.org/conda-forge) in a single command:
