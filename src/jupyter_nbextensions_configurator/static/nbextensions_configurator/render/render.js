@@ -33,6 +33,8 @@ define([
     var mod_name = 'jupyter_nbextensions_configurator/render';
     var log_prefix = '[' + mod_name + ']';
 
+    marked = marked.marked || marked;
+
     /**
      * Custom marked options,
      * lifted from notebook/js/notebook
