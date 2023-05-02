@@ -206,6 +206,10 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
+0.6.2
+-----
+ * Fix marked.js
+
 0.6.1
 -----
  * Remove scripts from setup.py
