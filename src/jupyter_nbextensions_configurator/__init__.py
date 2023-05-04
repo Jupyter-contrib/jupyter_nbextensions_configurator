@@ -14,7 +14,7 @@ import posixpath
 import re
 
 import yaml
-from notebook import version_info as nb_version_info
+from notebook._version import version_info as nb_version_info
 from notebook.base.handlers import APIHandler, IPythonHandler
 from notebook.utils import url_path_join as ujoin
 from notebook.utils import path2url
