@@ -206,6 +206,10 @@ For debugging, useful information can (sometimes) be found by:
 Changes
 =======
 
+0.6.3
+-----
+ * Import notebook version
+
 0.6.2
 -----
  * Fix marked.js
@@ -328,3 +332,9 @@ Remove tests dependency on `ipython_genutils`
 0.1.0
 -----
 First public release!
+
+Release
+=======
+
+python setup.py bdist_wheel 
+twine upload dist/* 
