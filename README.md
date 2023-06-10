@@ -366,3 +366,6 @@ Then to upload the package to PyPI, do:
   ```bash
   twine upload dist/*
   ```
+
+Lastly, you can follow the instructions [here](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository)
+to make a manual release on Github via [`jupyter_nbextensions_configurator/releases`](https://github.com/jupyter-contrib/jupyter_nbextensions_configurator/releases).
