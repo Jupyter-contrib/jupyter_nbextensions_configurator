@@ -333,8 +333,39 @@ Remove tests dependency on `ipython_genutils`
 -----
 First public release!
 
-Release
-=======
+</br>
+</br>
 
-python setup.py bdist_wheel 
-twine upload dist/* 
+Making a new release of jupyter_nbextensions_configurator
+=========================================================
+This extension can be manually distributed as a Python package.
+
+</br>
+
+Manually bumb the package version in:
+  * `version` and `download_url` in `setup.py`
+  * `current_version` in `.bumpversion.cfg`
+  * `__version__` in `src/jupyter_nbextensions_configurator/__init__.py`
+
+
+Update the Changes section of the this README with notes for the release.
+
+To create the binary package (`.whl`) in the `dist/` directory, do:
+  ```bash
+  python setup.py bdist_wheel
+  ```
+
+Commit the changes to the repository, and upload artifacts.
+
+Install the necessary `twine` python package
+  ```bash
+  pip install twine
+  ```
+
+Then to upload the package to PyPI, do:
+  ```bash
+  twine upload dist/*
+  ```
+
+Lastly, you can follow the instructions [here](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository)
+to make a manual release on Github via [`jupyter_nbextensions_configurator/releases`](https://github.com/jupyter-contrib/jupyter_nbextensions_configurator/releases).
