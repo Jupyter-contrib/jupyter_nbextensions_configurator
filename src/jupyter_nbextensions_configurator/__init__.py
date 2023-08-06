@@ -14,10 +14,10 @@ import posixpath
 import re
 
 import yaml
+from jupyter_server.base.handlers import APIHandler, JupyterHandler
+from jupyter_server.utils import url_path_join as ujoin
+from jupyter_server.utils import path2url
 from notebook._version import version_info as nb_version_info
-from notebook.base.handlers import APIHandler, IPythonHandler
-from notebook.utils import url_path_join as ujoin
-from notebook.utils import path2url
 from tornado import web
 
 # attempt to use LibYaml if available
@@ -184,10 +184,10 @@ class NBExtensionHandlerJSON(APIHandler):
         self.finish(json.dumps(extension_list))
 
 
-class NBExtensionHandlerPage(IPythonHandler):
+class NBExtensionHandlerPage(JupyterHandler):
     """Renders the nbextension configuration interface."""
 
-    @IPythonHandler.log.getter
+    @JupyterHandler.log.getter
     def log(self):
         return ConfiguratorLogger(super(NBExtensionHandlerPage, self).log)
 
@@ -201,10 +201,10 @@ class NBExtensionHandlerPage(IPythonHandler):
         ))
 
 
-class RenderExtensionHandler(IPythonHandler):
+class RenderExtensionHandler(JupyterHandler):
     """Renders markdown files as pages."""
 
-    @IPythonHandler.log.getter
+    @JupyterHandler.log.getter
     def log(self):
         return ConfiguratorLogger(super(RenderExtensionHandler, self).log)
 
