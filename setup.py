@@ -55,6 +55,7 @@ options.
         install_requires=[
             'jupyter_contrib_core >=0.3.3',
             'jupyter_core',
+            'jupyter_server',
             'notebook >=6.0',
             'pyyaml',
             'tornado',
