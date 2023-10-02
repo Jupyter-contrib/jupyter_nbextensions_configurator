@@ -1,4 +1,4 @@
-# http://travis-ci.org/#!/jupyter-contrib/jupyter_nbextensions_configurator
+# http://travis-ci.com/#!/jupyter-contrib/jupyter_nbextensions_configurator
 language: python
 sudo: false
 addons:
@@ -15,15 +15,12 @@ matrix:
       env: TOXENV=lint
     # check that conda build/install works
     - os: linux
-      python: '3.7'
+      python: '3.6'
       env: TOXENV=condarecipe
     # linux, various python and notebook versions
     - os: linux
       python: '3.6'
       env: TOXENV=py36-notebook
-    - os: linux
-      python: '3.7'
-      env: TOXENV=py37-notebook
     - os: linux
       python: 'pypy'
       env: TOXENV=pypy-notebook

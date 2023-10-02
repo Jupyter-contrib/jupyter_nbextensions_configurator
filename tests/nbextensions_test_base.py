@@ -39,6 +39,7 @@ else:
     from selenium.webdriver.remote import remote_connection
     from selenium.webdriver.support import expected_conditions as ec
     from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
     # don't show selenium debug logs
     remote_connection.LOGGER.setLevel(logging.INFO)
 
@@ -227,6 +228,7 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
                 # 'platform': 'Mac OS X 10.9',
                 'platform': 'Linux',
                 'browserName': 'firefox',
+                'marionette': False,
                 'version': 'latest',
                 'tags': [os.environ['TOXENV'], 'CI'],
                 'name': cls.__name__
@@ -244,7 +246,9 @@ class SeleniumNbextensionTestBase(NbextensionTestBase):
                 desired_capabilities=capabilities, command_executor=hub_url)
         else:
             cls.log.info('Using local webdriver.')
-            cls.driver = webdriver.Firefox()
+            cap = DesiredCapabilities().FIREFOX
+            cap["marionette"] = False
+            cls.driver = webdriver.Firefox(capabilities=cap)
         return cls.driver
 
     def run(self, results):
