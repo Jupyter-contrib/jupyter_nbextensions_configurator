@@ -16,6 +16,7 @@ import re
 import yaml
 try: 
     from notebook.base.handlers import APIHandler
+    # When Notebook < 7 is available, the import the Notebook handlers
     from notebook.base.handlers import IPythonHandler as JupyterHandler
     from notebook.utils import url_path_join as ujoin
     from notebook.utils import path2url
