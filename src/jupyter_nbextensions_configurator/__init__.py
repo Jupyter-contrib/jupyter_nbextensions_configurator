@@ -14,9 +14,16 @@ import posixpath
 import re
 
 import yaml
-from jupyter_server.base.handlers import APIHandler, JupyterHandler
-from jupyter_server.utils import url_path_join as ujoin
-from jupyter_server.utils import path2url
+try: 
+    from notebook.base.handlers import APIHandler
+    from notebook.base.handlers import IPythonHandler as JupyterHandler
+    from notebook.utils import url_path_join as ujoin
+    from notebook.utils import path2url
+except ModuleNotFoundError as e:
+    from jupyter_server.base.handlers import APIHandler, JupyterHandler
+    from jupyter_server.utils import url_path_join as ujoin
+    from jupyter_server.utils import path2url
+
 from notebook._version import version_info as nb_version_info
 from tornado import web
 
