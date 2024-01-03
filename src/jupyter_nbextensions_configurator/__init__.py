@@ -26,6 +26,14 @@ try:
 except ImportError:
     from yaml import SafeLoader
 
+if nb_version_info > (7,):
+    from nbclassic import shim_notebook, nbextensions, notebookapp, tests
+    import sys
+    shim_notebook()
+    sys.modules['notebook.nbextensions'] = nbextensions
+    sys.modules['notebook.notebookapp'] = notebookapp
+    sys.modules['notebook.tests'] = tests
+
 if nb_version_info < (5, 2, 0):
     from notebook.base.handlers import json_errors
 else:
